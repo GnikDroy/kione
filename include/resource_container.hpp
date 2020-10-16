@@ -1,0 +1,46 @@
+/**
+ * @file resource_container.hpp
+ * @author Gnik Droy
+ * @brief File containing functions/classes for managing resources.
+ *
+ */
+#pragma once
+#include <string>
+#include <unordered_map>
+
+namespace k2 {
+/**
+ * @class ResourceContainer
+ * @brief Class for managing resources.
+ */
+template <class ResourceType> class ResourceContainer {
+public:
+  /**
+   * @brief Returns the number of resources currently held by the game.
+   * @return Total number of resources held.
+   */
+  std::size_t size() const { return resources.size(); }
+
+  bool is_loaded(const std::string &resource_id) const {
+    return resources.find(resource_id) != resources.end();
+  }
+
+  ResourceType &operator[](const std::string &id) { return resources[id]; }
+
+  const ResourceType &operator[](const std::string &id) const {
+    return resources[id];
+  }
+
+  void erase(const std::string &id) { resources.erase(id); }
+
+  auto begin() const { return resources.cbegin(); }
+  auto end() const { return resources.cend(); }
+
+  auto begin() { return resources.begin(); }
+  auto end() { return resources.end(); }
+
+private:
+  /** Container that stores the identifier and Resource mappings.*/
+  std::unordered_map<std::string, ResourceType> resources;
+};
+} // namespace k2
