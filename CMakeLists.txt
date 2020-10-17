@@ -61,6 +61,14 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+# Setup spdlog
+FetchContent_Declare(
+  spdlog
+  GIT_REPOSITORY https://github.com/gabime/spdlog
+  GIT_TAG        v1.8.1)
+
+FetchContent_MakeAvailable(spdlog)
+
 # Setup fmtlib
 FetchContent_Declare(
   fmtlib
@@ -102,4 +110,5 @@ if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
    AND BUILD_TESTING)
   message(STATUS "BUILD_TESTING is ENABLED.")
   add_subdirectory(tests)
+  add_subdirectory(sandbox)
 endif()
