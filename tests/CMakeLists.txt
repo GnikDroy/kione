@@ -4,10 +4,29 @@ find_package(OpenGL REQUIRED)
 add_executable(
   tests
   main.cpp
+  resource_container.cpp
+  vector.cpp
 )
 
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include) 
-target_link_libraries(tests EnTT OpenGL::OpenGL SDL2::SDL2 imgui fmt::fmt Catch2::Catch2)
+target_precompile_headers(tests PRIVATE
+  <iostream>
+  <memory>
+  <vector>
+  <string>
+  <unordered_map>
+  <cstdint>
+  <cmath>
+  <algorithm>
+  <stdexcept>
+  <type_traits>
+  <concepts>
+
+  [["fmt/core.h"]]
+  [["fmt/ranges.h"]]
+  [["fmt/format.h"]]
+)
+target_link_libraries(tests SDL2::SDL2 kione2D fmt::fmt Catch2::Catch2)
 target_link_libraries(tests ${SDL2_IMAGE_LIBRARIES}
                               ${SDL2_TTF_LIBRARIES}
                               ${SDL2_MIXER_LIBRARIES})
