@@ -10,7 +10,7 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
 
-#include "sdl_types.hpp"
+#include "core/sdl_types.hpp"
 #include <iostream>
 #include <memory>
 #include <string>
