@@ -1,13 +1,43 @@
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 
-add_executable(
+add_library(
   kione2D
-  main.cpp
+  core/app.cpp
+  core/logger.cpp
 )
 
 target_include_directories(kione2D PRIVATE ${PROJECT_SOURCE_DIR}/include) 
-target_link_libraries(kione2D EnTT OpenGL::OpenGL SDL2::SDL2 imgui)
+target_precompile_headers(kione2D PRIVATE
+  <iostream>
+  <memory>
+  <vector>
+  <string>
+  <unordered_map>
+  <cstdint>
+  <cmath>
+  <numeric>
+  <algorithm>
+  <cassert>
+  <stdexcept>
+  <type_traits>
+  <concepts>
+  
+  [["SDL.h"]]
+  [["SDL_image.h"]]
+  [["SDL_mixer.h"]]
+  [["SDL_ttf.h"]]
+
+  [["fmt/core.h"]]
+  [["fmt/ranges.h"]]
+  [["fmt/format.h"]]
+  
+  [["entt/entt.hpp"]]
+  
+  [["spdlog/spdlog.h"]]
+)
+
+target_link_libraries(kione2D EnTT OpenGL::OpenGL SDL2::SDL2 imgui fmt::fmt spdlog::spdlog)
 target_link_libraries(kione2D ${SDL2_IMAGE_LIBRARIES}
                               ${SDL2_TTF_LIBRARIES}
                               ${SDL2_MIXER_LIBRARIES})
