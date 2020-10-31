@@ -4,7 +4,7 @@
 namespace k2 {
 
 std::string Clipboard::get() {
-    return std::string(glfwGetClipboardString(nullptr));
+    return {glfwGetClipboardString(nullptr)};
 }
 void Clipboard::set(const std::string& str) {
     glfwSetClipboardString(nullptr, str.c_str());
