@@ -77,13 +77,38 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(fmtlib)
 
-# Setup sdl2 and related packages
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_mixer REQUIRED)
-find_package(SDL2_ttf REQUIRED)
+# Setup glfw
+function(glfw_build)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
+    set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
+    set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
+    set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
+    FetchContent_Declare(
+      glfw
+      GIT_REPOSITORY https://github.com/glfw/glfw
+      GIT_TAG        3.3.2)
 
-# Setup imgui with sdl2
+    FetchContent_MakeAvailable(glfw)
+endfunction()
+glfw_build()
+
+
+# Setup glad
+function(glad_build)
+    set(GLAD_PROFILE "core" CACHE STRING "OpenGL profile")
+    set(GLAD_API "gl=" CACHE STRING "API type/version pairs, like \"gl=3.2,gles=\", no version means latest")
+    set(GLAD_GENERATOR "c" CACHE STRING "Language to generate the binding for")
+    FetchContent_Declare(
+      glad
+      GIT_REPOSITORY https://github.com/Dav1dde/glad
+      GIT_TAG        v0.1.34)
+
+    FetchContent_MakeAvailable(glad)
+endfunction()
+glad_build()
+
+
+# Setup imgui
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -95,10 +120,9 @@ if(NOT imgui_POPULATED)
   FetchContent_Populate(imgui)
   add_library(imgui
     ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-    ${imgui_SOURCE_DIR}/examples/imgui_impl_sdl.cpp ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp)
+    ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp)
   target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/examples/)
-  target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_CUSTOM=<SDL_opengl.h>  GL_GLEXT_PROTOTYPES=1)
-  target_link_libraries(imgui SDL2::SDL2)
+  target_compile_definitions(imgui PUBLIC GL_GLEXT_PROTOTYPES=1)
 endif()
 
 

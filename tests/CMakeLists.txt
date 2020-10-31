@@ -1,4 +1,3 @@
-find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 add_executable(
@@ -26,10 +25,7 @@ target_precompile_headers(tests PRIVATE
   [["fmt/ranges.h"]]
   [["fmt/format.h"]]
 )
-target_link_libraries(tests SDL2::SDL2 kione2D fmt::fmt Catch2::Catch2)
-target_link_libraries(tests ${SDL2_IMAGE_LIBRARIES}
-                              ${SDL2_TTF_LIBRARIES}
-                              ${SDL2_MIXER_LIBRARIES})
+target_link_libraries(tests kione2D fmt::fmt Catch2::Catch2)
 
 set_target_properties(tests
     PROPERTIES
