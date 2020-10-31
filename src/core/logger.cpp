@@ -12,17 +12,16 @@ namespace k2
 
         Impl(const std::string &name)
         {
-            auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-            auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(fmt::format("{}.log", name), true);
+            auto console_sink = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
+            auto file_sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(fmt::format("{}.log", name), true);
 
             console_sink->set_pattern("%^[%T] %n: %v%$");
             file_sink->set_pattern("[%T] [%l] %n: %v");
             std::array<spdlog::sink_ptr, 2> sink_arr = {std::move(console_sink), std::move(file_sink)};
 
-            logger = std::make_shared<spdlog::logger>(name, sink_arr.begin(), sink_arr.end());
+            logger = std::make_unique<spdlog::logger>(name, sink_arr.begin(), sink_arr.end());
             logger->set_level(spdlog::level::trace);
             logger->flush_on(spdlog::level::trace);
-            spdlog::register_logger(logger);
         }
         std::shared_ptr<spdlog::logger> logger;
     };
