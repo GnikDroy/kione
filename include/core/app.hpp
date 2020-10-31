@@ -1,11 +1,12 @@
 #pragma once
+#include "core/window.hpp"
 
 namespace k2
 {
     class App
     {
     public:
-        App(); 
+        App();
         virtual ~App();
         virtual void run();
     };
