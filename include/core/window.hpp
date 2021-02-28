@@ -38,5 +38,6 @@ class Window {
     
     void set_vsync(bool status);
     bool is_vsync() const;
+
 };
 }  // namespace k2

@@ -2,7 +2,6 @@
 #include <functional>
 
 #include "core/input_device.hpp"
-#include "core/keyboard.hpp"
 
 namespace k2 {
 class Window;
@@ -25,6 +24,13 @@ class MouseDevice : public IInputDevice {
         ButtonMiddle = Button2
     };
 
+    enum class ButtonState {
+        press = 1,
+        release = 0,
+        repeat = 2,
+        unknown = -1,
+    };
+
     enum class CursorMode {
         Normal,
         Hidden,
@@ -33,7 +39,7 @@ class MouseDevice : public IInputDevice {
 
     friend class Window;
 
-    KeyboardDevice::KeyState get_state(ButtonCode button);
+    MouseDevice::ButtonState get_state(ButtonCode button);
     void set_cursor_mode(CursorMode mode);
 
     ~MouseDevice();

@@ -66,8 +66,8 @@ MouseDevice::MouseDevice(Window* w) : window_instance(w) {
 
 MouseDevice::~MouseDevice() {}
 
-KeyboardDevice::KeyState MouseDevice::get_state(ButtonCode button) {
-    return static_cast<KeyboardDevice::KeyState>(glfwGetKey(
+MouseDevice::ButtonState MouseDevice::get_state(ButtonCode button) {
+    return static_cast<MouseDevice::ButtonState>(glfwGetKey(
         window_instance->impl->window.get(), static_cast<int>(button)));
 }
 

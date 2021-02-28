@@ -11,6 +11,7 @@
 
 // Glad must be included before glfw
 #define GLFW_INCLUDE_NONE
+
 #include "core/window.hpp"
 
 #include "GLFW/glfw3.h"
@@ -20,54 +21,54 @@
 
 namespace k2 {
 
-Window::Window(const WindowConfig& config)
-    : impl(std::move(std::make_unique<Window::Impl>(this, config))),
-      keyboard(this),
-      mouse(this) {}
+    Window::Window(const WindowConfig &config)
+            : impl(std::move(std::make_unique<Window::Impl>(this, config))),
+              keyboard(this),
+              mouse(this) {}
 
-Window::~Window() {}
+    Window::~Window() {}
 
-void Window::update() {
-    glfwPollEvents();
-}
+    void Window::update() {
+        glfwPollEvents();
+    }
 
-std::uint32_t Window::get_width() const {
-    int width, height;
-    glfwGetWindowSize(impl->window.get(), &width, &height);
-    return width;
-}
+    std::uint32_t Window::get_width() const {
+        int width, height;
+        glfwGetWindowSize(impl->window.get(), &width, &height);
+        return width;
+    }
 
-std::uint32_t Window::get_height() const {
-    int width, height;
-    glfwGetWindowSize(impl->window.get(), &width, &height);
-    return height;
-}
+    std::uint32_t Window::get_height() const {
+        int width, height;
+        glfwGetWindowSize(impl->window.get(), &width, &height);
+        return height;
+    }
 
-void Window::set_vsync(bool status) {
-    glfwSwapInterval(status);
-    impl->glfw_data.vsync = status;
-}
+    void Window::set_vsync(bool status) {
+        glfwSwapInterval(status);
+        impl->glfw_data.vsync = status;
+    }
 
-void* Window::get_native_handle() const {
+    void *Window::get_native_handle() const {
 #ifdef __linux__
-    return reinterpret_cast<void*>(glfwGetX11Window(impl->window.get()));
+        return reinterpret_cast<void*>(glfwGetX11Window(impl->window.get()));
 #elif _WIN32
-    return reinterpret_cast<void*>(glfwGetWin32Window(impl->window.get()));
+        return reinterpret_cast<void *>(glfwGetWin32Window(impl->window.get()));
 #else
 #error "Native window not implemented."
 #endif
-}
+    }
 
-void* Window::get_native_display() const {
+    void *Window::get_native_display() const {
 #ifdef __linux__
-    return reinterpret_cast<void*>(glfwGetX11Display());
+        return reinterpret_cast<void*>(glfwGetX11Display());
 #elif _WIN32
-    return nullptr;
+        return nullptr;
 #else
 #error "Native display not implemented."
 #endif
-}
+    }
 
-bool Window::is_vsync() const { return impl->glfw_data.vsync; }
+    bool Window::is_vsync() const { return impl->glfw_data.vsync; }
 
 }  // namespace k2
