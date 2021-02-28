@@ -18,6 +18,9 @@ target_precompile_headers(kione2D PRIVATE
   <vector>
   <string>
   <unordered_map>
+  <map>
+  <set>
+  <unordered_set>
   <cstdint>
   <cmath>
   <numeric>
@@ -34,9 +37,11 @@ target_precompile_headers(kione2D PRIVATE
   [["entt/entt.hpp"]]
   
   [["spdlog/spdlog.h"]]
+  [["spdlog/sinks/stdout_color_sinks.h"]]
+  [["spdlog/sinks/basic_file_sink.h"]]
 )
 
-target_link_libraries(kione2D EnTT OpenGL::OpenGL glfw glad imgui fmt::fmt spdlog::spdlog)
+target_link_libraries(kione2D EnTT OpenGL::GL glfw bgfx glad imgui fmt::fmt spdlog::spdlog)
 
 set_target_properties(kione2D
     PROPERTIES

@@ -25,9 +25,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # Let's nicely support folders in IDEs
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-    if(BUILD_DOCS)
+    if(K2_BUILD_DOCS)
       find_package(Doxygen)
-      message(STATUS "BUILD_DOCS is enabled")
+      message(STATUS "Building k2 docs.")
       if(Doxygen_FOUND)
           add_subdirectory(docs)
       endif()
@@ -42,12 +42,12 @@ Include(FetchContent)
 
 # Setup EnTT
 function(entt_build)
-    set(BUILD_TESTING OFF)
-    set(BUILD_DOCS OFF)
+    set(ENTT_BUILD_TESTING   OFF CACHE INTERNAL "" FORCE)
+    set(ENTT_BUILD_DOCS      OFF CACHE INTERNAL "" FORCE)
     FetchContent_Declare(
         EnTT
         GIT_REPOSITORY https://github.com/skypjack/entt
-        GIT_TAG        v3.5.2)
+        GIT_TAG        master)
 
     FetchContent_MakeAvailable(EnTT)
 endfunction()
@@ -57,7 +57,10 @@ entt_build()
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v2.13.1)
+  GIT_TAG        v2.13.1
+  GIT_SHALLOW 1
+  GIT_PROGRESS 1
+  )
 
 FetchContent_MakeAvailable(Catch2)
 
@@ -65,7 +68,10 @@ FetchContent_MakeAvailable(Catch2)
 FetchContent_Declare(
   spdlog
   GIT_REPOSITORY https://github.com/gabime/spdlog
-  GIT_TAG        v1.8.1)
+  GIT_TAG        v1.8.1
+  GIT_SHALLOW 1
+  GIT_PROGRESS 1
+  )
 
 FetchContent_MakeAvailable(spdlog)
 
@@ -73,35 +79,64 @@ FetchContent_MakeAvailable(spdlog)
 FetchContent_Declare(
   fmtlib
   GIT_REPOSITORY https://github.com/fmtlib/fmt
-  GIT_TAG        7.0.3)
+  GIT_TAG        7.0.3
+  GIT_SHALLOW 1
+  GIT_PROGRESS 1
+  )
 
 FetchContent_MakeAvailable(fmtlib)
 
 # Setup glfw
 function(glfw_build)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
-    set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
-    set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
-    set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
+    set(GLFW_BUILD_EXAMPLES  OFF CACHE INTERNAL "Build the GLFW example programs")
+    set(GLFW_BUILD_TESTS     OFF CACHE INTERNAL "Build the GLFW test programs")
+    set(GLFW_BUILD_DOCS      OFF CACHE INTERNAL "Build the GLFW documentation")
+    set(GLFW_INSTALL         OFF CACHE INTERNAL "Generate installation target")
     FetchContent_Declare(
       glfw
       GIT_REPOSITORY https://github.com/glfw/glfw
-      GIT_TAG        3.3.2)
+      GIT_TAG        3.3.2
+      GIT_SHALLOW 1
+      GIT_PROGRESS 1
+    )
 
     FetchContent_MakeAvailable(glfw)
 endfunction()
 glfw_build()
 
+# Build bgfx
+function(bgfx_build)
+  FetchContent_Declare(
+    bgfx
+    GIT_REPOSITORY https://github.com/widberg/bgfx.cmake
+    GIT_TAG        master
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
+  )
+
+  FetchContent_GetProperties(bgfx)
+    if (NOT bgfx_POPULATED)
+        FetchContent_Populate(bgfx)
+        set(BGFX_BUILD_TOOLS      OFF CACHE INTERNAL "")
+        set(BGFX_BUILD_EXAMPLES   OFF CACHE INTERNAL "")
+        set(BGFX_INSTALL          OFF CACHE INTERNAL "")
+        add_subdirectory(${bgfx_SOURCE_DIR})
+    endif()
+endfunction()
+bgfx_build()
 
 # Setup glad
 function(glad_build)
-    set(GLAD_PROFILE "core" CACHE STRING "OpenGL profile")
-    set(GLAD_API "gl=" CACHE STRING "API type/version pairs, like \"gl=3.2,gles=\", no version means latest")
-    set(GLAD_GENERATOR "c" CACHE STRING "Language to generate the binding for")
+    set(GLAD_PROFILE    "core"  CACHE INTERNAL "")
+    set(GLAD_API        "gl="   CACHE INTERNAL "")
+    set(GLAD_GENERATOR  "c"     CACHE INTERNAL "")
     FetchContent_Declare(
       glad
       GIT_REPOSITORY https://github.com/Dav1dde/glad
-      GIT_TAG        v0.1.34)
+      GIT_TAG        v0.1.34
+      GIT_SHALLOW 1
+      GIT_PROGRESS 1
+    )
 
     FetchContent_MakeAvailable(glad)
 endfunction()
@@ -112,7 +147,9 @@ glad_build()
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG        v1.78
+  GIT_TAG        master
+  GIT_SHALLOW 1
+  GIT_PROGRESS 1
 )
 
 FetchContent_GetProperties(imgui)
@@ -120,19 +157,25 @@ if(NOT imgui_POPULATED)
   FetchContent_Populate(imgui)
   add_library(imgui
     ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-    ${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp)
-  target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/examples/)
-  target_compile_definitions(imgui PUBLIC GL_GLEXT_PROTOTYPES=1)
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+  target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
+  target_compile_definitions(imgui PUBLIC GL_GLEXT_PROTOTYPES=1 IMGUI_IMPL_OPENGL_LOADER_GLAD)
+  target_link_libraries(imgui glad)
 endif()
 
 
 # Add our source files
 add_subdirectory(src)
 
-# Testing only available if this is the main app
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
-   AND BUILD_TESTING)
-  message(STATUS "BUILD_TESTING is ENABLED.")
+# Testing only available is stated explicitly
+if(K2_BUILD_TESTING)
+  message(STATUS "Building k2 tests.")
   add_subdirectory(tests)
-  add_subdirectory(sandbox)
+endif()
+
+# Setup sandbox build
+set(K2_BUILD_SANDBOX ON CACHE BOOL "Enable building sandbox")
+if(K2_BUILD_SANDBOX)
+    message(STATUS "Building k2 sandbox application.")
+    add_subdirectory(sandbox)
 endif()

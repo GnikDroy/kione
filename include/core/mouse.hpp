@@ -26,9 +26,9 @@ class MouseDevice : public IInputDevice {
     };
 
     enum class CursorMode {
-        NORMAL,
-        HIDDEN,
-        DISABLED,
+        Normal,
+        Hidden,
+        Disabled, 
     };
 
     friend class Window;

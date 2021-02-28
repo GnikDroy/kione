@@ -10,6 +10,8 @@
 #include "core/ecs.hpp"
 #include "core/event_dispatcher.hpp"
 
+#include "core/renderer.hpp"
+
 #include "events/mouse.hpp"
 #include "events/keyboard.hpp"
 #include "events/window.hpp"

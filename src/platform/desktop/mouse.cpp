@@ -73,9 +73,9 @@ KeyboardDevice::KeyState MouseDevice::get_state(ButtonCode button) {
 
 void MouseDevice::set_cursor_mode(CursorMode mode) {
     int glfw_mode{};
-    if (mode == CursorMode::HIDDEN)
+    if (mode == CursorMode::Hidden)
         glfw_mode = GLFW_CURSOR_HIDDEN;
-    else if (mode == CursorMode::DISABLED)
+    else if (mode == CursorMode::Disabled)
         glfw_mode = GLFW_CURSOR_DISABLED;
     else
         glfw_mode = GLFW_CURSOR_NORMAL;

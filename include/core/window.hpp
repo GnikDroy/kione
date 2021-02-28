@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <any>
 
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
@@ -32,6 +33,9 @@ class Window {
     std::uint32_t get_width() const;
     std::uint32_t get_height() const;
 
+    void* get_native_handle() const;
+    void* get_native_display() const;
+    
     void set_vsync(bool status);
     bool is_vsync() const;
 };
