@@ -1,10 +1,5 @@
 #include "core/logger.hpp"
 
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
-#include "fmt/core.h"
-
 namespace k2
 {
     struct Logger::Impl

@@ -1,5 +1,3 @@
-// #include "glad/glad.h"
-// glad before glfw
 #include "core/event_dispatcher.hpp"
 #include "core/logger.hpp"
 #include "events/window.hpp"

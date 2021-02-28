@@ -19,7 +19,7 @@ class Sandbox : public k2::App {
         running = false;
     }
 
-    virtual void run() override {
+    void run() override {
         activate_renderer(window);
         
         bgfx::setDebug(BGFX_DEBUG_STATS);
@@ -32,7 +32,7 @@ class Sandbox : public k2::App {
         }
     }
 
-    virtual ~Sandbox() override {
+    ~Sandbox() override {
         k2::Logger::app->info("Sandbox application stopped.");
     }
 };

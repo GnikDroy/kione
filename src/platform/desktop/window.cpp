@@ -1,6 +1,3 @@
-
-//#include "glad/glad.h"
-
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif __linux__
@@ -9,14 +6,11 @@
 #define GLFW_EXPOSE_NATIVE_COCOA
 #endif
 
-// Glad must be included before glfw
 #define GLFW_INCLUDE_NONE
 
-#include "core/window.hpp"
-
 #include "GLFW/glfw3.h"
-// Window must be included before glfw3native.h for a weird reason
 #include "GLFW/glfw3native.h"
+#include "core/window.hpp"
 #include "platform/desktop/window_impl.hpp"
 
 namespace k2 {
