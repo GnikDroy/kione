@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.17)
 
 project(
     kione2D
@@ -168,7 +168,7 @@ endif()
 add_subdirectory(src)
 
 # Testing only available is stated explicitly
-if(K2_BUILD_TESTING)
+if(K2_BUILD_TESTS)
   message(STATUS "Building k2 tests.")
   add_subdirectory(tests)
 endif()

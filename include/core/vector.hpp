@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cassert>
+#include <array>
 
 namespace k2 
 {

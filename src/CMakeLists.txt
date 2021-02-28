@@ -50,4 +50,8 @@ set_target_properties(kione2D
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     CXX_STANDARD 20
 )
-target_compile_options(kione2D PRIVATE -Wall -Wextra -pedantic -Werror)
+
+target_compile_options(kione2D PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+)

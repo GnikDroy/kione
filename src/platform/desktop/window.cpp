@@ -51,13 +51,21 @@ void Window::set_vsync(bool status) {
 void* Window::get_native_handle() const {
 #ifdef __linux__
     return reinterpret_cast<void*>(glfwGetX11Window(impl->window.get()));
+#elif _WIN32
+    return reinterpret_cast<void*>(glfwGetWin32Window(impl->window.get()));
 #else
 #error "Native window not implemented."
 #endif
 }
 
 void* Window::get_native_display() const {
+#ifdef __linux__
     return reinterpret_cast<void*>(glfwGetX11Display());
+#elif _WIN32
+    return nullptr;
+#else
+#error "Native display not implemented."
+#endif
 }
 
 bool Window::is_vsync() const { return impl->glfw_data.vsync; }

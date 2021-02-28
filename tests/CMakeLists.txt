@@ -34,4 +34,7 @@ set_target_properties(tests
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     CXX_STANDARD 20
 )
-target_compile_options(tests PRIVATE -Wall -Wextra -pedantic -Werror)
+target_compile_options(tests PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+)
