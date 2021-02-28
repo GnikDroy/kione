@@ -7,6 +7,7 @@
 
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
+#include "core/ecs.hpp"
 
 namespace k2 {
 struct WindowConfig {
@@ -19,6 +20,8 @@ class Window {
     std::unique_ptr<Impl> impl;
 
    public:
+    k2::dispatcher event_dispatcher;
+
     friend class KeyboardDevice;
     KeyboardDevice keyboard;
     

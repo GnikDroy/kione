@@ -1,4 +1,3 @@
-#include "core/event_dispatcher.hpp"
 #include "core/logger.hpp"
 #include "events/window.hpp"
 #include "platform/desktop/window_impl.hpp"
@@ -35,39 +34,34 @@ namespace k2 {
         glfwSetWindowUserPointer(window.get(), win);
 
         glfwSetWindowCloseCallback(window.get(), [](auto glfw_window) {
-            event_dispatcher.enqueue<WindowCloseEvent>(WindowCloseEvent{
-                    .window{reinterpret_cast<Window *>(
-                                    glfwGetWindowUserPointer(glfw_window))},
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            window->event_dispatcher.enqueue<WindowCloseEvent>(WindowCloseEvent{
+                    .window{window},
             });
         });
 
-        glfwSetWindowSizeCallback(window.get(), [](auto glfw_window, auto width,
-                                                   auto height) {
-            auto window =
-                    reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            event_dispatcher.enqueue<WindowResizeEvent>(WindowResizeEvent{
-                    .window{reinterpret_cast<Window *>(window)},
+        glfwSetWindowSizeCallback(window.get(), [](auto glfw_window, auto width, auto height) {
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            window->event_dispatcher.enqueue<WindowResizeEvent>(WindowResizeEvent{
+                    .window{window},
                     .width{width},
                     .height{height},
             });
         });
 
-        glfwSetWindowContentScaleCallback(
-                window.get(), [](auto glfw_window, auto x, auto y) {
-                    event_dispatcher.enqueue<WindowContentScaleChangeEvent>(
-                            WindowContentScaleChangeEvent{
-                                    .window{reinterpret_cast<Window *>(
-                                                    glfwGetWindowUserPointer(glfw_window))},
-                                    .x{x},
-                                    .y{y},
-                            });
-                });
+        glfwSetWindowContentScaleCallback(window.get(), [](auto glfw_window, auto x, auto y) {
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            window->event_dispatcher.enqueue<WindowContentScaleChangeEvent>(
+                    WindowContentScaleChangeEvent{
+                            .window{window},
+                            .x{x},
+                            .y{y},
+                    });
+        });
 
-        glfwSetWindowPosCallback(window.get(), [](auto glfw_window, auto x,
-                                                  auto y) {
-            auto window =
-                    reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            event_dispatcher.enqueue<WindowRepositionEvent>(WindowRepositionEvent{
+        glfwSetWindowPosCallback(window.get(), [](auto glfw_window, auto x, auto y) {
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            window->event_dispatcher.enqueue<WindowRepositionEvent>(WindowRepositionEvent{
                     .window{window},
                     .x{x},
                     .y{y},
@@ -75,30 +69,28 @@ namespace k2 {
         });
 
         glfwSetWindowFocusCallback(window.get(), [](auto glfw_window, int focus) {
-            event_dispatcher.enqueue<WindowFocusChangeEvent>(WindowFocusChangeEvent{
-                    .window{reinterpret_cast<Window *>(
-                                    glfwGetWindowUserPointer(glfw_window))},
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            window->event_dispatcher.enqueue<WindowFocusChangeEvent>(WindowFocusChangeEvent{
+                    .window{window},
                     .focused{static_cast<bool>(focus)},
             });
         });
 
-        glfwSetWindowIconifyCallback(
-                window.get(), [](auto glfw_window, int iconified) {
-                    event_dispatcher.enqueue<WindowIconifyEvent>(WindowIconifyEvent{
-                            .window{reinterpret_cast<Window *>(
-                                            glfwGetWindowUserPointer(glfw_window))},
-                            .iconified{static_cast<bool>(iconified)},
-                    });
-                });
+        glfwSetWindowIconifyCallback(window.get(), [](auto glfw_window, int iconified) {
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            window->event_dispatcher.enqueue<WindowIconifyEvent>(WindowIconifyEvent{
+                    .window{window},
+                    .iconified{static_cast<bool>(iconified)},
+            });
+        });
 
-        glfwSetWindowMaximizeCallback(
-                window.get(), [](auto glfw_window, int maximized) {
-                    event_dispatcher.enqueue<WindowMaximizeEvent>(WindowMaximizeEvent{
-                            .window{reinterpret_cast<Window *>(
-                                            glfwGetWindowUserPointer(glfw_window))},
-                            .maximized{static_cast<bool>(maximized)},
-                    });
-                });
+        glfwSetWindowMaximizeCallback(window.get(), [](auto glfw_window, int maximized) {
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            window->event_dispatcher.enqueue<WindowMaximizeEvent>(WindowMaximizeEvent{
+                    .window{window},
+                    .maximized{static_cast<bool>(maximized)},
+            });
+        });
     }
 
     Window::Impl::~Impl() { glfw_window_count--; }

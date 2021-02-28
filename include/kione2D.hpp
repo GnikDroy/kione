@@ -8,7 +8,6 @@
 #include "core/clipboard.hpp"
 #include "core/app.hpp"
 #include "core/ecs.hpp"
-#include "core/event_dispatcher.hpp"
 
 #include "core/renderer.hpp"
 

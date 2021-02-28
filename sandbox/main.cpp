@@ -10,7 +10,7 @@ class Sandbox : public k2::App {
 
     Sandbox() : App(), window{} {
         k2::Logger::app->info("Sandbox application started.");
-        k2::event_dispatcher.sink<k2::WindowCloseEvent>()
+        window.event_dispatcher.sink<k2::WindowCloseEvent>()
             .connect<&Sandbox::close>(this);
     }
 
@@ -28,7 +28,6 @@ class Sandbox : public k2::App {
         while (running) {
             bgfx::frame();
             window.update();
-            k2::event_dispatcher.update();
         }
     }
 

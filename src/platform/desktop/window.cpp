@@ -24,6 +24,7 @@ namespace k2 {
 
     void Window::update() {
         glfwPollEvents();
+        event_dispatcher.update();
     }
 
     std::uint32_t Window::get_width() const {
