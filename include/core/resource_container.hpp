@@ -21,17 +21,17 @@ public:
    */
   std::size_t size() const { return resources.size(); }
 
-  bool is_loaded(const std::string &resource_id) const {
+  bool is_loaded(std::uint64_t resource_id) const {
     return resources.find(resource_id) != resources.end();
   }
 
-  ResourceType &operator[](const std::string &id) { return resources[id]; }
+  ResourceType &operator[](std::uint64_t id) { return resources[id]; }
 
-  const ResourceType &operator[](const std::string &id) const {
+  const ResourceType &operator[](std::uint64_t id) const {
     return resources[id];
   }
 
-  void erase(const std::string &id) { resources.erase(id); }
+  void erase(std::uint64_t id) { resources.erase(id); }
 
   auto begin() const { return resources.cbegin(); }
   auto end() const { return resources.cend(); }
@@ -41,6 +41,6 @@ public:
 
 private:
   /** Container that stores the identifier and Resource mappings.*/
-  std::unordered_map<std::string, ResourceType> resources;
+  std::unordered_map<std::uint64_t, ResourceType> resources;
 };
 } // namespace k2
