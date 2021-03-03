@@ -10,18 +10,20 @@
 #include "core/ecs.hpp"
 
 namespace k2 {
+struct Event;
+
 struct WindowConfig {
     std::string title{"Kione 2D"};
     std::uint32_t x_pos{}, y_pos{}, width = 1280, height = 720;
+    std::function<void(Event)> event_handler;
 };
+
 
 class Window {
     struct Impl;
     std::unique_ptr<Impl> impl;
 
    public:
-    k2::dispatcher event_dispatcher;
-
     friend class KeyboardDevice;
     KeyboardDevice keyboard;
     
@@ -35,6 +37,8 @@ class Window {
 
     std::uint32_t get_width() const;
     std::uint32_t get_height() const;
+
+    void set_event_handler(std::function<void(Event)>);
 
     void* get_native_handle() const;
     void* get_native_display() const;

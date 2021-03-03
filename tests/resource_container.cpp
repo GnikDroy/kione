@@ -4,22 +4,22 @@
 
 TEST_CASE("Resource Manager tests")
 {
-
+  using k2::literals::operator""_fnv1a;
   // Mocking textures with ints.
   k2::ResourceContainer<int> textures;
   REQUIRE(textures.size() == 0);
-  REQUIRE(!textures.is_loaded("test_texture"_fnv));
+  REQUIRE(!textures.is_loaded("test_texture"_fnv1a));
   REQUIRE(textures.begin() == textures.end());
-  REQUIRE(textures["test_texture"_fnv] == 0);
+  REQUIRE(textures["test_texture"_fnv1a] == 0);
   REQUIRE(textures.size() == 1);
 
-  textures["test_texture"_fnv] = 5;
+  textures["test_texture"_fnv1a] = 5;
   REQUIRE(textures.size() == 1);
-  REQUIRE(textures["test_texture"_fnv] == 5);
-  REQUIRE(textures.is_loaded("test_texture"_fnv));
-  REQUIRE(textures.begin()->first == "test_texture"_fnv);
-  REQUIRE(textures.begin()->second == textures["test_texture"_fnv]);
+  REQUIRE(textures["test_texture"_fnv1a] == 5);
+  REQUIRE(textures.is_loaded("test_texture"_fnv1a));
+  REQUIRE(textures.begin()->first == "test_texture"_fnv1a);
+  REQUIRE(textures.begin()->second == textures["test_texture"_fnv1a]);
 
-  textures.erase("test_texture"_fnv);
+  textures.erase("test_texture"_fnv1a);
   REQUIRE(textures.size() == 0);
 }

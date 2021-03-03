@@ -2,8 +2,6 @@
 #include "entt/entt.hpp"
 
 namespace k2 {
-App::App() {}
-App::~App() {}
-
-void App::run() {}
+App::App() = default;
+App::~App() = default;
 }  // namespace k2

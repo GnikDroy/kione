@@ -20,11 +20,10 @@ namespace k2 {
               keyboard(this),
               mouse(this) {}
 
-    Window::~Window() {}
+    Window::~Window() = default;
 
     void Window::update() {
         glfwPollEvents();
-        event_dispatcher.update();
     }
 
     std::uint32_t Window::get_width() const {
@@ -42,6 +41,10 @@ namespace k2 {
     void Window::set_vsync(bool status) {
         glfwSwapInterval(status);
         impl->glfw_data.vsync = status;
+    }
+
+    void Window::set_event_handler(std::function<void(Event)> handler) {
+       impl->event_handler = std::move(handler);
     }
 
     void *Window::get_native_handle() const {

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdlib>
+#include <functional>
 
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
@@ -22,6 +23,8 @@ struct Window::Impl {
         std::string title;
         bool vsync;
     } glfw_data;
+
+    std::function<void(Event)> event_handler;
 
     Impl(Window* instance, const WindowConfig& config);
 

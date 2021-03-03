@@ -3,7 +3,8 @@
 #include "platform/desktop/window_impl.hpp"
 
 namespace k2 {
-    Window::Impl::Impl(Window *win, const WindowConfig &config) {
+    Window::Impl::Impl(Window *win, const WindowConfig &config) :
+            event_handler{config.event_handler} {
         glfw_data = {
                 .title = config.title,
                 .vsync = true,
@@ -35,61 +36,53 @@ namespace k2 {
 
         glfwSetWindowCloseCallback(window.get(), [](auto glfw_window) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<WindowCloseEvent>(WindowCloseEvent{
-                    .window{window},
-            });
+            WindowCloseEvent event;
+            window->impl->event_handler(event);
         });
 
         glfwSetWindowSizeCallback(window.get(), [](auto glfw_window, auto width, auto height) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<WindowResizeEvent>(WindowResizeEvent{
-                    .window{window},
-                    .width{width},
-                    .height{height},
-            });
+            WindowResizeEvent event;
+            event.width = width;
+            event.height = height;
+            window->impl->event_handler(event);
         });
 
         glfwSetWindowContentScaleCallback(window.get(), [](auto glfw_window, auto x, auto y) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<WindowContentScaleChangeEvent>(
-                    WindowContentScaleChangeEvent{
-                            .window{window},
-                            .x{x},
-                            .y{y},
-                    });
+            WindowContentScaleChangeEvent event;
+            event.x = x;
+            event.y = y;
+            window->impl->event_handler(event);
         });
 
         glfwSetWindowPosCallback(window.get(), [](auto glfw_window, auto x, auto y) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<WindowRepositionEvent>(WindowRepositionEvent{
-                    .window{window},
-                    .x{x},
-                    .y{y},
-            });
+            WindowRepositionEvent event;
+            event.x = x;
+            event.y = y;
+            window->impl->event_handler(event);
         });
 
         glfwSetWindowFocusCallback(window.get(), [](auto glfw_window, int focus) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<WindowFocusChangeEvent>(WindowFocusChangeEvent{
-                    .window{window},
-                    .focused{static_cast<bool>(focus)},
-            });
+            WindowFocusChangeEvent event;
+            event.focused = static_cast<bool>(focus);
+            window->impl->event_handler(event);
         });
 
         glfwSetWindowIconifyCallback(window.get(), [](auto glfw_window, int iconified) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<WindowIconifyEvent>(WindowIconifyEvent{
-                    .window{window},
-                    .iconified{static_cast<bool>(iconified)},
-            });
+            WindowIconifyEvent event;
+            event.iconified = static_cast<bool>(iconified);
+            window->impl->event_handler(event);
         });
 
         glfwSetWindowMaximizeCallback(window.get(), [](auto glfw_window, int maximized) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<WindowMaximizeEvent>(WindowMaximizeEvent{
-                    .window{window},
-                    .maximized{static_cast<bool>(maximized)},
-            });
+            WindowMaximizeEvent event;
+            event.maximized = static_cast<bool>(maximized);
+            window->impl->event_handler(event);
         });
     }
 

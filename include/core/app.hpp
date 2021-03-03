@@ -8,6 +8,6 @@ namespace k2
     public:
         App();
         virtual ~App();
-        virtual void run();
+        virtual void run() = 0;
     };
 } // namespace k2

@@ -9,49 +9,43 @@ namespace k2 {
     MouseDevice::MouseDevice(Window *w) : window_instance(w) {
         glfwSetCursorPosCallback(w->impl->window.get(), [](auto glfw_window, auto x, auto y) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<CursorPositionEvent>(CursorPositionEvent{
-                    .window{window},
-                    .x{x},
-                    .y{y},
-            });
+            CursorPositionEvent event;
+            event.x = x;
+            event.y = y;
+            window->impl->event_handler(event);
         });
 
         glfwSetScrollCallback(w->impl->window.get(), [](auto glfw_window, auto x, auto y) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<ScrollEvent>(ScrollEvent{
-                    .window{reinterpret_cast<Window *>(
-                                    glfwGetWindowUserPointer(glfw_window))},
-                    .x{x},
-                    .y{y},
-            });
+            ScrollEvent event;
+            event.x = x;
+            event.y = y;
+            window->impl->event_handler(event);
         });
 
         glfwSetMouseButtonCallback(w->impl->window.get(), [](auto glfw_window, auto code, auto mod, auto state) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<MouseButtonEvent>(MouseButtonEvent{
-                    .window{window},
-                    .code{static_cast<k2::MouseDevice::ButtonCode>(code)},
-                    .mods{static_cast<KeyboardDevice::KeyMod>(mod)},
-                    .state{static_cast<KeyboardDevice::KeyState>(state)},
-            });
+            MouseButtonEvent event;
+            event.code = static_cast<k2::MouseDevice::ButtonCode>(code);
+            event.mods = static_cast<KeyboardDevice::KeyMod>(mod);
+            event.state = static_cast<KeyboardDevice::KeyState>(state);
+            window->impl->event_handler(event);
         });
 
         glfwSetCursorEnterCallback(w->impl->window.get(), [](auto glfw_window, auto state) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            window->event_dispatcher.enqueue<CursorEnterExitEvent>(CursorEnterExitEvent{
-                    .window{window},
-                    .state{static_cast<bool>(state)},
-            });
+            CursorEnterExitEvent event;
+            event.state = static_cast<bool>(state);
+            window->impl->event_handler(event);
         });
 
         glfwSetDropCallback(w->impl->window.get(), [](auto glfw_window, auto count, auto paths) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
             std::vector<std::string> paths_vec;
             for (int i{}; i < count; i++) { paths_vec.emplace_back(paths[i]); }
-            window->event_dispatcher.enqueue<MouseDropEvent>(MouseDropEvent{
-                    .window{window},
-                    .paths{std::move(paths_vec)},
-            });
+            MouseDropEvent event;
+            event.paths = std::move(paths_vec);
+            window->impl->event_handler(event);
         });
     }
 

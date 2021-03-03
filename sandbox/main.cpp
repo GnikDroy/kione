@@ -4,14 +4,20 @@
 #include "kione2D.hpp"
 
 class Sandbox : public k2::App {
-   public:
+public:
     k2::Window window;
     bool running = true;
+    std::vector<k2::Layer> layers;
 
     Sandbox() : App(), window{} {
         k2::Logger::app->info("Sandbox application started.");
-        window.event_dispatcher.sink<k2::WindowCloseEvent>()
-            .connect<&Sandbox::close>(this);
+
+        using namespace k2::literals;
+        window.set_event_handler([this](auto event){
+           if (event.type == "WindowCloseEvent"_fnv1a){
+              running = false;
+           }
+        });
     }
 
     void close(k2::WindowCloseEvent) {
@@ -21,7 +27,7 @@ class Sandbox : public k2::App {
 
     void run() override {
         activate_renderer(window);
-        
+
         bgfx::setDebug(BGFX_DEBUG_STATS);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0xffffffff, 1.0f, 0);
 

@@ -4,6 +4,7 @@ add_library(
   kione2D
   core/app.cpp
   core/logger.cpp
+  events/event.cpp
   platform/desktop/window.cpp
   platform/desktop/window_impl.cpp
   platform/desktop/keyboard.cpp
@@ -41,7 +42,7 @@ target_precompile_headers(kione2D PRIVATE
   [["spdlog/sinks/basic_file_sink.h"]]
 )
 
-target_link_libraries(kione2D EnTT OpenGL::GL glfw bgfx glad imgui fmt::fmt spdlog::spdlog)
+target_link_libraries(kione2D EnTT OpenGL::GL glfw bgfx imgui fmt::fmt spdlog::spdlog)
 
 set_target_properties(kione2D
     PROPERTIES
