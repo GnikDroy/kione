@@ -18,7 +18,6 @@ struct WindowConfig {
     std::function<void(Event)> event_handler;
 };
 
-
 class Window {
     struct Impl;
     std::unique_ptr<Impl> impl;
@@ -29,6 +28,9 @@ class Window {
     
     friend class MouseDevice;
     MouseDevice mouse;
+
+    friend class ImguiLayer;
+    class ImguiLayer;
 
     Window(const WindowConfig & = {});
     ~Window();

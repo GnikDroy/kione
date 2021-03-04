@@ -4,6 +4,8 @@ add_library(
   kione2D
   core/app.cpp
   core/logger.cpp
+  core/layer.cpp
+  core/imgui_bgfx/imgui_impl_bgfx.cpp
   events/event.cpp
   platform/desktop/window.cpp
   platform/desktop/window_impl.cpp

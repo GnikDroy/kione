@@ -2,6 +2,7 @@
 
 #include "bgfx/bgfx.h"
 #include "kione2D.hpp"
+#include "core/imgui_layer.hpp"
 
 class Sandbox : public k2::App {
 public:
@@ -28,11 +29,16 @@ public:
     void run() override {
         activate_renderer(window);
 
-        bgfx::setDebug(BGFX_DEBUG_STATS);
-        bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0xffffffff, 1.0f, 0);
 
+        k2::ImguiLayer imgui_layer{window};
         while (running) {
+            bgfx::setViewRect(0, 0, 0, uint16_t(window.get_width()), uint16_t(window.get_height()) );
+            bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0xffffffff, 1.0f, 0);
+
+            imgui_layer.update();
+            bgfx::touch(0);
             bgfx::frame();
+
             window.update();
         }
     }
