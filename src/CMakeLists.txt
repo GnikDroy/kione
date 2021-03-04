@@ -6,6 +6,7 @@ add_library(
   core/logger.cpp
   core/layer.cpp
   core/imgui_bgfx/imgui_impl_bgfx.cpp
+  core/imgui_layer.cpp
   events/event.cpp
   platform/desktop/window.cpp
   platform/desktop/window_impl.cpp
