@@ -162,6 +162,23 @@ if(NOT imgui_POPULATED)
   target_link_libraries(imgui glfw)
 endif()
 
+## Download font awesome files
+#file(DOWNLOAD "https://github.com/FortAwesome/Font-Awesome/raw/master/webfonts/fa-regular-400.ttf" ${CMAKE_BINARY_DIR}/bin/assets/fa-regular-400.ttf)
+#file(DOWNLOAD "https://github.com/FortAwesome/Font-Awesome/raw/master/webfonts/fa-solid-900.ttf" ${CMAKE_BINARY_DIR}/bin/assets/fa-solid-900.ttf)
+#
+## icon_font_cpp_headers
+#FetchContent_Declare(
+#        icon_font_cpp_headers
+#        GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders
+#        GIT_TAG        master
+#        GIT_PROGRESS 1
+#)
+#FetchContent_GetProperties(iconfontcppheaders)
+#if(NOT iconfontcppheaders_POPULATED)
+#    FetchContent_Populate(iconfontcppheaders)
+#    add_library(iconfontcppheaders INTERFACE ${iconfontcppheaders_SOURCE_DIR})
+#    target_include_directories(iconfontcppheaders INTERFACE ${iconfontcppheaders_SOURCE_DIR})
+#endif()
 
 # Add our source files
 add_subdirectory(src)
