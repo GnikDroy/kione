@@ -17,7 +17,7 @@ namespace k2 {
 
         ~ImguiLayer() override;
         void update() override;
-        bool handle_event(const Event&) override;
+        bool handle_event(const Event*) override;
         void render() override;
     };
 }

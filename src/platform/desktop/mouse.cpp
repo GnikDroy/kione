@@ -9,47 +9,47 @@ namespace k2 {
     MouseDevice::MouseDevice(Window *w) : window_instance(w) {
         glfwSetCursorPosCallback(w->impl->window.get(), [](auto glfw_window, auto x, auto y) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            CursorPositionEvent event;
-            event.x = x;
-            event.y = y;
-            window->impl->event_handler(event);
+            auto event = std::make_unique<CursorPositionEvent>();
+            event->x = x;
+            event->y = y;
+            window->events.push(std::move(event));
         });
 
         glfwSetScrollCallback(w->impl->window.get(), [](auto glfw_window, auto x, auto y) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            ScrollEvent event;
-            event.x = x;
-            event.y = y;
-            window->impl->event_handler(event);
+            auto event = std::make_unique<ScrollEvent>();
+            event->x = x;
+            event->y = y;
+            window->events.push(std::move(event));
         });
 
-        glfwSetMouseButtonCallback(w->impl->window.get(), [](auto glfw_window, auto code, auto mod, auto state) {
+        glfwSetMouseButtonCallback(w->impl->window.get(), [](auto glfw_window, auto code, auto state, auto mods) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            MouseButtonEvent event;
-            event.code = static_cast<k2::MouseDevice::ButtonCode>(code);
-            event.mods = static_cast<KeyboardDevice::KeyMod>(mod);
-            event.state = static_cast<KeyboardDevice::KeyState>(state);
-            window->impl->event_handler(event);
+            auto event = std::make_unique<MouseButtonEvent>();
+            event->code = static_cast<k2::MouseDevice::ButtonCode>(code);
+            event->state = static_cast<KeyboardDevice::KeyState>(state);
+            event->mods = static_cast<KeyboardDevice::KeyMod>(mods);
+            window->events.push(std::move(event));
         });
 
         glfwSetCursorEnterCallback(w->impl->window.get(), [](auto glfw_window, auto state) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            CursorEnterExitEvent event;
-            event.state = static_cast<bool>(state);
-            window->impl->event_handler(event);
+            auto event = std::make_unique<CursorEnterExitEvent>();
+            event->state = static_cast<bool>(state);
+            window->events.push(std::move(event));
         });
 
         glfwSetDropCallback(w->impl->window.get(), [](auto glfw_window, auto count, auto paths) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
             std::vector<std::string> paths_vec;
             for (int i{}; i < count; i++) { paths_vec.emplace_back(paths[i]); }
-            MouseDropEvent event;
-            event.paths = std::move(paths_vec);
-            window->impl->event_handler(event);
+            auto event = std::make_unique<MouseDropEvent>();
+            event->paths = std::move(paths_vec);
+            window->events.push(std::move(event));
         });
     }
 
-    MouseDevice::~MouseDevice() {}
+    MouseDevice::~MouseDevice() = default;
 
     MouseDevice::ButtonState MouseDevice::get_state(ButtonCode button) {
         return static_cast<MouseDevice::ButtonState>(glfwGetKey(

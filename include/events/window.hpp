@@ -9,37 +9,37 @@ namespace k2 {
     };
 
     struct WindowResizeEvent : public Event {
-        WindowResizeEvent() : Event("WindowResizeEvent"_fnv1a) {}
-        int width, height;
+        WindowResizeEvent() : Event("WindowResizeEvent"_fnv1a) {};
+        int width{}, height{};
     };
 
     struct WindowFramebufferResizeEvent : public Event {
         WindowFramebufferResizeEvent() : Event("WindowFramebufferResizeEvent"_fnv1a) {}
-        int width, height;
+        int width{}, height{};
     };
 
     struct WindowContentScaleChangeEvent : public Event {
         WindowContentScaleChangeEvent() : Event("WindowContentScaleChangeEvent"_fnv1a) {}
-        float x, y;
+        float x{}, y{};
     };
 
     struct WindowRepositionEvent : public Event {
         WindowRepositionEvent() : Event("WindowRepositionEvent"_fnv1a) {}
-        int x, y;
+        int x{}, y{};
     };
 
     struct WindowIconifyEvent : public Event {
         WindowIconifyEvent() : Event("WindowIconifyEvent"_fnv1a) {}
-        bool iconified;
+        bool iconified{};
     };
 
     struct WindowMaximizeEvent : public Event {
         WindowMaximizeEvent() : Event("WindowMaximizeEvent"_fnv1a) {}
-        bool maximized;
+        bool maximized{};
     };
 
     struct WindowFocusChangeEvent : public Event {
         WindowFocusChangeEvent() : Event("WindowFocusChangeEvent"_fnv1a) {}
-        bool focused;
+        bool focused{};
     };
 }  // namespace k2

@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <any>
+#include <queue>
 
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
@@ -32,7 +33,7 @@ class Window {
     friend class ImguiLayer;
     class ImguiLayer;
 
-    Window(const WindowConfig & = {});
+    explicit Window(const WindowConfig & = {});
     ~Window();
 
     void update();
@@ -40,13 +41,12 @@ class Window {
     std::uint32_t get_width() const;
     std::uint32_t get_height() const;
 
-    void set_event_handler(std::function<void(Event)>);
-
     void* get_native_handle() const;
     void* get_native_display() const;
     
     void set_vsync(bool status);
     bool is_vsync() const;
 
+    std::queue<std::unique_ptr<Event>> events;
 };
 }  // namespace k2

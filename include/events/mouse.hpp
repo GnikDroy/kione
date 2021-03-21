@@ -7,9 +7,9 @@ namespace k2 {
     using namespace k2::literals;
     struct MouseButtonEvent : public Event {
         MouseButtonEvent() : Event("MouseButtonEvent"_fnv1a) {}
-        MouseDevice::ButtonCode code;
-        KeyboardDevice::KeyMod mods;
-        KeyboardDevice::KeyState state;
+        MouseDevice::ButtonCode code{};
+        KeyboardDevice::KeyState state{};
+        KeyboardDevice::KeyMod mods{};
     };
 
     struct MouseDropEvent : public Event {
@@ -19,16 +19,16 @@ namespace k2 {
 
     struct CursorPositionEvent : public Event {
         CursorPositionEvent() : Event("CursorPositionEvent"_fnv1a) {}
-        double x, y;
+        double x{}, y{};
     };
 
     struct CursorEnterExitEvent : public Event {
         CursorEnterExitEvent() : Event("CursorEnterExitEvent"_fnv1a) {}
-        bool state;
+        bool state{};
     };
 
     struct ScrollEvent : public Event {
         ScrollEvent() : Event("ScrollEvent"_fnv1a) {}
-        double x, y;
+        double x{}, y{};
     };
 }  // namespace k2

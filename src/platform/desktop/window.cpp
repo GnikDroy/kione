@@ -12,6 +12,7 @@
 #include "GLFW/glfw3native.h"
 #include "core/window.hpp"
 #include "platform/desktop/window_impl.hpp"
+#include "events/event.hpp"
 
 namespace k2 {
 
@@ -41,10 +42,6 @@ namespace k2 {
     void Window::set_vsync(bool status) {
         glfwSwapInterval(status);
         impl->glfw_data.vsync = status;
-    }
-
-    void Window::set_event_handler(std::function<void(Event)> handler) {
-       impl->event_handler = std::move(handler);
     }
 
     void *Window::get_native_handle() const {

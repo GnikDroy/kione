@@ -12,18 +12,18 @@ namespace k2 {
                 w->impl->window.get(), [](GLFWwindow *glfw_window, int key,
                                           int scan_code, int action, int mod) {
                     auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-                    KeyboardKeyEvent event;
-                    event.code = static_cast<KeyboardDevice::KeyCode>(key);
-                    event.scan_code = scan_code;
-                    event.state = static_cast<KeyboardDevice::KeyState>(action);
-                    event.mods = static_cast<KeyboardDevice::KeyMod>(mod);
-                    window->impl->event_handler(event);
+                    auto event = std::make_unique<KeyboardKeyEvent>();
+                    event->code = static_cast<KeyboardDevice::KeyCode>(key);
+                    event->scan_code = scan_code;
+                    event->state = static_cast<KeyboardDevice::KeyState>(action);
+                    event->mods = static_cast<KeyboardDevice::KeyMod>(mod);
+                    window->events.push(std::move(event));
                 });
         glfwSetCharCallback(w->impl->window.get(), [](GLFWwindow *glfw_window, unsigned int code_point) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-            KeyboardCharEvent event;
-            event.code = code_point;
-            window->impl->event_handler(event);
+            auto event = std::make_unique<KeyboardCharEvent>();
+            event->code = code_point;
+            window->events.push(std::move(event));
         });
     }
 

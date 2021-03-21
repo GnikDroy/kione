@@ -45,7 +45,7 @@ class MouseDevice : public IInputDevice {
     ~MouseDevice();
 
    private:
-    MouseDevice(Window*);
+    explicit MouseDevice(Window*);
     Window* window_instance;
 };
 }  // namespace k2

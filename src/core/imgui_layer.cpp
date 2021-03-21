@@ -6,13 +6,15 @@
 #include "platform/desktop/window_impl.hpp"
 #include "GLFW/glfw3.h"
 #include "events/event.hpp"
+#include "events/keyboard.hpp"
+#include "events/mouse.hpp"
 #include "imgui.h"
 
 static void ImGuiStyleDark() {
     ImGui::GetStyle().FrameRounding = 4.0f;
     ImGui::GetStyle().GrabRounding = 4.0f;
 
-    ImVec4* colors = ImGui::GetStyle().Colors;
+    ImVec4 *colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
     colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
@@ -63,8 +65,9 @@ static void ImGuiStyleDark() {
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
 }
+
 namespace k2 {
-    ImguiLayer::ImguiLayer(k2::Window &win) {
+    ImguiLayer::ImguiLayer(k2::Window &win) : window(&win) {
         if (initialized_windows.count(window) != 0) {
             throw std::runtime_error("Imgui layer for this window already exists.");
         }
@@ -82,7 +85,7 @@ namespace k2 {
         ImGuiStyleDark();
 
         ImGui_Implbgfx_Init(255);
-        ImGui_ImplGlfw_InitForOther(glfw_window, true);
+        ImGui_ImplGlfw_InitForOther(glfw_window, false);
     }
 
     ImguiLayer::~ImguiLayer() {
@@ -92,15 +95,26 @@ namespace k2 {
         initialized_windows.erase(window);
     };
 
-    bool ImguiLayer::handle_event(const Event &event) {
+    bool ImguiLayer::handle_event(const Event *event) {
         using namespace k2::literals;
-        if (event.type == "KeyboardKeyEvent"_fnv1a || event.type == "KeyboardCharEvent"_fnv1a) {
+        if (event->type == "KeyboardKeyEvent"_fnv1a) {
+            auto key_event = static_cast<const KeyboardKeyEvent *>(event);
+            ImGui_ImplGlfw_KeyCallback(window->impl->window.get(), static_cast<int>(key_event->code),
+                                       key_event->scan_code, static_cast<int>(key_event->state),
+                                       static_cast<int>(key_event->mods));
             return ImGui::GetIO().WantCaptureKeyboard;
-        } else if (event.type == "MouseButtonEvent"_fnv1a
-                   || event.type == "MouseDropEvent"_fnv1a
-                   || event.type == "CursorPositionEvent"_fnv1a
-                   || event.type == "CursorEnterExitEvent"_fnv1a
-                   || event.type == "ScrollEvent"_fnv1a) {
+        } else if (event->type == "KeyboardCharEvent"_fnv1a) {
+            auto char_event = static_cast<const KeyboardCharEvent *>(event);
+            ImGui_ImplGlfw_CharCallback(window->impl->window.get(), char_event->code);
+            return ImGui::GetIO().WantCaptureKeyboard;
+        } else if (event->type == "MouseButtonEvent"_fnv1a) {
+            auto mouse_event = static_cast<const MouseButtonEvent *>(event);
+            ImGui_ImplGlfw_MouseButtonCallback(window->impl->window.get(), static_cast<int>(mouse_event->code),
+                                               static_cast<int>(mouse_event->state), static_cast<int>(mouse_event->mods));
+            return ImGui::GetIO().WantCaptureMouse;
+        } else if (event->type == "ScrollEvent"_fnv1a) {
+            auto scroll_event = static_cast<const ScrollEvent *>(event);
+            ImGui_ImplGlfw_ScrollCallback(window->impl->window.get(), scroll_event->x, scroll_event->y);
             return ImGui::GetIO().WantCaptureMouse;
         }
         return false;
