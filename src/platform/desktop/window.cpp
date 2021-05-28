@@ -26,8 +26,8 @@ namespace k2 {
     Window::~Window() = default;
 
     void Window::update() {
-        glfwPollEvents();
         glfwSwapBuffers(impl->window.get());
+        glfwPollEvents();
     }
 
     std::uint32_t Window::get_width() const {

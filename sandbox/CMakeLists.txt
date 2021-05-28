@@ -25,3 +25,6 @@ target_compile_options(sandbox PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
 )
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/res/fs.glsl ${CMAKE_BINARY_DIR}/bin/res COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/res/vs.glsl ${CMAKE_BINARY_DIR}/bin/res COPYONLY)

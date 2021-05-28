@@ -13,7 +13,7 @@ namespace k2 {
 
         glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -37,12 +37,14 @@ namespace k2 {
 
         glfwMakeContextCurrent(window.get());
         glfwSwapInterval(glfw_data.vsync);
-
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             k2::Logger::core->critical("Failed to initialize GLAD.");
         } else {
             k2::Logger::core->info("GLAD initialization successful.");
         }
+
+        k2::Logger::core->info(fmt::format("OpenGL version is {}", glGetString(GL_VERSION)));
+        glViewport(0, 0, static_cast<int32_t>(config.width), static_cast<int32_t>(config.height));
 
         glfwSetWindowCloseCallback(window.get(), [](auto glfw_window) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
