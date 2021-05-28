@@ -115,46 +115,22 @@ function(glfw_build)
 endfunction()
 glfw_build()
 
-# Build bgfx
-function(bgfx_build)
-  FetchContent_Declare(
-    bgfx
-    GIT_REPOSITORY https://github.com/bkaradzic/bgfx.cmake
-    GIT_TAG        master
-    GIT_SHALLOW 1
-    GIT_PROGRESS 1
-  )
-
-  FetchContent_GetProperties(bgfx)
-    if (NOT bgfx_POPULATED)
-        FetchContent_Populate(bgfx)
-        # Set install directory
-        set(CMAKE_INSTALL_PREFIX "./tools" CACHE STRING " " FORCE )
-        message(STATUS "Shader and other tools will be placed in /tools")
-        set(BGFX_BUILD_TOOLS      ON CACHE INTERNAL "")
-        set(BGFX_BUILD_EXAMPLES   OFF CACHE INTERNAL "")
-        set(BGFX_INSTALL          ON CACHE INTERNAL "")
-        add_subdirectory(${bgfx_SOURCE_DIR})
-    endif()
-endfunction()
-bgfx_build()
-
 # Setup glad
-#function(glad_build)
-#    set(GLAD_PROFILE    "core"  CACHE INTERNAL "")
-#    set(GLAD_API        "gl="   CACHE INTERNAL "")
-#    set(GLAD_GENERATOR  "c"     CACHE INTERNAL "")
-#    FetchContent_Declare(
-#      glad
-#      GIT_REPOSITORY https://github.com/Dav1dde/glad
-#      GIT_TAG        v0.1.34
-#      GIT_SHALLOW 1
-#      GIT_PROGRESS 1
-#    )
-#
-#    FetchContent_MakeAvailable(glad)
-#endfunction()
-#glad_build()
+function(glad_build)
+    set(GLAD_PROFILE    "core"  CACHE INTERNAL "")
+    set(GLAD_API        "gl="   CACHE INTERNAL "")
+    set(GLAD_GENERATOR  "c"     CACHE INTERNAL "")
+    FetchContent_Declare(
+      glad
+      GIT_REPOSITORY https://github.com/Dav1dde/glad
+      GIT_TAG        v0.1.34
+      GIT_SHALLOW 1
+      GIT_PROGRESS 1
+    )
+
+    FetchContent_MakeAvailable(glad)
+endfunction()
+glad_build()
 
 
 # Setup imgui
@@ -171,7 +147,8 @@ if(NOT imgui_POPULATED)
   FetchContent_Populate(imgui)
   add_library(imgui
     ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-    ${imgui_SOURCE_DIR}/imgui_tables.cpp ${imgui_SOURCE_DIR}/imgui_demo.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp ${imgui_SOURCE_DIR}/imgui_demo.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
   set_target_properties(imgui
           PROPERTIES
           ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -179,26 +156,8 @@ if(NOT imgui_POPULATED)
           CXX_STANDARD 17
           )
   target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
-  target_link_libraries(imgui glfw)
+  target_link_libraries(imgui glfw glad)
 endif()
-
-## Download font awesome files
-#file(DOWNLOAD "https://github.com/FortAwesome/Font-Awesome/raw/master/webfonts/fa-regular-400.ttf" ${CMAKE_BINARY_DIR}/bin/assets/fa-regular-400.ttf)
-#file(DOWNLOAD "https://github.com/FortAwesome/Font-Awesome/raw/master/webfonts/fa-solid-900.ttf" ${CMAKE_BINARY_DIR}/bin/assets/fa-solid-900.ttf)
-#
-## icon_font_cpp_headers
-#FetchContent_Declare(
-#        icon_font_cpp_headers
-#        GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders
-#        GIT_TAG        master
-#        GIT_PROGRESS 1
-#)
-#FetchContent_GetProperties(iconfontcppheaders)
-#if(NOT iconfontcppheaders_POPULATED)
-#    FetchContent_Populate(iconfontcppheaders)
-#    add_library(iconfontcppheaders INTERFACE ${iconfontcppheaders_SOURCE_DIR})
-#    target_include_directories(iconfontcppheaders INTERFACE ${iconfontcppheaders_SOURCE_DIR})
-#endif()
 
 # Add our source files
 add_subdirectory(src)

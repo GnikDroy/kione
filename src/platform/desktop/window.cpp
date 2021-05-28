@@ -14,6 +14,8 @@
 #include "platform/desktop/window_impl.hpp"
 #include "events/event.hpp"
 
+#include "glad/glad.h"
+
 namespace k2 {
 
     Window::Window(const WindowConfig &config)
@@ -25,6 +27,7 @@ namespace k2 {
 
     void Window::update() {
         glfwPollEvents();
+        glfwSwapBuffers(impl->window.get());
     }
 
     std::uint32_t Window::get_width() const {

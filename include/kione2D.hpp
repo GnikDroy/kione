@@ -9,7 +9,6 @@
 #include "core/app.hpp"
 #include "core/ecs.hpp"
 
-#include "core/renderer.hpp"
 #include "core/layer.hpp"
 
 #include "events/event.hpp"

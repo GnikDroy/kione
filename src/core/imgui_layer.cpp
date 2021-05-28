@@ -1,10 +1,8 @@
 #include "core/imgui_layer.hpp"
 
 #include "imgui_impl_glfw.h"
-#include "core/imgui_bgfx/imgui_impl_bgfx.hpp"
-#include "bgfx/bgfx.h"
+#include "imgui_impl_opengl3.h"
 #include "platform/desktop/window_impl.hpp"
-#include "GLFW/glfw3.h"
 #include "events/event.hpp"
 #include "events/keyboard.hpp"
 #include "events/mouse.hpp"
@@ -84,12 +82,12 @@ namespace k2 {
         ImGui::StyleColorsDark();
         ImGuiStyleDark();
 
-        ImGui_Implbgfx_Init(255);
-        ImGui_ImplGlfw_InitForOther(glfw_window, false);
+        ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
+        ImGui_ImplOpenGL3_Init();
     }
 
     ImguiLayer::~ImguiLayer() {
-        ImGui_Implbgfx_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
         initialized_windows.erase(window);
@@ -123,7 +121,7 @@ namespace k2 {
     void ImguiLayer::update() {}
 
     void ImguiLayer::render() {
-        ImGui_Implbgfx_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
@@ -131,7 +129,7 @@ namespace k2 {
         ImGui::ShowDemoWindow(&show_demo);
 
         ImGui::Render();
-        ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     };
 
 }

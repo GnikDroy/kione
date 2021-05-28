@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "core/logger.hpp"
 #include "events/window.hpp"
 #include "platform/desktop/window_impl.hpp"
@@ -9,7 +10,7 @@ namespace k2 {
                 .title = config.title,
                 .vsync = true,
         };
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
         glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -33,6 +34,15 @@ namespace k2 {
         });
 
         glfwSetWindowUserPointer(window.get(), win);
+
+        glfwMakeContextCurrent(window.get());
+        glfwSwapInterval(glfw_data.vsync);
+
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+            k2::Logger::core->critical("Failed to initialize GLAD.");
+        } else {
+            k2::Logger::core->info("GLAD initialization successful.");
+        }
 
         glfwSetWindowCloseCallback(window.get(), [](auto glfw_window) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));

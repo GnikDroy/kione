@@ -5,7 +5,6 @@ add_library(
   core/app.cpp
   core/logger.cpp
   core/layer.cpp
-  core/imgui_bgfx/imgui_impl_bgfx.cpp
   core/imgui_layer.cpp
   events/event.cpp
   platform/desktop/window.cpp
@@ -45,7 +44,7 @@ target_precompile_headers(kione2D PRIVATE
   [["spdlog/sinks/basic_file_sink.h"]]
 )
 
-target_link_libraries(kione2D EnTT OpenGL::GL glfw bgfx imgui fmt::fmt spdlog::spdlog)
+target_link_libraries(kione2D EnTT OpenGL::GL glfw glad glm imgui fmt::fmt spdlog::spdlog)
 
 set_target_properties(kione2D
     PROPERTIES
