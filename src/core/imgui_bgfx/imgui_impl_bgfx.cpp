@@ -13,11 +13,40 @@
 #include "core/imgui_bgfx/imgui_impl_bgfx.hpp"
 #include "imgui.h"
 
-// BGFX/BX
+// BGFX
 #include "bgfx/bgfx.h"
 #include "bgfx/embedded_shader.h"
-#include "bx/math.h"
-#include "bx/timer.h"
+
+struct Handness
+{
+    enum Enum
+    {
+        Left,
+        Right,
+    };
+};
+
+static void mtxOrtho(float* _result, float _left, float _right, float _bottom, float _top, float _near, float _far, float _offset, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left)
+{
+    const float aa = 2.0f/(_right - _left);
+    const float bb = 2.0f/(_top - _bottom);
+    const float cc = (_homogeneousNdc ? 2.0f : 1.0f) / (_far - _near);
+    const float dd = (_left + _right )/(_left   - _right);
+    const float ee = (_top  + _bottom)/(_bottom - _top  );
+    const float ff = _homogeneousNdc
+                     ? (_near + _far)/(_near - _far)
+                     :  _near        /(_near - _far)
+    ;
+
+    std::memset(_result, 0, sizeof(float)*16);
+    _result[ 0] = aa;
+    _result[ 5] = bb;
+    _result[10] = Handness::Right == _handness ? -cc : cc;
+    _result[12] = dd + _offset;
+    _result[13] = ee;
+    _result[14] = ff;
+    _result[15] = 1.0f;
+}
 
 // Data
 static uint8_t g_View = 255;
@@ -55,7 +84,7 @@ void ImGui_Implbgfx_RenderDrawLists(ImDrawData* draw_data)
 
     // Setup viewport, orthographic projection matrix
     float ortho[16];
-    bx::mtxOrtho(
+    mtxOrtho(
             ortho, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 0.0f, 1000.0f,
             0.0f, caps->homogeneousDepth);
     bgfx::setViewTransform(g_View, NULL, ortho);
@@ -98,11 +127,11 @@ void ImGui_Implbgfx_RenderDrawLists(ImDrawData* draw_data)
             if (pcmd->UserCallback) {
                 pcmd->UserCallback(cmd_list, pcmd);
             } else {
-                const uint16_t xx = (uint16_t)bx::max(pcmd->ClipRect.x, 0.0f);
-                const uint16_t yy = (uint16_t)bx::max(pcmd->ClipRect.y, 0.0f);
+                const uint16_t xx = (uint16_t)std::max(pcmd->ClipRect.x, 0.0f);
+                const uint16_t yy = (uint16_t)std::max(pcmd->ClipRect.y, 0.0f);
                 bgfx::setScissor(
-                        xx, yy, (uint16_t)bx::min(pcmd->ClipRect.z, 65535.0f) - xx,
-                        (uint16_t)bx::min(pcmd->ClipRect.w, 65535.0f) - yy);
+                        xx, yy, (uint16_t)std::min(pcmd->ClipRect.z, 65535.0f) - xx,
+                        (uint16_t)std::min(pcmd->ClipRect.w, 65535.0f) - yy);
 
                 bgfx::setState(state);
                 bgfx::TextureHandle texture = {

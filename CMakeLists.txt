@@ -86,6 +86,17 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(fmtlib)
 
+# Setup glm
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm
+        GIT_TAG        0.9.9.8
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
+)
+
+FetchContent_MakeAvailable(glm)
+
 # Setup glfw
 function(glfw_build)
     set(GLFW_BUILD_EXAMPLES  OFF CACHE INTERNAL "Build the GLFW example programs")
@@ -108,7 +119,7 @@ glfw_build()
 function(bgfx_build)
   FetchContent_Declare(
     bgfx
-    GIT_REPOSITORY https://github.com/widberg/bgfx.cmake
+    GIT_REPOSITORY https://github.com/bkaradzic/bgfx.cmake
     GIT_TAG        master
     GIT_SHALLOW 1
     GIT_PROGRESS 1
@@ -117,30 +128,33 @@ function(bgfx_build)
   FetchContent_GetProperties(bgfx)
     if (NOT bgfx_POPULATED)
         FetchContent_Populate(bgfx)
-        set(BGFX_BUILD_TOOLS      OFF CACHE INTERNAL "")
+        # Set install directory
+        set(CMAKE_INSTALL_PREFIX "./tools" CACHE STRING " " FORCE )
+        message(STATUS "Shader and other tools will be placed in /tools")
+        set(BGFX_BUILD_TOOLS      ON CACHE INTERNAL "")
         set(BGFX_BUILD_EXAMPLES   OFF CACHE INTERNAL "")
-        set(BGFX_INSTALL          OFF CACHE INTERNAL "")
+        set(BGFX_INSTALL          ON CACHE INTERNAL "")
         add_subdirectory(${bgfx_SOURCE_DIR})
     endif()
 endfunction()
 bgfx_build()
 
 # Setup glad
-function(glad_build)
-    set(GLAD_PROFILE    "core"  CACHE INTERNAL "")
-    set(GLAD_API        "gl="   CACHE INTERNAL "")
-    set(GLAD_GENERATOR  "c"     CACHE INTERNAL "")
-    FetchContent_Declare(
-      glad
-      GIT_REPOSITORY https://github.com/Dav1dde/glad
-      GIT_TAG        v0.1.34
-      GIT_SHALLOW 1
-      GIT_PROGRESS 1
-    )
-
-    FetchContent_MakeAvailable(glad)
-endfunction()
-glad_build()
+#function(glad_build)
+#    set(GLAD_PROFILE    "core"  CACHE INTERNAL "")
+#    set(GLAD_API        "gl="   CACHE INTERNAL "")
+#    set(GLAD_GENERATOR  "c"     CACHE INTERNAL "")
+#    FetchContent_Declare(
+#      glad
+#      GIT_REPOSITORY https://github.com/Dav1dde/glad
+#      GIT_TAG        v0.1.34
+#      GIT_SHALLOW 1
+#      GIT_PROGRESS 1
+#    )
+#
+#    FetchContent_MakeAvailable(glad)
+#endfunction()
+#glad_build()
 
 
 # Setup imgui
@@ -158,6 +172,12 @@ if(NOT imgui_POPULATED)
   add_library(imgui
     ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp ${imgui_SOURCE_DIR}/imgui_demo.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
+  set_target_properties(imgui
+          PROPERTIES
+          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+          LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+          CXX_STANDARD 17
+          )
   target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
   target_link_libraries(imgui glfw)
 endif()

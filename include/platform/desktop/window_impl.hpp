@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdlib>
 #include <functional>
+#include "core/logger.hpp"
 
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
@@ -11,9 +12,8 @@ struct Window::Impl {
     static inline std::uint32_t glfw_window_count = 0;
 
     static inline bool glfw_initialized = []() {
-        bool initialized = glfwInit() == GLFW_TRUE;
-        if (initialized) std::atexit([]() { glfwTerminate(); });
-        return initialized;
+        std::atexit(glfwTerminate);
+        return glfwInit() == GLFW_TRUE;
     }();
 
     std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)> window{
