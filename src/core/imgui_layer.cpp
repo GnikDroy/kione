@@ -9,8 +9,19 @@
 #include "imgui.h"
 
 static void ImGuiStyleDark() {
-    ImGui::GetStyle().FrameRounding = 4.0f;
-    ImGui::GetStyle().GrabRounding = 4.0f;
+    auto& style = ImGui::GetStyle();
+    style.WindowPadding = { 2, 2 };
+    style.WindowBorderSize = 0;
+    style.DisplaySafeAreaPadding = { 0, 6 };
+
+    style.FrameRounding = 4;
+    style.WindowRounding = 2;
+    style.FrameBorderSize = 1;
+    style.ScrollbarRounding = 6;
+    style.IndentSpacing = 16;
+    style.GrabRounding = 4;
+    style.ItemInnerSpacing = { 6, 4 };
+    style.TabRounding = 2;
 
     ImVec4 *colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
