@@ -7,20 +7,60 @@
 
 #include "core/imgui_layer.hpp"
 #include "core/rendering/shader.hpp"
+#include "core/rendering/image.hpp"
+
+
+#pragma warning(disable : 4201)
+#define GLM_FORCE_CXX2A
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <map>
 #include <ranges>
 
 float vertices[] = {
-        -0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,   0.0f, 1.0f,
-         0.5f,  0.5f, 0.0f,   0.5f, 0.6f, 0.8f, 1.0f,   1.0f, 1.0f,
-};
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
 
-int indices[] = {
-        0, 1, 2,
-        1, 2, 3
+        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 1.0f
 };
 
 class Sandbox : public k2::App {
@@ -40,41 +80,35 @@ public:
         layers.push_back(std::make_unique<k2::ImguiLayer>(window));
 
 
-        int width{}, height{}, channels{};
-        stbi_set_flip_vertically_on_load(true);
-        auto tex_data = stbi_load("res/texture.jpg", &width, &height, &channels, 0);
 
+        k2::Image image{"res/texture.jpg"};
+        if (!image) {
+            k2::Logger::app->critical("Couldn't load image.");
+        }
 
         GLuint tex{};
         glGenTextures(1, &tex);
         glBindTexture(GL_TEXTURE_2D, tex);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
         glGenerateMipmap(GL_TEXTURE_2D);
-
-        stbi_image_free(tex_data);
 
 
         auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path("res/vs.glsl"));
 
-        if (!vertex_shader.good()){
+        if (!vertex_shader){
             k2::Logger::app->critical(vertex_shader.error_msg().value());
         }
         auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, fs::path("res/fs.glsl"));
 
-        if (!fragment_shader.good()){
+        if (!fragment_shader){
             k2::Logger::app->critical(fragment_shader.error_msg().value());
         }
 
         k2::Program shader_program{vertex_shader, fragment_shader};
         shader_program.link();
 
-        if (!shader_program.good()){
+        if (!shader_program){
             k2::Logger::app->critical(shader_program.error_msg().value());
         }
 
@@ -87,12 +121,6 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        GLuint ebo;
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
         glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (3 * sizeof(float)));
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (7 * sizeof(float)));
@@ -100,7 +128,25 @@ public:
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
 
+        glEnable(GL_DEPTH_TEST);
+
+        glm::vec3 cube_positions[] = {
+                { 0.0f,  0.0f, 0.0f},
+                { 1.0f,  2.0f, -2.0f},
+                { 1.0f, -2.0f, 2.0f},
+        };
+
+        glm::vec3 camera_position(0.0f, 0.0f,  -3.0f);
+        glm::vec3 camera_offset(0.0f, 0.0f, 1.0f);
+        glm::vec3 camera_up(0.0f, 1.0f,  0.0f);
+        float camera_speed = 5.0f;
+
+        auto current_frame = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        auto last_frame = current_frame;
         while (running) {
+            current_frame = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            auto dt = float(current_frame-last_frame) / 1000.0f;
+            last_frame = current_frame;
 
             // Populate event buffer.
             window.update();
@@ -118,15 +164,24 @@ public:
                     running = false;
                 }
 
-                for (auto &layer: std::views::reverse(layers)) {
+                if (window.keyboard.get_state(k2::KeyboardDevice::KeyCode::key_w) == k2::KeyboardDevice::KeyState::press) {
+                    camera_position += camera_speed * dt * camera_offset;
+                } else if (window.keyboard.get_state(k2::KeyboardDevice::KeyCode::key_s) == k2::KeyboardDevice::KeyState::press) {
+                    camera_position -= camera_speed * dt * camera_offset;
+                } else if (window.keyboard.get_state(k2::KeyboardDevice::KeyCode::key_a) == k2::KeyboardDevice::KeyState::press) {
+                    camera_position -= glm::normalize(glm::cross(camera_offset, camera_up)) * camera_speed * dt;
+                } else if (window.keyboard.get_state(k2::KeyboardDevice::KeyCode::key_d) == k2::KeyboardDevice::KeyState::press) {
+                    camera_position += glm::normalize(glm::cross(camera_offset, camera_up)) * dt * camera_speed;
+                }
+
+        for (auto &layer: std::views::reverse(layers)) {
                     if (layer->handle_event(event.get())) { break; }
                 }
             }
 
             // Render
             glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-//          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, tex);
@@ -135,7 +190,22 @@ public:
             shader_program.use();
             glUniform1i(glGetUniformLocation(shader_program.handle, "tex"), 0);
 
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            auto view = glm::lookAt(camera_position, camera_offset + camera_position, camera_up);
+
+            glm::mat4 projection;
+            projection = glm::perspective(glm::radians(45.0f), window.get_width() / (float) window.get_height(), 0.1f, 100.0f);
+
+            glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "view"), 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+            for(auto & position : cube_positions)
+            {
+                auto model = glm::translate(glm::mat4(1.0f), position);
+                model = glm::rotate(model, glm::radians(15.0f), glm::vec3(1.0f, 1.0f, 0.0f));
+                glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                glDrawArrays(GL_TRIANGLES, 0, (GLsizei) std::size(vertices));
+            }
+
             for (auto &layer: layers) { layer->render(); }
         }
         k2::Logger::app->info("Sandbox application run() end.");
