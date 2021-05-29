@@ -41,7 +41,7 @@ namespace k2 {
         }
 
         std::optional<std::string> error_msg() const {
-            if (*this) {
+            if (!*this) {
                 GLint length{};
                 glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &length);
 
@@ -94,7 +94,7 @@ namespace k2 {
         }
 
         std::optional<std::string> error_msg() const {
-            if (*this) {
+            if (!*this) {
                 GLint length{};
                 glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);
 
