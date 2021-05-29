@@ -12,6 +12,7 @@ add_library(
   platform/desktop/keyboard.cpp
   platform/desktop/mouse.cpp
   platform/desktop/clipboard.cpp
+  stb_image.cpp
 )
 
 target_include_directories(kione2D PRIVATE ${PROJECT_SOURCE_DIR}/include) 
@@ -44,7 +45,7 @@ target_precompile_headers(kione2D PRIVATE
   [["spdlog/sinks/basic_file_sink.h"]]
 )
 
-target_link_libraries(kione2D EnTT OpenGL::GL glfw glad glm imgui fmt::fmt spdlog::spdlog)
+target_link_libraries(kione2D EnTT OpenGL::GL glfw glad glm imgui stb fmt::fmt spdlog::spdlog)
 
 set_target_properties(kione2D
     PROPERTIES

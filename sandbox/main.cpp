@@ -1,7 +1,9 @@
 #include <iostream>
 
 #include "kione2D.hpp"
+
 #include "glad/glad.h"
+#include "stb_image.h"
 
 #include "core/imgui_layer.hpp"
 #include "core/rendering/shader.hpp"
@@ -10,10 +12,10 @@
 #include <ranges>
 
 float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        -0.5f,  0.5f, 0.0f,
-        0.5f,  0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,   0.0f, 1.0f,
+         0.5f,  0.5f, 0.0f,   0.5f, 0.6f, 0.8f, 1.0f,   1.0f, 1.0f,
 };
 
 int indices[] = {
@@ -37,6 +39,27 @@ public:
 
         layers.push_back(std::make_unique<k2::ImguiLayer>(window));
 
+
+        int width{}, height{}, channels{};
+        stbi_set_flip_vertically_on_load(true);
+        auto tex_data = stbi_load("res/texture.jpg", &width, &height, &channels, 0);
+
+
+        GLuint tex{};
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        stbi_image_free(tex_data);
+
+
         auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path("res/vs.glsl"));
 
         if (!vertex_shader.good()){
@@ -48,10 +71,9 @@ public:
             k2::Logger::app->critical(fragment_shader.error_msg().value());
         }
 
-        k2::Program shader_program;
-        shader_program.attach_shader(vertex_shader);
-        shader_program.attach_shader(fragment_shader);
+        k2::Program shader_program{vertex_shader, fragment_shader};
         shader_program.link();
+
         if (!shader_program.good()){
             k2::Logger::app->critical(shader_program.error_msg().value());
         }
@@ -71,8 +93,12 @@ public:
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (3 * sizeof(float)));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (7 * sizeof(float)));
         glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
 
         while (running) {
 
@@ -98,14 +124,16 @@ public:
             }
 
             // Render
-            glClearColor(1, 0, 1, 1);
+            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 //          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, tex);
+
             glBindVertexArray(vao);
             shader_program.use();
-            auto location = glGetUniformLocation(shader_program.handle, "color");
-            glUniform4f(location, 1.0, 0.0, 0.0, 1.0);
+            glUniform1i(glGetUniformLocation(shader_program.handle, "tex"), 0);
 
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
             for (auto &layer: layers) { layer->render(); }

@@ -28,3 +28,4 @@ target_compile_options(sandbox PRIVATE
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/res/fs.glsl ${CMAKE_BINARY_DIR}/bin/res COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/res/vs.glsl ${CMAKE_BINARY_DIR}/bin/res COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/res/texture.jpg ${CMAKE_BINARY_DIR}/bin/res COPYONLY)

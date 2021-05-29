@@ -159,6 +159,26 @@ if(NOT imgui_POPULATED)
   target_link_libraries(imgui glfw glad)
 endif()
 
+# Setup stb
+function(stb_build)
+    FetchContent_Declare(
+            stb
+            GIT_REPOSITORY https://github.com/nothings/stb
+            GIT_TAG        master
+            GIT_SHALLOW 1
+            GIT_PROGRESS 1
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ""
+    )
+    FetchContent_GetProperties(stb)
+    if(NOT stb_POPULATED)
+        FetchContent_Populate(stb)
+    endif()
+    add_library(stb INTERFACE)
+    target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+endfunction()
+stb_build()
+
 # Add our source files
 add_subdirectory(src)
 
