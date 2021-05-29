@@ -20,47 +20,48 @@
 #include <ranges>
 
 float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
+        //   position               color(unused)            tex             normal
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
 
-        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
 
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
 
-        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
 
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, -1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
 
-        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,    0.0f, 1.0f
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
 };
 
 class Sandbox : public k2::App {
@@ -121,12 +122,14 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (3 * sizeof(float)));
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (7 * sizeof(float)));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), nullptr);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (3 * sizeof(float)));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (7 * sizeof(float)));
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (9 * sizeof(float)));
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
 
         glEnable(GL_DEPTH_TEST);
 
@@ -197,6 +200,12 @@ public:
 
             glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "view"), 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+//            glUniform3fv(glGetUniformLocation(shader_program.handle, "light_position"), 1, glm::value_ptr(camera_offset));
+            glUniform3fv(glGetUniformLocation(shader_program.handle, "light_color"), 1, glm::value_ptr(glm::vec3(0.8f, 1.0f, 1.0f)));
+            glUniform3fv(glGetUniformLocation(shader_program.handle, "light_position"), 1, glm::value_ptr(camera_position));
+            glUniform3fv(glGetUniformLocation(shader_program.handle, "viewer_position"), 1, glm::value_ptr(camera_position));
+            glUniform1f(glGetUniformLocation(shader_program.handle, "ambient_strength"), 0.3f);
 
             for(auto & position : cube_positions)
             {
