@@ -34,14 +34,14 @@ namespace k2 {
             }
         }
 
-        bool good() const {
+        operator bool() const {
             GLint ret{};
             glGetShaderiv(handle, GL_COMPILE_STATUS, &ret);
             return ret != GL_FALSE;
         }
 
         std::optional<std::string> error_msg() const {
-            if (!good()) {
+            if (*this) {
                 GLint length{};
                 glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &length);
 
@@ -87,14 +87,14 @@ namespace k2 {
             glUseProgram(handle);
         }
 
-        bool good() const {
+        operator bool() const {
             GLint ret{};
             glGetProgramiv(handle, GL_LINK_STATUS, &ret);
             return ret != GL_FALSE;
         }
 
         std::optional<std::string> error_msg() const {
-            if (!good()) {
+            if (*this) {
                 GLint length{};
                 glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);
 
