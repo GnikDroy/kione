@@ -1,5 +1,11 @@
 #include <iostream>
 
+#pragma warning(disable : 4201)
+#define GLM_FORCE_CXX2A
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "kione2D.hpp"
 
 #include "glad/glad.h"
@@ -9,60 +15,11 @@
 #include "core/rendering/shader.hpp"
 #include "core/rendering/image.hpp"
 
-
-#pragma warning(disable : 4201)
-#define GLM_FORCE_CXX2A
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "core/rendering/mesh.hpp"
+#include "core/rendering/model.hpp"
 
 #include <map>
 #include <ranges>
-
-float vertices[] = {
-        //   position               color(unused)            tex             normal
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
-
-        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
-
-        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, -1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, -1.0f, 0.0f,
-
-        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 0.0f, 0.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-};
 
 class Sandbox : public k2::App {
 public:
@@ -80,20 +37,7 @@ public:
 
         layers.push_back(std::make_unique<k2::ImguiLayer>(window));
 
-
-
-        k2::Image image{"res/texture.jpg"};
-        if (!image) {
-            k2::Logger::app->critical("Couldn't load image.");
-        }
-
-        GLuint tex{};
-        glGenTextures(1, &tex);
-        glBindTexture(GL_TEXTURE_2D, tex);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
+        k2::Model backpack_model{"res/backpack.obj"};
 
         auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path("res/vs.glsl"));
 
@@ -106,38 +50,14 @@ public:
             k2::Logger::app->critical(fragment_shader.error_msg().value());
         }
 
-        k2::Program shader_program{vertex_shader, fragment_shader};
-        shader_program.link();
+        k2::Program program{vertex_shader, fragment_shader};
+        program.link();
 
-        if (!shader_program){
-            k2::Logger::app->critical(shader_program.error_msg().value());
+        if (!program){
+            k2::Logger::app->critical(program.error_msg().value());
         }
 
-        GLuint vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), nullptr);
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (3 * sizeof(float)));
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (7 * sizeof(float)));
-        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (9 * sizeof(float)));
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3);
-
         glEnable(GL_DEPTH_TEST);
-
-        glm::vec3 cube_positions[] = {
-                { 0.0f,  0.0f, 0.0f},
-                { 1.0f,  2.0f, -2.0f},
-                { 1.0f, -2.0f, 2.0f},
-        };
 
         glm::vec3 camera_position(0.0f, 0.0f,  -3.0f);
         glm::vec3 camera_offset(0.0f, 0.0f, 1.0f);
@@ -160,7 +80,7 @@ public:
 
                 if (event->type == "WindowFramebufferResizeEvent"_fnv1a) {
                     auto e = reinterpret_cast<k2::WindowFramebufferResizeEvent *>(event.get());
-                    glViewport(0, 0, e->width/2, e->height/2);
+                    glViewport(0, 0, e->width, e->height);
                 }
                 if (event->type == "WindowCloseEvent"_fnv1a) {
                     k2::Logger::app->info("Window Close Event Received.");
@@ -186,34 +106,30 @@ public:
             glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, tex);
-
-            glBindVertexArray(vao);
-            shader_program.use();
-            glUniform1i(glGetUniformLocation(shader_program.handle, "tex"), 0);
+            program.use();
 
             auto view = glm::lookAt(camera_position, camera_offset + camera_position, camera_up);
 
             glm::mat4 projection;
             projection = glm::perspective(glm::radians(45.0f), window.get_width() / (float) window.get_height(), 0.1f, 100.0f);
 
-            glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "view"), 1, GL_FALSE, glm::value_ptr(view));
-            glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+            auto position = glm::vec3(2.0f, 2.0f, 2.0f);
+            auto model = glm::translate(glm::mat4(1.0f), position);
+            model = glm::rotate(model, glm::radians(15.0f), glm::vec3(1.0f, 1.0f, 0.0f));
 
-//            glUniform3fv(glGetUniformLocation(shader_program.handle, "light_position"), 1, glm::value_ptr(camera_offset));
-            glUniform3fv(glGetUniformLocation(shader_program.handle, "light_color"), 1, glm::value_ptr(glm::vec3(0.8f, 1.0f, 1.0f)));
-            glUniform3fv(glGetUniformLocation(shader_program.handle, "light_position"), 1, glm::value_ptr(camera_position));
-            glUniform3fv(glGetUniformLocation(shader_program.handle, "viewer_position"), 1, glm::value_ptr(camera_position));
-            glUniform1f(glGetUniformLocation(shader_program.handle, "ambient_strength"), 0.3f);
+            glUniformMatrix4fv(glGetUniformLocation(program.handle, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(glGetUniformLocation(program.handle, "view"), 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(glGetUniformLocation(program.handle, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-            for(auto & position : cube_positions)
-            {
-                auto model = glm::translate(glm::mat4(1.0f), position);
-                model = glm::rotate(model, glm::radians(15.0f), glm::vec3(1.0f, 1.0f, 0.0f));
-                glUniformMatrix4fv(glGetUniformLocation(shader_program.handle, "model"), 1, GL_FALSE, glm::value_ptr(model));
-                glDrawArrays(GL_TRIANGLES, 0, (GLsizei) std::size(vertices));
-            }
+            program.set_uniform("light.position", camera_position);
+            program.set_uniform("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
+            program.set_uniform("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f)); // darken diffuse light a bit
+            program.set_uniform("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
+            program.set_uniform("viewer_position", camera_position);
+            program.set_uniform("material.shininess", 32.0f);
+
+            backpack_model.draw(program);
 
             for (auto &layer: layers) { layer->render(); }
         }
