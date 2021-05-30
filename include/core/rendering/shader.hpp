@@ -1,5 +1,9 @@
 #pragma once
 #include "glad/glad.h"
+
+#include "glm/glm.hpp"
+#include <glm/gtc/type_ptr.hpp>
+
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -77,6 +81,14 @@ namespace k2 {
 
         void attach_shader(const Shader& shader) {
             glAttachShader(handle, shader.handle);
+        }
+
+        void set_uniform(const std::string& str, float f) const {
+            glUniform1f(glGetUniformLocation(handle, str.c_str()), f);
+        }
+
+        void set_uniform(const std::string& str, glm::vec3 vec) const {
+            glUniform3fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
         }
 
         void link() {
