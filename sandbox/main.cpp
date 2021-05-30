@@ -17,6 +17,8 @@
 
 #include "core/rendering/mesh.hpp"
 #include "core/rendering/model.hpp"
+#include "core/rendering/buffer.hpp"
+#include "core/rendering/vertex_array.hpp"
 
 #include <map>
 #include <ranges>

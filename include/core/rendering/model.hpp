@@ -55,9 +55,10 @@ namespace k2 {
         }
 
         Mesh process_mesh(aiMesh *ai_mesh, const aiScene *scene) {
-            Mesh mesh;
+
 
             // process vertices
+            std::vector<Vertex> vertices;
             for(size_t i = 0; i < ai_mesh->mNumVertices; i++) {
                 Vertex vertex{
                         .position{ glm::vec3( ai_mesh->mVertices[i].x,
@@ -71,25 +72,26 @@ namespace k2 {
                 if(ai_mesh->mTextureCoords[0]) {
                     vertex.tex_coord = glm::vec2{ai_mesh->mTextureCoords[0][i].x, ai_mesh->mTextureCoords[0][i].y};
                 }
-                mesh.vertices.push_back(vertex);
+                vertices.push_back(vertex);
             }
 
             // process indices
+            std::vector<unsigned int> indices;
             for(size_t i = 0; i < ai_mesh->mNumFaces; i++) {
                 auto& face = ai_mesh->mFaces[i];
                 for(size_t j = 0; j < face.mNumIndices; j++) {
-                    mesh.indices.push_back(face.mIndices[j]);
+                    indices.push_back(face.mIndices[j]);
                 }
             }
 
             // process material
+            std::vector<std::uint64_t> textures_vec;
             if(ai_mesh->mMaterialIndex >= 0) {
                 auto material = scene->mMaterials[ai_mesh->mMaterialIndex];
-                load_material_textures(material, aiTextureType_DIFFUSE, std::back_inserter(mesh.textures));
-                load_material_textures(material, aiTextureType_SPECULAR, std::back_inserter(mesh.textures));
+                load_material_textures(material, aiTextureType_DIFFUSE, std::back_inserter(textures_vec));
+                load_material_textures(material, aiTextureType_SPECULAR, std::back_inserter(textures_vec));
             }
-            mesh.load();
-            return mesh;
+            return {vertices, indices, textures_vec};
         }
 
         template<class OutIt>

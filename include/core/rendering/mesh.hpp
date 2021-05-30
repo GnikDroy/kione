@@ -6,6 +6,9 @@
 #include "core/rendering/texture.hpp"
 #include "core/resource_container.hpp"
 
+#include "core/rendering/buffer.hpp"
+#include "core/rendering/vertex_array.hpp"
+
 namespace k2 {
     struct Vertex {
         glm::vec3 position;
@@ -14,7 +17,9 @@ namespace k2 {
     };
 
     class Mesh {
-        GLuint vao{}, vbo{}, ebo{};
+        VertexArray va;
+        VertexBuffer vb;
+        IndexBuffer ib;
     public:
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
@@ -22,11 +27,32 @@ namespace k2 {
 
         Mesh() = default;
 
-        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<uint64_t> textures)
-                : vertices(std::move(vertices)) ,
-                  indices(std::move(indices)),
-                  textures(std::move(textures)) {
-            load();
+        Mesh(std::vector<Vertex> verts, std::vector<unsigned int> ind, std::vector<uint64_t> tex)
+                : vertices(std::move(verts)) ,
+                  indices(std::move(ind)),
+                  textures(std::move(tex))
+          {
+            va.bind();
+
+            vb = VertexBuffer{vertices.size() * sizeof(Vertex)};
+            vb.bind();
+            vb.set(vertices.data(), vertices.size() * sizeof(Vertex));
+
+            ib = IndexBuffer{indices.size() * sizeof(indices[0])};
+            ib.bind();
+            ib.set(indices.data(), indices.size() * sizeof(indices[0]));
+
+            // vertex positions
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
+            // vertex normals
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
+            // vertex texture coords
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tex_coord)));
+
+            va.unbind();
         }
 
         Mesh(const Mesh&) = delete;
@@ -35,9 +61,9 @@ namespace k2 {
         Mesh(Mesh&& other) { *this = std::move(other); }
 
         Mesh& operator=(Mesh&& other) {
-            std::swap(other.vao, vao);
-            std::swap(other.vbo, vbo);
-            std::swap(other.ebo, ebo);
+            std::swap(other.va, va);
+            std::swap(other.vb, vb);
+            std::swap(other.ib, ib);
             std::swap(other.vertices, vertices);
             std::swap(other.indices, indices);
             std::swap(other.textures, textures);
@@ -64,46 +90,9 @@ namespace k2 {
             glActiveTexture(GL_TEXTURE0);
 
             // draw mesh
-            glBindVertexArray(vao);
+            va.bind();
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
-            glBindVertexArray(0);
-        }
-
-        ~Mesh() {
-            glDeleteBuffers(1, &vbo);
-            glDeleteBuffers(1, &ebo);
-            glDeleteVertexArrays(1, &vao);
-        }
-
-        Mesh& load()
-        {
-            if (vao == 0){
-                glGenVertexArrays(1, &vao);
-                glGenBuffers(1, &vbo);
-                glGenBuffers(1, &ebo);
-
-                glBindVertexArray(vao);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-                glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
-
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
-                             indices.data(), GL_STATIC_DRAW);
-
-                // vertex positions
-                glEnableVertexAttribArray(0);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
-                // vertex normals
-                glEnableVertexAttribArray(1);
-                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
-                // vertex texture coords
-                glEnableVertexAttribArray(2);
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tex_coord)));
-
-                glBindVertexArray(0);
-            }
-            return *this;
+            va.unbind();
         }
     };
 }
