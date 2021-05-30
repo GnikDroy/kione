@@ -21,15 +21,11 @@ public:
    */
   std::size_t size() const { return resources.size(); }
 
-  bool is_loaded(std::uint64_t resource_id) const {
-    return resources.find(resource_id) != resources.end();
-  }
+  bool contains(std::uint64_t resource_id) const { return resources.count(resource_id); }
 
   ResourceType &operator[](std::uint64_t id) { return resources[id]; }
 
-  const ResourceType &operator[](std::uint64_t id) const {
-    return resources[id];
-  }
+  const ResourceType &operator[](std::uint64_t id) const { return resources.at(id); }
 
   void erase(std::uint64_t id) { resources.erase(id); }
 
