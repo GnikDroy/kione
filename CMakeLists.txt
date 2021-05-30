@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.17)
 project(
     kione2D
     VERSION 0.1
-    LANGUAGES CXX)
+    LANGUAGES CXX C)
 
 
 # Set the default build type
@@ -39,6 +39,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 Include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
 
 # Setup EnTT
 function(entt_build)
@@ -137,7 +138,7 @@ glad_build()
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG        master
+  GIT_TAG        v1.83
   GIT_SHALLOW 1
   GIT_PROGRESS 1
 )
@@ -178,6 +179,31 @@ function(stb_build)
     target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 endfunction()
 stb_build()
+
+# Setup assimp
+function(assimp_build)
+#    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Generation of shared libs. Set this to OFF to get static lib" FORCE)
+    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE INTERNAL "If supplementary tools for Assimp are built in addition to the library" FORCE)
+    set(ASSIMP_BUILD_TESTS OFF CACHE INTERNAL "If the test suite for Assimp is built in addition to the library." FORCE)
+    # NOTE: This might be useful later.
+    set(ASSIMP_NO_EXPORT ON CACHE INTERNAL "Disable Assimp's export functionality" FORCE)
+
+    FetchContent_Declare(
+            assimp
+            GIT_REPOSITORY https://github.com/assimp/assimp
+            GIT_TAG        v5.0.1
+            GIT_SHALLOW 1
+            GIT_PROGRESS 1
+    )
+    FetchContent_GetProperties(assimp)
+    if(NOT assimp_POPULATED)
+        FetchContent_Populate(assimp)
+    endif()
+    add_subdirectory(${assimp_SOURCE_DIR} ${assimp_BINARY_DIR})
+#    set_target_properties(assimp PROPERTIES LINKER_LANGUAGE CXX)
+endfunction()
+assimp_build()
+
 
 # Add our source files
 add_subdirectory(src)

@@ -45,7 +45,7 @@ target_precompile_headers(kione2D PRIVATE
   [["spdlog/sinks/basic_file_sink.h"]]
 )
 
-target_link_libraries(kione2D EnTT OpenGL::GL glfw glad glm imgui stb fmt::fmt spdlog::spdlog)
+target_link_libraries(kione2D EnTT OpenGL::GL glfw glad glm imgui stb assimp fmt::fmt spdlog::spdlog)
 
 set_target_properties(kione2D
     PROPERTIES
