@@ -88,7 +88,8 @@ namespace k2 {
                 load_material_textures(material, aiTextureType_DIFFUSE, std::back_inserter(mesh.textures));
                 load_material_textures(material, aiTextureType_SPECULAR, std::back_inserter(mesh.textures));
             }
-            return mesh.load();
+            mesh.load();
+            return mesh;
         }
 
         template<class OutIt>
@@ -105,7 +106,7 @@ namespace k2 {
                     } else if (type == aiTextureType_SPECULAR) {
                         texture.type = Texture::Type::Specular;
                     }
-                    textures[fnv1a(path_to_texture)] = texture;
+                    textures[fnv1a(path_to_texture)] = std::move(texture);
                 }
                 *(it++) = fnv1a(path_to_texture);
             }

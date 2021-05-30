@@ -29,6 +29,21 @@ namespace k2 {
             load();
         }
 
+        Mesh(const Mesh&) = delete;
+        Mesh& operator=(const Mesh&) = delete;
+
+        Mesh(Mesh&& other) { *this = std::move(other); }
+
+        Mesh& operator=(Mesh&& other) {
+            std::swap(other.vao, vao);
+            std::swap(other.vbo, vbo);
+            std::swap(other.ebo, ebo);
+            std::swap(other.vertices, vertices);
+            std::swap(other.indices, indices);
+            std::swap(other.textures, textures);
+            return *this;
+        }
+
         void draw(const Program &program, const ResourceContainer<Texture>& textures_map) const
         {
             size_t diffuse_num{}, specular_num{};
@@ -55,6 +70,9 @@ namespace k2 {
         }
 
         ~Mesh() {
+            glDeleteBuffers(1, &vbo);
+            glDeleteBuffers(1, &ebo);
+            glDeleteVertexArrays(1, &vao);
         }
 
         Mesh& load()

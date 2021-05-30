@@ -20,6 +20,22 @@ namespace k2 {
 
         Texture() = default;
 
+        Texture(const Texture&) = delete;
+        Texture& operator=(const Texture&) = delete;
+
+        Texture(Texture&& other) { *this = std::move(other); }
+
+        Texture& operator=(Texture&& other) {
+            std::swap(other.id, id);
+            std::swap(other.path, path);
+            type = other.type;
+            return *this;
+        }
+
+        ~Texture() {
+            glDeleteTextures(1, &id);
+        }
+
         explicit Texture(const std::filesystem::path &path) : path(path) {
             load(path);
         }

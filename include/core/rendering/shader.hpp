@@ -38,6 +38,17 @@ namespace k2 {
             }
         }
 
+        Shader(const Shader&) = delete;
+        Shader& operator=(const Shader&) = delete;
+
+        Shader(Shader&& other) { *this = std::move(other);}
+
+        Shader& operator=(Shader&& other) {
+            std::swap(other.handle, handle);
+            type = other.type;
+            return *this;
+        }
+
         operator bool() const {
             GLint ret{};
             glGetShaderiv(handle, GL_COMPILE_STATUS, &ret);
@@ -73,10 +84,16 @@ namespace k2 {
         Program(const Program&) = delete;
         Program& operator=(const Program&) = delete;
 
+        Program(Program&& other) { *this = std::move(other);}
+
+        Program& operator=(Program&& other) {
+            std::swap(other.handle, handle);
+        }
+
         template<std::same_as<Shader>... T>
-        Program(T... shaders) {
+        Program(T&&... shaders) {
             handle = glCreateProgram();
-            (attach_shader(shaders), ...);
+            (attach_shader(std::forward<T>(shaders)), ...);
         }
 
         void attach_shader(const Shader& shader) {

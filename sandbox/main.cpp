@@ -50,7 +50,7 @@ public:
             k2::Logger::app->critical(fragment_shader.error_msg().value());
         }
 
-        k2::Program program{vertex_shader, fragment_shader};
+        k2::Program program{std::move(vertex_shader), std::move(fragment_shader)};
         program.link();
 
         if (!program){
