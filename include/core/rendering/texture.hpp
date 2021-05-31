@@ -70,7 +70,7 @@ namespace k2 {
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 } else {
-                    k2::Logger::core->critical(fmt::format("Failed to load image at path: {}", texture_path));
+                    k2::Logger::core->critical(fmt::format("Failed to load image at path: {}", texture_path.string()));
                 }
             }
             return *this;

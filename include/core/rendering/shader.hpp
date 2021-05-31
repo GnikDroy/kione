@@ -108,6 +108,10 @@ namespace k2 {
             glUniform3fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
         }
 
+        void set_uniform(const std::string& str, glm::mat4 mat) const {
+            glUniformMatrix4fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
         void link() {
             glLinkProgram(handle);
         }
