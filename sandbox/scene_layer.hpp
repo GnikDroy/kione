@@ -1,0 +1,159 @@
+#pragma once
+
+#include "kione2D.hpp"
+
+#include "core/rendering/shader.hpp"
+#include "core/rendering/model.hpp"
+
+#include "core/entity_editor.hpp"
+
+#include "components.hpp"
+
+
+class SceneLayer : public k2::Layer {
+    k2::Window& window;
+
+    entt::registry registry{};
+    k2::EntityEditor<entt::registry::entity_type> entity_editor;
+
+    k2::Program program {};
+
+    Camera camera {};
+
+    struct MouseController {
+        float pitch = 0.0f;
+        float yaw = -90.0f;
+        float sensitivity = 0.1f;
+
+        float last_cursor_x;
+        float last_cursor_y;
+    };
+
+    MouseController mouse_controller {};
+
+public:
+    explicit SceneLayer(k2::Window& window) :
+         window{window},
+         mouse_controller{.last_cursor_x = float(window.get_width()) / 2, .last_cursor_y = float(window.get_height()) / 2}
+    {
+        namespace fs = std::filesystem;
+        program = []() {
+            auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path("res/vs.glsl"));
+            if (!vertex_shader) { k2::Logger::app->critical(vertex_shader.error_msg().value()); }
+
+            auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, fs::path("res/fs.glsl"));
+            if (!fragment_shader) { k2::Logger::app->critical(fragment_shader.error_msg().value()); }
+
+            k2::Program ret{std::move(vertex_shader), std::move(fragment_shader)};
+            ret.link();
+
+            if (!ret) { k2::Logger::app->critical(ret.error_msg().value()); }
+            return ret;
+        }();
+
+        entity_editor.register_component<Transform>("Transform");
+        entity_editor.register_component<PointLight>("Point Light");
+        setup_scene();
+    }
+
+    SceneLayer(const SceneLayer&) = delete;
+    SceneLayer& operator=(const SceneLayer&) = delete;
+
+    void setup_scene() {
+        camera = {
+            .position {},
+            .direction { 0.f, 0.f, -1.f},
+            .up {0.f, 1.f, 0.f},
+            .fov = glm::radians(45.0f),
+            .far_clip = 1000.f,
+            .near_clip = 0.01f,
+        };
+
+        auto backpack = registry.create();
+        registry.emplace<Transform>(backpack);
+        registry.emplace<k2::Model>(backpack, "res/backpack.obj");
+
+        auto light = registry.create();
+        registry.emplace<Transform>(light, Transform { .position{0.0f, 1.0f, -2.0f}, });
+        registry.emplace<PointLight>(light, PointLight {
+                .ambient{0.2f, 0.2f, 0.2f} ,
+                .diffuse{0.5f, 0.5f, 0.5f},
+                .specular{1.0f, 1.0f, 1.0f}
+        });
+    }
+
+    void update(float dt) override {
+        float camera_speed = 1.5f;
+
+        using k2::KeyboardDevice;
+        using k2::KeyboardDevice;
+
+        if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_w) == KeyboardDevice::KeyState::press) {
+            camera.position += camera_speed * dt * camera.direction;
+        } else if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_s) == KeyboardDevice::KeyState::press) {
+            camera.position -= camera_speed * dt * camera.direction;
+        } else if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_a) == KeyboardDevice::KeyState::press) {
+            camera.position -= glm::normalize(glm::cross(camera.direction, camera.up)) * camera_speed * dt;
+        } else if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_d) == KeyboardDevice::KeyState::press) {
+            camera.position += glm::normalize(glm::cross(camera.direction, camera.up)) * dt * camera_speed;
+        }
+    }
+
+    void render() override {
+        static auto entity = (entt::entity)0;
+        registry.view<Transform, k2::Model>().each([&](auto, auto& transform, auto & model){
+            auto model_mat = [&]() {
+                auto translate = glm::translate(glm::mat4(1.0f), transform.position);
+                auto rotate = glm::eulerAngleXYZ(transform.rotation.x, transform.rotation.y, transform.rotation.z);
+                return glm::scale(translate * rotate, transform.scale);
+            }();
+
+            auto view_mat = glm::lookAt(camera.position, camera.position + camera.direction , camera.up);
+            auto projection_mat = glm::perspective(camera.fov, float(window.get_width()) / float(window.get_height()),
+                                               camera.near_clip,
+                                               camera.far_clip);
+
+            registry.view<Transform, PointLight>().each([&](auto, auto& light_transform, auto & light){
+                program.set_uniform("model", model_mat)
+                        .set_uniform("view", view_mat)
+                        .set_uniform("projection", projection_mat)
+                        .set_uniform("light.position", light_transform.position)
+                        .set_uniform("light.ambient", light.ambient)
+                        .set_uniform("light.diffuse", light.diffuse)
+                        .set_uniform("light.specular", light.specular)
+                        .set_uniform("viewer_position", camera.position)
+                        .set_uniform("material.shininess", 32.0f)
+                        .use();
+                model.draw(program);
+            });
+            entity_editor.render_simple_combo(registry, entity);
+        });
+    }
+
+    bool handle_event(const k2::Event* event) override {
+        using namespace k2::literals;
+
+        if (event->type == "CursorPositionEvent"_fnv1a) {
+            auto e = reinterpret_cast<const k2::CursorPositionEvent *>(event);
+            auto diffX = -float(mouse_controller.last_cursor_x - e->x);
+            auto diffY = float(mouse_controller.last_cursor_y - e->y);
+
+            mouse_controller.yaw += diffX * mouse_controller.sensitivity;
+            mouse_controller.pitch += diffY * mouse_controller.sensitivity;
+
+            if (mouse_controller.pitch > 89.0f) mouse_controller.pitch = 89.0f;
+            if (mouse_controller.pitch < -89.0f) mouse_controller.pitch = -89.0f;
+
+            camera.direction.x = cos(glm::radians(mouse_controller.yaw)) * cos(glm::radians(mouse_controller.pitch));
+            camera.direction.y = sin(glm::radians(mouse_controller.pitch));
+            camera.direction.z = sin(glm::radians(mouse_controller.yaw)) * cos(glm::radians(mouse_controller.pitch));
+            camera.direction = glm::normalize(camera.direction);
+
+            mouse_controller.last_cursor_x = float(e->x);
+            mouse_controller.last_cursor_y = float(e->y);
+        }
+
+        return false;
+    }
+};
+

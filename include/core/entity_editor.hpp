@@ -213,7 +213,7 @@ namespace k2 {
             if (components.empty()) {
                 ImGui::Text("Orphans:");
                 registry.orphans([&registry](auto e) {
-                    MM_IEEE_ENTITY_WIDGET(e, registry, false);
+                    k2::EntityWidget(e, registry, false);
                 });
             } else {
                 auto view = registry.runtime_view(components.begin(), components.end());
@@ -221,7 +221,7 @@ namespace k2 {
 
                 if (ImGui::BeginChild("entity list")) {
                     for (auto e : view) {
-                        MM_IEEE_ENTITY_WIDGET(e, registry, false);
+                        k2::EntityWidget(e, registry, false);
                     }
                 }
                 ImGui::EndChild();

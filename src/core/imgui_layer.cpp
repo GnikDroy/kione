@@ -129,7 +129,7 @@ namespace k2 {
         return false;
     }
 
-    void ImguiLayer::update() {}
+    void ImguiLayer::update(float) {}
 
     void ImguiLayer::start() {
         ImGui_ImplOpenGL3_NewFrame();

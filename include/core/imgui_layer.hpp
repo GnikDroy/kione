@@ -16,7 +16,7 @@ namespace k2 {
         ImguiLayer& operator=(const ImguiLayer&) = delete;
 
         ~ImguiLayer() override;
-        void update() override;
+        void update(float) override;
         bool handle_event(const Event*) override;
         void start();
         void render() override;
