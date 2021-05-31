@@ -1,4 +1,5 @@
 #pragma once
+
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -16,34 +17,35 @@ namespace k2 {
         GLuint handle{};
         GLenum type{};
 
-        Shader(GLenum shader_type, const std::string& source) : type{shader_type}{
+        Shader(GLenum shader_type, const std::string &source) : type{shader_type} {
             handle = glCreateShader(type);
-            const char * ptr[] = {source.c_str()};
+            const char *ptr[] = {source.c_str()};
             auto size = static_cast<GLint>(source.size());
             glShaderSource(handle, 1, ptr, &size);
             glCompileShader(handle);
         }
 
-        Shader(const GLenum shader_type, const std::filesystem::path& path) : type{shader_type} {
+        Shader(const GLenum shader_type, const std::filesystem::path &path) : type{shader_type} {
             std::ifstream file(path, std::ios::binary);
-            if (file){
+            if (file) {
                 std::string source((std::istreambuf_iterator<char>(file)),
                                    std::istreambuf_iterator<char>());
 
                 handle = glCreateShader(type);
-                const char * ptr[] = {source.c_str()};
+                const char *ptr[] = {source.c_str()};
                 auto size = static_cast<GLint>(source.size());
                 glShaderSource(handle, 1, ptr, &size);
                 glCompileShader(handle);
             }
         }
 
-        Shader(const Shader&) = delete;
-        Shader& operator=(const Shader&) = delete;
+        Shader(const Shader &) = delete;
 
-        Shader(Shader&& other) { *this = std::move(other);}
+        Shader &operator=(const Shader &) = delete;
 
-        Shader& operator=(Shader&& other) {
+        Shader(Shader &&other) { *this = std::move(other); }
+
+        Shader &operator=(Shader &&other) {
             std::swap(other.handle, handle);
             type = other.type;
             return *this;
@@ -79,122 +81,147 @@ namespace k2 {
     struct Program {
         GLuint handle{};
 
-        Program() : handle {glCreateProgram()}{ }
+        Program() = default;
 
-        Program(const Program&) = delete;
-        Program& operator=(const Program&) = delete;
+        Program(const Program &) = delete;
 
-        Program(Program&& other) { *this = std::move(other);}
+        Program &operator=(const Program &) = delete;
 
-        Program& operator=(Program&& other) {
+        Program(Program &&other) { *this = std::move(other); }
+
+        Program &operator=(Program &&other) {
             std::swap(other.handle, handle);
+            return *this;
         }
 
         template<std::same_as<Shader>... T>
-        Program(T&&... shaders) {
+        Program(T &&... shaders) {
             handle = glCreateProgram();
             (attach_shader(std::forward<T>(shaders)), ...);
         }
 
-        void attach_shader(const Shader& shader) {
+        void attach_shader(const Shader &shader) {
+            if (!handle) handle = glCreateProgram();
             glAttachShader(handle, shader.handle);
         }
 
-        void set_uniform(const std::string& str, int i) const {
+        const Program& set_uniform(const std::string &str, int i) const {
             glUniform1i(glGetUniformLocation(handle, str.c_str()), i);
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::ivec2 vec) const {
+        const Program& set_uniform(const std::string &str, glm::ivec2 vec) const {
             glUniform2iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::ivec3 vec) const {
+        const Program& set_uniform(const std::string &str, glm::ivec3 vec) const {
             glUniform3iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::ivec4 vec) const {
+        const Program& set_uniform(const std::string &str, glm::ivec4 vec) const {
             glUniform4iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, unsigned int i) const {
+        const Program& set_uniform(const std::string &str, unsigned int i) const {
             glUniform1ui(glGetUniformLocation(handle, str.c_str()), i);
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::uvec2 vec) const {
+        const Program& set_uniform(const std::string &str, glm::uvec2 vec) const {
             glUniform2uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::uvec3 vec) const {
+        const Program& set_uniform(const std::string &str, glm::uvec3 vec) const {
             glUniform3uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::uvec4 vec) const {
+        const Program& set_uniform(const std::string &str, glm::uvec4 vec) const {
             glUniform4uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
 
-        void set_uniform(const std::string& str, float f) const {
+        const Program& set_uniform(const std::string &str, float f) const {
             glUniform1f(glGetUniformLocation(handle, str.c_str()), f);
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::vec2 vec) const {
+        const Program& set_uniform(const std::string &str, glm::vec2 vec) const {
             glUniform2fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::vec3 vec) const {
+        const Program& set_uniform(const std::string &str, glm::vec3 vec) const {
             glUniform3fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::vec4 vec) const {
+        const Program& set_uniform(const std::string &str, glm::vec4 vec) const {
             glUniform4fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, double f) const {
+        const Program& set_uniform(const std::string &str, double f) const {
             glUniform1d(glGetUniformLocation(handle, str.c_str()), f);
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::dvec2 vec) const {
+        const Program& set_uniform(const std::string &str, glm::dvec2 vec) const {
             glUniform2dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::dvec3 vec) const {
+        const Program& set_uniform(const std::string &str, glm::dvec3 vec) const {
             glUniform3dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::dvec4 vec) const {
+        const Program& set_uniform(const std::string &str, glm::dvec4 vec) const {
             glUniform4dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::mat2 mat) const {
+        const Program& set_uniform(const std::string &str, glm::mat2 mat) const {
             glUniformMatrix2fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::mat3 mat) const {
+        const Program& set_uniform(const std::string &str, glm::mat3 mat) const {
             glUniformMatrix3fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::mat4 mat) const {
+        const Program& set_uniform(const std::string &str, glm::mat4 mat) const {
             glUniformMatrix4fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::dmat2 mat) const {
+        const Program& set_uniform(const std::string &str, glm::dmat2 mat) const {
             glUniformMatrix2dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::dmat3 mat) const {
+        const Program& set_uniform(const std::string &str, glm::dmat3 mat) const {
             glUniformMatrix3dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
         }
 
-        void set_uniform(const std::string& str, glm::dmat4 mat) const {
+        const Program& set_uniform(const std::string &str, glm::dmat4 mat) const {
             glUniformMatrix4dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+            return *this;
         }
 
-        void link() {
-            glLinkProgram(handle);
+        void link() const {
+            if (handle) glLinkProgram(handle);
         }
 
-        void use() {
-            glUseProgram(handle);
+        void use() const {
+            if (handle) glUseProgram(handle);
         }
 
         operator bool() const {
@@ -204,7 +231,7 @@ namespace k2 {
         }
 
         std::optional<std::string> error_msg() const {
-            if (!*this) {
+            if (handle && !*this) {
                 GLint length{};
                 glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);
 
@@ -217,7 +244,7 @@ namespace k2 {
             return {};
         }
 
-        ~Program(){
+        ~Program() {
             glDeleteProgram(handle);
         }
     };
