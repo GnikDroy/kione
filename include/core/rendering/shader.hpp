@@ -1,14 +1,14 @@
 #pragma once
-#include "glad/glad.h"
-
-#include "glm/glm.hpp"
-#include <glm/gtc/type_ptr.hpp>
-
 #include <filesystem>
 #include <fstream>
 #include <optional>
 #include <string>
 #include <concepts>
+
+#include "glad/glad.h"
+#include "glm/glm.hpp"
+
+#include <glm/gtc/type_ptr.hpp>
 
 namespace k2 {
 
@@ -100,16 +100,93 @@ namespace k2 {
             glAttachShader(handle, shader.handle);
         }
 
+        void set_uniform(const std::string& str, int i) const {
+            glUniform1i(glGetUniformLocation(handle, str.c_str()), i);
+        }
+
+        void set_uniform(const std::string& str, glm::ivec2 vec) const {
+            glUniform2iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, glm::ivec3 vec) const {
+            glUniform3iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, glm::ivec4 vec) const {
+            glUniform4iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, unsigned int i) const {
+            glUniform1ui(glGetUniformLocation(handle, str.c_str()), i);
+        }
+
+        void set_uniform(const std::string& str, glm::uvec2 vec) const {
+            glUniform2uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, glm::uvec3 vec) const {
+            glUniform3uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, glm::uvec4 vec) const {
+            glUniform4uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+
         void set_uniform(const std::string& str, float f) const {
             glUniform1f(glGetUniformLocation(handle, str.c_str()), f);
+        }
+
+        void set_uniform(const std::string& str, glm::vec2 vec) const {
+            glUniform2fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
         }
 
         void set_uniform(const std::string& str, glm::vec3 vec) const {
             glUniform3fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
         }
 
+        void set_uniform(const std::string& str, glm::vec4 vec) const {
+            glUniform4fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, double f) const {
+            glUniform1d(glGetUniformLocation(handle, str.c_str()), f);
+        }
+
+        void set_uniform(const std::string& str, glm::dvec2 vec) const {
+            glUniform2dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, glm::dvec3 vec) const {
+            glUniform3dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, glm::dvec4 vec) const {
+            glUniform4dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+        }
+
+        void set_uniform(const std::string& str, glm::mat2 mat) const {
+            glUniformMatrix2fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
+        void set_uniform(const std::string& str, glm::mat3 mat) const {
+            glUniformMatrix3fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
         void set_uniform(const std::string& str, glm::mat4 mat) const {
             glUniformMatrix4fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
+        void set_uniform(const std::string& str, glm::dmat2 mat) const {
+            glUniformMatrix2dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
+        void set_uniform(const std::string& str, glm::dmat3 mat) const {
+            glUniformMatrix3dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+        }
+
+        void set_uniform(const std::string& str, glm::dmat4 mat) const {
+            glUniformMatrix4dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
         }
 
         void link() {
