@@ -62,6 +62,14 @@ namespace k2 {
             window->events.push(std::move(event));
         });
 
+        glfwSetFramebufferSizeCallback(window.get(), [](auto glfw_window, auto width, auto height) {
+            auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
+            auto event = std::make_unique<WindowFramebufferResizeEvent>();
+            event->width = width;
+            event->height = height;
+            window->events.push(std::move(event));
+        });
+
         glfwSetWindowContentScaleCallback(window.get(), [](auto glfw_window, auto x, auto y) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
             auto event = std::make_unique<WindowContentScaleChangeEvent>();
