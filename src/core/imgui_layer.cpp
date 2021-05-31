@@ -131,10 +131,13 @@ namespace k2 {
 
     void ImguiLayer::update() {}
 
-    void ImguiLayer::render() {
+    void ImguiLayer::start() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+    }
+
+    void ImguiLayer::render() {
 
         static bool show_demo = true;
         ImGui::ShowDemoWindow(&show_demo);
