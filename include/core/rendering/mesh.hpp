@@ -70,7 +70,7 @@ namespace k2 {
             return *this;
         }
 
-        void draw(const Program &program, const ResourceContainer<Texture>& textures_map) const
+        void draw(const Program &program, const ResourceContainer<Texture2D>& textures_map) const
         {
             size_t diffuse_num{}, specular_num{};
 
@@ -80,9 +80,9 @@ namespace k2 {
                 glBindTexture(GL_TEXTURE_2D, textures_map[textures[i]].id);
 
                 auto & type = textures_map[textures[i]].type;
-                if (type == Texture::Type::Diffuse) {
+                if (type == Texture2D::Type::Diffuse) {
                     program.set_uniform(fmt::format("material.diffuse_{}", diffuse_num++), float(i));
-                } else if(type == Texture::Type::Specular){
+                } else if(type == Texture2D::Type::Specular){
                     program.set_uniform(fmt::format("material.specular_{}", specular_num++), float(i));
                 }
 

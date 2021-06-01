@@ -24,6 +24,8 @@ namespace k2 {
             glBindVertexArray(handle);
         }
 
+        operator bool() const { return handle != 0; }
+
         auto get() const { return handle; }
 
         static void unbind() { glBindVertexArray(0); }

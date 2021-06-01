@@ -18,7 +18,7 @@
 namespace k2 {
     class Model {
         std::vector<Mesh> meshes;
-        ResourceContainer<Texture> textures;
+        ResourceContainer<Texture2D> textures;
         std::filesystem::path path;
     public:
         Model() = default;
@@ -102,11 +102,11 @@ namespace k2 {
                 auto path_to_texture = (path.parent_path() / str.C_Str()).string();
 
                 if (!textures.contains(fnv1a(path_to_texture))){
-                    Texture texture{path_to_texture};
+                    Texture2D texture{path_to_texture};
                     if (type == aiTextureType_DIFFUSE){
-                        texture.type = Texture::Type::Diffuse;
+                        texture.type = Texture2D::Type::Diffuse;
                     } else if (type == aiTextureType_SPECULAR) {
-                        texture.type = Texture::Type::Specular;
+                        texture.type = Texture2D::Type::Specular;
                     }
                     textures[fnv1a(path_to_texture)] = std::move(texture);
                 }

@@ -37,6 +37,8 @@ namespace k2 {
             }
         }
 
+        operator bool() const { return handle != 0; }
+
         void bind() const { glBindBuffer(Type, handle); }
 
         auto get() const { return handle; }

@@ -220,8 +220,9 @@ namespace k2 {
             if (handle) glLinkProgram(handle);
         }
 
-        void use() const {
+        const Program& use() const {
             if (handle) glUseProgram(handle);
+            return *this;
         }
 
         operator bool() const {

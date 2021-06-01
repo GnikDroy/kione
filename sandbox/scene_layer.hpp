@@ -8,6 +8,7 @@
 #include "core/entity_editor.hpp"
 
 #include "components.hpp"
+#include "skybox.hpp"
 
 
 class SceneLayer : public k2::Layer {
@@ -16,9 +17,12 @@ class SceneLayer : public k2::Layer {
     entt::registry registry{};
     k2::EntityEditor<entt::registry::entity_type> entity_editor;
 
-    k2::Program program {};
+    k2::Program light_program {};
+    k2::Program skybox_program {};
 
     Camera camera {};
+
+    SkyBox skybox{};
 
     struct MouseController {
         float pitch = 0.0f;
@@ -36,12 +40,12 @@ public:
          window{window},
          mouse_controller{.last_cursor_x = float(window.get_width()) / 2, .last_cursor_y = float(window.get_height()) / 2}
     {
-        namespace fs = std::filesystem;
-        program = []() {
-            auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path("res/vs.glsl"));
+        auto program_loader = [](auto vertex, auto fragment) {
+            namespace fs = std::filesystem;
+            auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path(vertex));
             if (!vertex_shader) { k2::Logger::app->critical(vertex_shader.error_msg().value()); }
 
-            auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, fs::path("res/fs.glsl"));
+            auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, fs::path(fragment));
             if (!fragment_shader) { k2::Logger::app->critical(fragment_shader.error_msg().value()); }
 
             k2::Program ret{std::move(vertex_shader), std::move(fragment_shader)};
@@ -49,7 +53,9 @@ public:
 
             if (!ret) { k2::Logger::app->critical(ret.error_msg().value()); }
             return ret;
-        }();
+        };
+        light_program = program_loader("res/shaders/phong_vs.glsl", "res/shaders/phong_fs.glsl");
+        skybox_program = program_loader("res/shaders/skybox_vs.glsl", "res/shaders/skybox_fs.glsl");
 
         entity_editor.register_component<Transform>("Transform");
         entity_editor.register_component<PointLight>("Point Light");
@@ -71,7 +77,7 @@ public:
 
         auto backpack = registry.create();
         registry.emplace<Transform>(backpack);
-        registry.emplace<k2::Model>(backpack, "res/backpack.obj");
+        registry.emplace<k2::Model>(backpack, "res/models/backpack.obj");
 
         auto light = registry.create();
         registry.emplace<Transform>(light, Transform { .position{0.0f, 1.0f, -2.0f}, });
@@ -79,6 +85,15 @@ public:
                 .ambient{0.2f, 0.2f, 0.2f} ,
                 .diffuse{0.5f, 0.5f, 0.5f},
                 .specular{1.0f, 1.0f, 1.0f}
+        });
+
+        skybox.load({
+            "res/textures/skybox/right.jpg",
+            "res/textures/skybox/left.jpg",
+            "res/textures/skybox/bottom.jpg",
+            "res/textures/skybox/top.jpg",
+            "res/textures/skybox/front.jpg",
+            "res/textures/skybox/back.jpg"
         });
     }
 
@@ -100,6 +115,16 @@ public:
     }
 
     void render() override {
+        auto view_mat = glm::lookAt(camera.position, camera.position + camera.direction , camera.up);
+        auto projection_mat = glm::perspective(camera.fov, float(window.get_width()) / float(window.get_height()),
+                                               camera.near_clip,
+                                               camera.far_clip);
+
+        skybox_program.use()
+                      .set_uniform("view", glm::mat4(glm::mat3(view_mat)))
+                      .set_uniform("projection", projection_mat);
+        skybox.draw(skybox_program);
+
         static auto entity = (entt::entity)0;
         registry.view<Transform, k2::Model>().each([&](auto, auto& transform, auto & model){
             auto model_mat = [&]() {
@@ -108,13 +133,9 @@ public:
                 return glm::scale(translate * rotate, transform.scale);
             }();
 
-            auto view_mat = glm::lookAt(camera.position, camera.position + camera.direction , camera.up);
-            auto projection_mat = glm::perspective(camera.fov, float(window.get_width()) / float(window.get_height()),
-                                               camera.near_clip,
-                                               camera.far_clip);
-
             registry.view<Transform, PointLight>().each([&](auto, auto& light_transform, auto & light){
-                program.set_uniform("model", model_mat)
+                light_program.use()
+                        .set_uniform("model", model_mat)
                         .set_uniform("view", view_mat)
                         .set_uniform("projection", projection_mat)
                         .set_uniform("light.position", light_transform.position)
@@ -122,9 +143,8 @@ public:
                         .set_uniform("light.diffuse", light.diffuse)
                         .set_uniform("light.specular", light.specular)
                         .set_uniform("viewer_position", camera.position)
-                        .set_uniform("material.shininess", 32.0f)
-                        .use();
-                model.draw(program);
+                        .set_uniform("material.shininess", 32.0f);
+                model.draw(light_program);
             });
             entity_editor.render_simple_combo(registry, entity);
         });
