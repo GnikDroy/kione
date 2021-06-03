@@ -18,6 +18,7 @@ namespace k2 {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_SAMPLES, 4);
 
         window.reset(glfwCreateWindow(config.width, config.height,
                                       glfw_data.title.c_str(), nullptr, nullptr));
@@ -47,6 +48,7 @@ namespace k2 {
 
         k2::Logger::core->info(fmt::format("OpenGL version is {}", glGetString(GL_VERSION)));
         glViewport(0, 0, static_cast<int32_t>(config.width), static_cast<int32_t>(config.height));
+        glEnable(GL_MULTISAMPLE);
 
         glfwSetWindowCloseCallback(window.get(), [](auto glfw_window) {
             auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));

@@ -4,6 +4,7 @@
 #include <string>
 
 #include "core/rendering/mesh.hpp"
+#include "core/logger.hpp"
 
 #include "glm/glm.hpp"
 
@@ -28,9 +29,11 @@ namespace k2 {
             const auto scene = importer.ReadFile(path.string().c_str(),
                                                  aiProcess_Triangulate
                                                  | aiProcess_FlipUVs
-                                                 | aiProcess_GenNormals);
+                                                 | aiProcess_GenNormals
+                                                 | aiProcess_CalcTangentSpace);
 
             if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+                k2::Logger::core->warn(importer.GetErrorString());
                 return;
             }
             process_node(scene->mRootNode, scene);
@@ -55,8 +58,6 @@ namespace k2 {
         }
 
         Mesh process_mesh(aiMesh *ai_mesh, const aiScene *scene) {
-
-
             // process vertices
             std::vector<Vertex> vertices;
             for(size_t i = 0; i < ai_mesh->mNumVertices; i++) {
@@ -67,6 +68,9 @@ namespace k2 {
                         .normal{ glm::vec3( ai_mesh->mNormals[i].x,
                                             ai_mesh->mNormals[i].y,
                                             ai_mesh->mNormals[i].z ) },
+                        .tangent{glm::vec3( ai_mesh->mTangents[i].x,
+                                            ai_mesh->mTangents[i].y,
+                                            ai_mesh->mTangents[i].z ) }
                 };
 
                 if(ai_mesh->mTextureCoords[0]) {
@@ -90,6 +94,7 @@ namespace k2 {
                 auto material = scene->mMaterials[ai_mesh->mMaterialIndex];
                 load_material_textures(material, aiTextureType_DIFFUSE, std::back_inserter(textures_vec));
                 load_material_textures(material, aiTextureType_SPECULAR, std::back_inserter(textures_vec));
+                load_material_textures(material, aiTextureType_NORMALS, std::back_inserter(textures_vec));
             }
             return {vertices, indices, textures_vec};
         }
@@ -107,8 +112,10 @@ namespace k2 {
                         texture.type = Texture2D::Type::Diffuse;
                     } else if (type == aiTextureType_SPECULAR) {
                         texture.type = Texture2D::Type::Specular;
+                    } else if (type == aiTextureType_NORMALS) {
+                        texture.type = Texture2D::Type::Normal;
                     }
-                    textures[fnv1a(path_to_texture)] = std::move(texture);
+                textures[fnv1a(path_to_texture)] = std::move(texture);
                 }
                 *(it++) = fnv1a(path_to_texture);
             }

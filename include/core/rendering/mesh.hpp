@@ -14,6 +14,7 @@ namespace k2 {
         glm::vec3 position;
         glm::vec3 normal;
         glm::vec2 tex_coord;
+        glm::vec3 tangent;
     };
 
     class Mesh {
@@ -51,6 +52,9 @@ namespace k2 {
             // vertex texture coords
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tex_coord)));
+            // vertex tangent
+            glEnableVertexAttribArray(3);
+            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
 
             va.unbind();
         }
@@ -72,18 +76,20 @@ namespace k2 {
 
         void draw(const Program &program, const ResourceContainer<Texture2D>& textures_map) const
         {
-            size_t diffuse_num{}, specular_num{};
+            size_t diffuse_num{}, specular_num{}, normal_num{};
 
             for(size_t i = 0; i < textures.size(); i++)
             {
+                auto & type = textures_map[textures[i]].type;
                 glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + i));
                 glBindTexture(GL_TEXTURE_2D, textures_map[textures[i]].id);
 
-                auto & type = textures_map[textures[i]].type;
                 if (type == Texture2D::Type::Diffuse) {
-                    program.set_uniform(fmt::format("material.diffuse_{}", diffuse_num++), float(i));
+                    program.set_uniform(fmt::format("material.diffuse_{}", diffuse_num++), int(i));
                 } else if(type == Texture2D::Type::Specular){
-                    program.set_uniform(fmt::format("material.specular_{}", specular_num++), float(i));
+                    program.set_uniform(fmt::format("material.specular_{}", specular_num++), int(i));
+                } else if(type == Texture2D::Type::Normal){
+                    program.set_uniform(fmt::format("material.normal_{}", normal_num++), int(i));
                 }
 
             }

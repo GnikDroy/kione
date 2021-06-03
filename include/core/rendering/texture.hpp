@@ -11,6 +11,7 @@ namespace k2 {
         enum class Type {
             Diffuse,
             Specular,
+            Normal,
             Unknown,
         };
 
