@@ -13,13 +13,12 @@
 #include "assimp/postprocess.h"
 
 #include "core/fnv.hpp"
-#include "core/resource_container.hpp"
+#include "core/resources.hpp"
 
 
 namespace k2 {
     class Model {
         std::vector<Mesh> meshes;
-        ResourceContainer<Texture2D> textures;
         std::filesystem::path path;
     public:
         Model() = default;
@@ -41,7 +40,7 @@ namespace k2 {
 
         void draw(const Program& program) {
             for (const auto& mesh: meshes) {
-                mesh.draw(program, textures);
+                mesh.draw(program);
             }
         }
 
@@ -106,7 +105,7 @@ namespace k2 {
                 mat->GetTexture(type, static_cast<unsigned int>(i), &str);
                 auto path_to_texture = (path.parent_path() / str.C_Str()).string();
 
-                if (!textures.contains(fnv1a(path_to_texture))){
+                if (!Resources::get<Texture2D>().contains(fnv1a(path_to_texture))){
                     Texture2D texture{path_to_texture};
                     if (type == aiTextureType_DIFFUSE){
                         texture.type = Texture2D::Type::Diffuse;
@@ -115,7 +114,7 @@ namespace k2 {
                     } else if (type == aiTextureType_NORMALS) {
                         texture.type = Texture2D::Type::Normal;
                     }
-                textures[fnv1a(path_to_texture)] = std::move(texture);
+                Resources::get<Texture2D>()[fnv1a(path_to_texture)] = std::move(texture);
                 }
                 *(it++) = fnv1a(path_to_texture);
             }

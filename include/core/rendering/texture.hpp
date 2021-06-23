@@ -17,7 +17,6 @@ namespace k2 {
 
         GLuint id{};
         Type type = Type::Unknown;
-        std::filesystem::path path;
 
         Texture2D() = default;
 
@@ -28,7 +27,6 @@ namespace k2 {
 
         Texture2D& operator=(Texture2D&& other) {
             std::swap(other.id, id);
-            std::swap(other.path, path);
             type = other.type;
             return *this;
         }
@@ -37,12 +35,21 @@ namespace k2 {
             glDeleteTextures(1, &id);
         }
 
-        explicit Texture2D(const std::filesystem::path &path) : path(path) {
+        explicit Texture2D(const std::filesystem::path &path) {
             load(path);
         }
 
         operator bool() const {
             return id != 0;
+        }
+
+        static Texture2D create_white_texture() {
+            Texture2D texture;
+            glGenTextures(1, &texture.id);
+            glBindTexture(GL_TEXTURE_2D, texture.id);
+            std::uint8_t data[] = {0xFF, 0xFF, 0xFF, 0xFF};
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            return texture;
         }
 
         Texture2D& load(const std::filesystem::path &texture_path) {
@@ -63,8 +70,7 @@ namespace k2 {
                         return GL_RGBA;
                     }();
 
-                    glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE,
-                                 image.data);
+                    glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.data);
                     glGenerateMipmap(GL_TEXTURE_2D);
 
                 } else {

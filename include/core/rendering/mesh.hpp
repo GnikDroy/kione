@@ -4,7 +4,7 @@
 #include "glm/glm.hpp"
 
 #include "core/rendering/texture.hpp"
-#include "core/resource_container.hpp"
+#include "core/resources.hpp"
 
 #include "core/rendering/buffer.hpp"
 #include "core/rendering/vertex_array.hpp"
@@ -74,8 +74,9 @@ namespace k2 {
             return *this;
         }
 
-        void draw(const Program &program, const ResourceContainer<Texture2D>& textures_map) const
+        void draw(const Program &program) const
         {
+            auto & textures_map = Resources::get<Texture2D>();
             size_t diffuse_num{}, specular_num{}, normal_num{};
 
             for(size_t i = 0; i < textures.size(); i++)
