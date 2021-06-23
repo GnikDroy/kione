@@ -10,11 +10,10 @@
 #include <cassert>
 #include <array>
 
+#include "core/utils.hpp"
+
 namespace k2 
 {
-  template <class T>
-  concept arithmetic = std::is_arithmetic_v<T>;
-
   template <arithmetic T, std::size_t N>
   struct Vector
   {
