@@ -220,3 +220,10 @@ if(K2_BUILD_SANDBOX)
     message(STATUS "Building k2 sandbox application.")
     add_subdirectory(sandbox)
 endif()
+
+# Setup sandbox build
+set(K2_BUILD_SANDBOX2D ON CACHE BOOL "Enable building sandbox2D")
+if(K2_BUILD_SANDBOX2D)
+    message(STATUS "Building k2 sandbox application.")
+    add_subdirectory(sandbox2D)
+endif()
