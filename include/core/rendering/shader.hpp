@@ -5,11 +5,13 @@
 #include <optional>
 #include <string>
 #include <concepts>
+#include <span>
 
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
+#include "core/utils.hpp"
 
 namespace k2 {
 
@@ -142,6 +144,21 @@ namespace k2 {
 
         const Program& set_uniform(const std::string &str, glm::uvec4 vec) const {
             glUniform4uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
+            return *this;
+        }
+
+
+        template <arithmetic T>
+        const Program& set_uniform(const std::string &str, const std::span<T>& vec) const {
+            if constexpr (std::is_same_v<T, std::uint32_t>) {
+                glUniform1uiv(glGetUniformLocation(handle, str.c_str()), (GLsizei) vec.size(), vec.data());
+            } else if (std::is_same_v<T, std::int32_t>) {
+                glUniform1iv(glGetUniformLocation(handle, str.c_str()), (GLsizei) vec.size(), vec.data());
+            } else if (std::is_same_v<T, float>) {
+                glUniform1fv(glGetUniformLocation(handle, str.c_str()), (GLsizei) vec.size(), vec.data());
+            } else if (std::is_same_v<T, double>) {
+                glUniform1dv(glGetUniformLocation(handle, str.c_str()), (GLsizei) vec.size(), vec.data());
+            }
             return *this;
         }
 
