@@ -13,6 +13,8 @@ namespace k2 {
  * @class ResourceContainer
  * @brief Class for managing resources.
  */
+using ResourceID = uint64_t;
+
 template <class ResourceType> class ResourceContainer {
 public:
   /**
@@ -21,13 +23,13 @@ public:
    */
   std::size_t size() const { return resources.size(); }
 
-  bool contains(std::uint64_t resource_id) const { return resources.count(resource_id); }
+  bool contains(ResourceID resource_id) const { return resources.count(resource_id); }
 
-  ResourceType &operator[](std::uint64_t id) { return resources[id]; }
+  ResourceType &operator[](ResourceID id) { return resources[id]; }
 
-  const ResourceType &operator[](std::uint64_t id) const { return resources.at(id); }
+  const ResourceType &operator[](ResourceID id) const { return resources.at(id); }
 
-  void erase(std::uint64_t id) { resources.erase(id); }
+  void erase(ResourceID id) { resources.erase(id); }
 
   auto begin() const { return resources.cbegin(); }
   auto end() const { return resources.cend(); }
@@ -37,6 +39,6 @@ public:
 
 private:
   /** Container that stores the identifier and Resource mappings.*/
-  std::unordered_map<std::uint64_t, ResourceType> resources;
+  std::unordered_map<ResourceID, ResourceType> resources;
 };
 } // namespace k2
