@@ -7,7 +7,7 @@ namespace k2 {
 class Window;
 
 class MouseDevice : public IInputDevice {
-   public:
+public:
     enum class ButtonCode {
         Button0 = 0,
         Button1 = 1,
@@ -34,7 +34,7 @@ class MouseDevice : public IInputDevice {
     enum class CursorMode {
         Normal,
         Hidden,
-        Disabled, 
+        Disabled,
     };
 
     friend class Window;
@@ -44,8 +44,8 @@ class MouseDevice : public IInputDevice {
 
     ~MouseDevice();
 
-   private:
+private:
     explicit MouseDevice(Window*);
     Window* window_instance;
 };
-}  // namespace k2
+} // namespace k2

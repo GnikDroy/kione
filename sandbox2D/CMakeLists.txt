@@ -20,8 +20,10 @@ if (WIN32)
             WIN32_EXECUTABLE true)
 endif()
 
+# /wd4103 due to a msvc compiler bug
+# see https://developercommunity.visualstudio.com/t/warning-c4103-in-visual-studio-166-update/1057589
 target_compile_options(sandbox2D PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest /wd4201>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest /wd4201 /wd4103>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
 )
 

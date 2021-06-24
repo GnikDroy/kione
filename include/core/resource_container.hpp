@@ -17,28 +17,28 @@ using ResourceID = uint64_t;
 
 template <class ResourceType> class ResourceContainer {
 public:
-  /**
-   * @brief Returns the number of resources currently held by the game.
-   * @return Total number of resources held.
-   */
-  std::size_t size() const { return resources.size(); }
+    /**
+     * @brief Returns the number of resources currently held by the game.
+     * @return Total number of resources held.
+     */
+    std::size_t size() const { return resources.size(); }
 
-  bool contains(ResourceID resource_id) const { return resources.count(resource_id); }
+    bool contains(ResourceID resource_id) const { return resources.count(resource_id); }
 
-  ResourceType &operator[](ResourceID id) { return resources[id]; }
+    ResourceType& operator[](ResourceID id) { return resources[id]; }
 
-  const ResourceType &operator[](ResourceID id) const { return resources.at(id); }
+    const ResourceType& operator[](ResourceID id) const { return resources.at(id); }
 
-  void erase(ResourceID id) { resources.erase(id); }
+    void erase(ResourceID id) { resources.erase(id); }
 
-  auto begin() const { return resources.cbegin(); }
-  auto end() const { return resources.cend(); }
+    auto begin() const { return resources.cbegin(); }
+    auto end() const { return resources.cend(); }
 
-  auto begin() { return resources.begin(); }
-  auto end() { return resources.end(); }
+    auto begin() { return resources.begin(); }
+    auto end() { return resources.end(); }
 
 private:
-  /** Container that stores the identifier and Resource mappings.*/
-  std::unordered_map<ResourceID, ResourceType> resources;
+    /** Container that stores the identifier and Resource mappings.*/
+    std::unordered_map<ResourceID, ResourceType> resources;
 };
 } // namespace k2

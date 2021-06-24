@@ -6,4 +6,4 @@ class Clipboard {
     static std::string get();
     static void set(const std::string& str);
 };
-}  // namespace k2
+} // namespace k2

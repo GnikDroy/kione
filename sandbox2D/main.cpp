@@ -8,16 +8,13 @@
 #include "core/imgui_layer.hpp"
 #include "scene_layer.hpp"
 
-
 class Sandbox2D : public k2::App {
 public:
     k2::Window window;
     bool running = true;
     std::vector<std::unique_ptr<k2::Layer>> layers;
 
-    Sandbox2D() : App(), window{} {
-        k2::Logger::app->info("Sandbox2D application started.");
-    }
+    Sandbox2D() { k2::Logger::app->info("Sandbox2D application started."); }
 
     void handle_events() {
         using namespace k2::literals;
@@ -27,15 +24,17 @@ public:
 
             // Handle all basic events
             if (event->type == "WindowFramebufferResizeEvent"_fnv1a) {
-                auto e = reinterpret_cast<k2::WindowFramebufferResizeEvent *>(event.get());
+                auto* e = reinterpret_cast<k2::WindowFramebufferResizeEvent*>(event.get());
                 glViewport(0, 0, e->width, e->height);
             } else if (event->type == "WindowCloseEvent"_fnv1a) {
                 k2::Logger::app->info("Window Close Event Received.");
                 running = false;
             }
 
-            for (auto &layer: std::views::reverse(layers)) {
-                if (layer->handle_event(event.get())) { break; }
+            for (auto& layer : std::views::reverse(layers)) {
+                if (layer->handle_event(event.get())) {
+                    break;
+                }
             }
         }
     }
@@ -45,7 +44,7 @@ public:
 
         layers.push_back(std::make_unique<SceneLayer>(window));
         layers.push_back(std::make_unique<k2::ImguiLayer>(window));
-        auto imgui_layer = reinterpret_cast<k2::ImguiLayer*>(layers[1].get());
+        auto* imgui_layer = reinterpret_cast<k2::ImguiLayer*>(layers[1].get());
 
         glEnable(GL_DEPTH_TEST);
 
@@ -57,10 +56,11 @@ public:
             auto dt = float(current_frame - last_frame) / 1000.0f;
             last_frame = current_frame;
 
-
-            //Update and handle events
+            // Update and handle events
             window.update();
-            for (auto &layer: layers) { layer->update(dt); }
+            for (auto& layer : layers) {
+                layer->update(dt);
+            }
             handle_events();
 
             // Clear Screen
@@ -69,15 +69,13 @@ public:
 
             // Render
             imgui_layer->start();
-            for (auto &layer: layers) { layer->render(); }
+            for (auto& layer : layers) {
+                layer->render();
+            }
         }
     }
 
-    ~Sandbox2D() override {
-        k2::Logger::app->info("Sandbox2D application stopped.");
-    }
+    ~Sandbox2D() override { k2::Logger::app->info("Sandbox2D application stopped."); }
 };
 
-std::unique_ptr<k2::App> create_app() {
-    return std::unique_ptr<k2::App>{std::make_unique<Sandbox2D>()};
-}
+auto create_app() -> std::unique_ptr<k2::App> { return std::make_unique<Sandbox2D>(); }

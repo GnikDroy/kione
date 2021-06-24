@@ -1,12 +1,12 @@
 #include "core/imgui_layer.hpp"
 
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include "platform/desktop/window_impl.hpp"
 #include "events/event.hpp"
 #include "events/keyboard.hpp"
 #include "events/mouse.hpp"
 #include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "platform/desktop/window_impl.hpp"
 
 static void ImGuiStyleDark() {
     auto& style = ImGui::GetStyle();
@@ -23,7 +23,7 @@ static void ImGuiStyleDark() {
     style.ItemInnerSpacing = { 6, 4 };
     style.TabRounding = 2;
 
-    ImVec4 *colors = ImGui::GetStyle().Colors;
+    ImVec4* colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
     colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
@@ -72,79 +72,77 @@ static void ImGuiStyleDark() {
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-
 }
 
 namespace k2 {
-    ImguiLayer::ImguiLayer(k2::Window &win) : window(&win) {
-        if (initialized_windows.count(window) != 0) {
-            throw std::runtime_error("Imgui layer for this window already exists.");
-        }
-        initialized_windows.insert(window);
-
-        auto glfw_window = win.impl->window.get();
-
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-        ImGui::StyleColorsDark();
-        ImGuiStyleDark();
-
-        ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
-        ImGui_ImplOpenGL3_Init();
+ImguiLayer::ImguiLayer(k2::Window& win)
+    : window(&win) {
+    if (initialized_windows.count(window) != 0) {
+        throw std::runtime_error("Imgui layer for this window already exists.");
     }
+    initialized_windows.insert(window);
 
-    ImguiLayer::~ImguiLayer() {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-        initialized_windows.erase(window);
-    };
+    auto glfw_window = win.impl->window.get();
 
-    bool ImguiLayer::handle_event(const Event *event) {
-        using namespace k2::literals;
-        if (event->type == "KeyboardKeyEvent"_fnv1a) {
-            auto key_event = static_cast<const KeyboardKeyEvent *>(event);
-            ImGui_ImplGlfw_KeyCallback(window->impl->window.get(), static_cast<int>(key_event->code),
-                                       key_event->scan_code, static_cast<int>(key_event->state),
-                                       static_cast<int>(key_event->mods));
-            return ImGui::GetIO().WantCaptureKeyboard;
-        } else if (event->type == "KeyboardCharEvent"_fnv1a) {
-            auto char_event = static_cast<const KeyboardCharEvent *>(event);
-            ImGui_ImplGlfw_CharCallback(window->impl->window.get(), char_event->code);
-            return ImGui::GetIO().WantCaptureKeyboard;
-        } else if (event->type == "MouseButtonEvent"_fnv1a) {
-            auto mouse_event = static_cast<const MouseButtonEvent *>(event);
-            ImGui_ImplGlfw_MouseButtonCallback(window->impl->window.get(), static_cast<int>(mouse_event->code),
-                                               static_cast<int>(mouse_event->state), static_cast<int>(mouse_event->mods));
-            return ImGui::GetIO().WantCaptureMouse;
-        } else if (event->type == "ScrollEvent"_fnv1a) {
-            auto scroll_event = static_cast<const ScrollEvent *>(event);
-            ImGui_ImplGlfw_ScrollCallback(window->impl->window.get(), scroll_event->x, scroll_event->y);
-            return ImGui::GetIO().WantCaptureMouse;
-        }
-        return false;
-    }
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
 
-    void ImguiLayer::update(float) {}
+    ImGui::StyleColorsDark();
+    ImGuiStyleDark();
 
-    void ImguiLayer::start() {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-    }
-
-    void ImguiLayer::render() {
-
-        static bool show_demo = true;
-        ImGui::ShowDemoWindow(&show_demo);
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    };
-
+    ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
+    ImGui_ImplOpenGL3_Init();
 }
 
+ImguiLayer::~ImguiLayer() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    initialized_windows.erase(window);
+};
+
+bool ImguiLayer::handle_event(const Event* event) {
+    using namespace k2::literals;
+    if (event->type == "KeyboardKeyEvent"_fnv1a) {
+        auto key_event = static_cast<const KeyboardKeyEvent*>(event);
+        ImGui_ImplGlfw_KeyCallback(window->impl->window.get(), static_cast<int>(key_event->code), key_event->scan_code,
+            static_cast<int>(key_event->state), static_cast<int>(key_event->mods));
+        return ImGui::GetIO().WantCaptureKeyboard;
+    } else if (event->type == "KeyboardCharEvent"_fnv1a) {
+        auto char_event = static_cast<const KeyboardCharEvent*>(event);
+        ImGui_ImplGlfw_CharCallback(window->impl->window.get(), char_event->code);
+        return ImGui::GetIO().WantCaptureKeyboard;
+    } else if (event->type == "MouseButtonEvent"_fnv1a) {
+        auto mouse_event = static_cast<const MouseButtonEvent*>(event);
+        ImGui_ImplGlfw_MouseButtonCallback(window->impl->window.get(), static_cast<int>(mouse_event->code),
+            static_cast<int>(mouse_event->state), static_cast<int>(mouse_event->mods));
+        return ImGui::GetIO().WantCaptureMouse;
+    } else if (event->type == "ScrollEvent"_fnv1a) {
+        auto scroll_event = static_cast<const ScrollEvent*>(event);
+        ImGui_ImplGlfw_ScrollCallback(window->impl->window.get(), scroll_event->x, scroll_event->y);
+        return ImGui::GetIO().WantCaptureMouse;
+    }
+    return false;
+}
+
+void ImguiLayer::update(float) { }
+
+void ImguiLayer::start() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
+
+void ImguiLayer::render() {
+
+    static bool show_demo = true;
+    ImGui::ShowDemoWindow(&show_demo);
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+};
+
+}

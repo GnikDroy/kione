@@ -1,0 +1,13 @@
+---
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+
+  modernize-*,
+  -modernize-use-trailing-return-type,
+
+  bugprone-*,
+  performance-*,
+FormatStyle: file
+...
+

@@ -1,7 +1,7 @@
 #pragma once
+#include "core/logger.hpp"
 #include <cstdlib>
 #include <functional>
-#include "core/logger.hpp"
 
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
@@ -16,8 +16,7 @@ struct Window::Impl {
         return glfwInit() == GLFW_TRUE;
     }();
 
-    std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)> window{
-        nullptr, &glfwDestroyWindow};
+    std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)> window { nullptr, &glfwDestroyWindow };
 
     struct GLFWData {
         std::string title;
@@ -30,4 +29,4 @@ struct Window::Impl {
 
     ~Impl();
 };
-}  // namespace k2
+} // namespace k2

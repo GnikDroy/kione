@@ -2,26 +2,24 @@
 #include <memory>
 #include <string>
 
-namespace k2
-{
-    class Logger
-    {
-        struct Impl;
-        std::unique_ptr<Impl> impl;
+namespace k2 {
+class Logger {
+    struct Impl;
+    std::unique_ptr<Impl> impl;
 
-    public:
-        Logger(const std::string &name);
-        Logger(const Logger&) = delete;
-        Logger& operator=(const Logger&) = delete;
+public:
+    Logger(const std::string& name);
+    Logger(const Logger&) = delete;
+    Logger& operator=(const Logger&) = delete;
 
-        void trace(const std::string &msg);
-        void info(const std::string &msg);
-        void warn(const std::string &msg);
-        void error(const std::string &msg);
-        void critical(const std::string &msg);
+    void trace(const std::string& msg);
+    void info(const std::string& msg);
+    void warn(const std::string& msg);
+    void error(const std::string& msg);
+    void critical(const std::string& msg);
 
-        static std::unique_ptr<Logger> core;
-        static std::unique_ptr<Logger> app;
-    };
+    static std::unique_ptr<Logger> core;
+    static std::unique_ptr<Logger> app;
+};
 
 } // namespace k2

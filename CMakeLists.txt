@@ -199,11 +199,18 @@ function(assimp_build)
     if(NOT assimp_POPULATED)
         FetchContent_Populate(assimp)
     endif()
+
+    if(MSVC)
+        # Assimp suppress array equality operator deprecation and other warnings.
+        set(CMAKE_CXX_FLAGS "/wd4530 /wd5056")
+    endif()
     add_subdirectory(${assimp_SOURCE_DIR} ${assimp_BINARY_DIR})
-#    set_target_properties(assimp PROPERTIES LINKER_LANGUAGE CXX)
 endfunction()
 assimp_build()
 
+
+# Export compile commands for all of our source files
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Add our source files
 add_subdirectory(src)

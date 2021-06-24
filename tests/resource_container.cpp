@@ -1,10 +1,9 @@
-#include "catch2/catch.hpp"
 #include "core/resource_container.hpp"
+#include "catch2/catch.hpp"
 #include "core/fnv.hpp"
 
-TEST_CASE("Resource Manager tests")
-{
-  using k2::literals::operator""_fnv1a;
+TEST_CASE("Resource Manager tests") {
+    using k2::literals::operator""_fnv1a;
     {
         // Mocking textures with ints.
         k2::ResourceContainer<int> textures;
@@ -44,4 +43,3 @@ TEST_CASE("Resource Manager tests")
         REQUIRE(textures.size() == 0);
     }
 }
-
