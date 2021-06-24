@@ -1,11 +1,11 @@
 #pragma once
+
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
-
-#include "entt/entt.hpp"
-#include "imgui.h"
+#include <imgui.h>
 
 #include "core/entity_editor.hpp"
 #include "core/rendering/camera.hpp"

@@ -18,31 +18,34 @@ Window::Impl::Impl(Window* win, const WindowConfig& config)
 #endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
+#ifdef DEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+#endif
 
     window.reset(glfwCreateWindow((int)config.width, (int)config.height, glfw_data.title.c_str(), nullptr, nullptr));
 
     if (!window) {
-        k2::Logger::core->critical("Failed to create GLFW window");
+        k2::Log::core().critical("Failed to create GLFW window");
         glfwTerminate();
     } else {
-        k2::Logger::core->info("Created GLFW window");
+        k2::Log::core().info("Created GLFW window");
         glfw_window_count++;
     }
 
     glfwSetErrorCallback(
-        [](auto error_code, auto msg) { k2::Logger::core->error(fmt::format("GLFW Error {} : {}", error_code, msg)); });
+        [](auto error_code, auto msg) { k2::Log::core().error(fmt::format("GLFW Error {} : {}", error_code, msg)); });
 
     glfwSetWindowUserPointer(window.get(), win);
 
     glfwMakeContextCurrent(window.get());
     glfwSwapInterval(glfw_data.vsync);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        k2::Logger::core->critical("Failed to initialize GLAD.");
+        k2::Log::core().critical("Failed to initialize GLAD.");
     } else {
-        k2::Logger::core->info("GLAD initialization successful.");
+        k2::Log::core().info("GLAD initialization successful.");
     }
 
-    k2::Logger::core->info(fmt::format("OpenGL version is {}", glGetString(GL_VERSION)));
+    k2::Log::core().info(fmt::format("OpenGL version is {}", glGetString(GL_VERSION)));
     glViewport(0, 0, static_cast<int32_t>(config.width), static_cast<int32_t>(config.height));
     glEnable(GL_MULTISAMPLE);
 

@@ -1,5 +1,6 @@
+#include <catch2/catch.hpp>
+
 #include "core/vector.hpp"
-#include "catch2/catch.hpp"
 
 TEST_CASE("Vector2 Functionality") {
     k2::Vector2<int> vec;

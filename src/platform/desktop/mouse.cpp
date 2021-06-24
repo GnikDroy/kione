@@ -1,6 +1,6 @@
-#include "core/mouse.hpp"
+#include <GLFW/glfw3.h>
 
-#include "GLFW/glfw3.h"
+#include "core/mouse.hpp"
 #include "core/window.hpp"
 #include "events/mouse.hpp"
 #include "platform/desktop/window_impl.hpp"

@@ -1,6 +1,6 @@
 #pragma once
-#include "stb_image.h"
 #include <filesystem>
+#include <stb_image.h>
 
 namespace k2 {
 struct Image {

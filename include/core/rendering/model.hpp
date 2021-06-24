@@ -1,19 +1,18 @@
 #pragma once
+
+#include "core/fnv.hpp"
+#include "core/logger.hpp"
+#include "core/rendering/mesh.hpp"
+#include "core/resources.hpp"
+
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <glm/glm.hpp>
+
 #include <filesystem>
 #include <string>
 #include <vector>
-
-#include "core/logger.hpp"
-#include "core/rendering/mesh.hpp"
-
-#include "glm/glm.hpp"
-
-#include "assimp/Importer.hpp"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
-
-#include "core/fnv.hpp"
-#include "core/resources.hpp"
 
 namespace k2 {
 class Model {
@@ -30,7 +29,7 @@ public:
             aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            k2::Logger::core->warn(importer.GetErrorString());
+            k2::Log::core().warn(importer.GetErrorString());
             return;
         }
         process_node(scene->mRootNode, scene);

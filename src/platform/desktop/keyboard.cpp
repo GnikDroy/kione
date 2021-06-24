@@ -1,6 +1,6 @@
-#include "core/keyboard.hpp"
+#include <GLFW/glfw3.h>
 
-#include "GLFW/glfw3.h"
+#include "core/keyboard.hpp"
 #include "core/window.hpp"
 #include "events/keyboard.hpp"
 #include "platform/desktop/window_impl.hpp"

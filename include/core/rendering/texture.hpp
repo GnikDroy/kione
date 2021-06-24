@@ -1,7 +1,7 @@
 #pragma once
 
-#include "fmt/format.h"
-#include "glad/glad.h"
+#include <fmt/format.h>
+#include <glad/glad.h>
 
 #include "core/logger.hpp"
 #include "core/rendering/image.hpp"
@@ -68,7 +68,7 @@ struct Texture2D {
                         return GL_RGB;
                     if (image.channels == 4)
                         return GL_RGBA;
-                    k2::Logger::core->warn(
+                    k2::Log::core().warn(
                         fmt::format("Incorrect number of channels ({}) for image: {}", image.channels, texture_path));
                     return GL_RGBA;
                 }();
@@ -78,7 +78,7 @@ struct Texture2D {
                 glGenerateMipmap(GL_TEXTURE_2D);
 
             } else {
-                k2::Logger::core->critical(fmt::format("Failed to load image at path: {}", texture_path.string()));
+                k2::Log::core().critical(fmt::format("Failed to load image at path: {}", texture_path.string()));
             }
         }
         return *this;
@@ -129,7 +129,7 @@ struct TextureCube {
                             return GL_RGB;
                         if (image.channels == 4)
                             return GL_RGBA;
-                        k2::Logger::core->warn(fmt::format(
+                        k2::Log::core().warn(fmt::format(
                             "Incorrect number of channels ({}) for image: {}", image.channels, texture_path));
                         return GL_RGBA;
                     }();
@@ -143,7 +143,7 @@ struct TextureCube {
                     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
                 } else {
-                    k2::Logger::core->critical(fmt::format("Failed to load image at path: {}", texture_path.string()));
+                    k2::Log::core().critical(fmt::format("Failed to load image at path: {}", texture_path.string()));
                 }
             }
         }

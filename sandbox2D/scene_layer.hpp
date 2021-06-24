@@ -1,17 +1,10 @@
 #pragma once
 
+#include "components.hpp"
+#include "core/rendering/renderer2D.hpp"
 #include "kione2D.hpp"
 
-#include "core/rendering/camera.hpp"
-#include "core/rendering/renderer2D.hpp"
-#include "core/rendering/shader.hpp"
-
-#include "core/entity_editor.hpp"
-#include "core/logger.hpp"
-
-#include "components.hpp"
-
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 #include <numeric>
 
@@ -62,19 +55,19 @@ public:
             namespace fs = std::filesystem;
             auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path(vertex));
             if (!vertex_shader) {
-                k2::Logger::app->critical(vertex_shader.error_msg().value());
+                k2::Log::app().critical(vertex_shader.error_msg().value());
             }
 
             auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, fs::path(fragment));
             if (!fragment_shader) {
-                k2::Logger::app->critical(fragment_shader.error_msg().value());
+                k2::Log::app().critical(fragment_shader.error_msg().value());
             }
 
             k2::Program ret { std::move(vertex_shader), std::move(fragment_shader) };
             ret.link();
 
             if (!ret) {
-                k2::Logger::app->critical(ret.error_msg().value());
+                k2::Log::app().critical(ret.error_msg().value());
             }
             return ret;
         };

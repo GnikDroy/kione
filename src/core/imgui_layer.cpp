@@ -3,10 +3,11 @@
 #include "events/event.hpp"
 #include "events/keyboard.hpp"
 #include "events/mouse.hpp"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "platform/desktop/window_impl.hpp"
+
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 static void ImGuiStyleDark() {
     auto& style = ImGui::GetStyle();

@@ -1,14 +1,12 @@
 #pragma once
 
+#include <glm/glm.hpp>
 #include <vector>
 
-#include "glm/glm.hpp"
-
-#include "core/rendering/texture.hpp"
-#include "core/resources.hpp"
-
 #include "core/rendering/buffer.hpp"
+#include "core/rendering/texture.hpp"
 #include "core/rendering/vertex_array.hpp"
+#include "core/resources.hpp"
 
 namespace k2 {
 struct Vertex {

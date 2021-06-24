@@ -6,8 +6,8 @@
 #include <set>
 #include <string>
 
-#include "entt/entt.hpp"
-#include "imgui.h"
+#include <entt/entt.hpp>
+#include <imgui.h>
 
 constexpr static inline auto K2_IMGUI_PAYLOAD_TYPE_ENTITY = "k2_entity";
 

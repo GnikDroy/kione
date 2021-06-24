@@ -1,7 +1,4 @@
 #pragma once
-#include "fmt/core.h"
-#include "fmt/format.h"
-#include "fmt/ranges.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -9,6 +6,10 @@
 #include <concepts>
 #include <cstdint>
 #include <numeric>
+
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include "core/utils.hpp"
 

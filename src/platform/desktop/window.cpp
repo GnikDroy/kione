@@ -7,10 +7,10 @@
 #endif
 
 #define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 #include "core/window.hpp"
-#include "GLFW/glfw3.h"
-#include "GLFW/glfw3native.h"
 #include "events/event.hpp"
 #include "platform/desktop/window_impl.hpp"
 

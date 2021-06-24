@@ -7,10 +7,11 @@
 #include <span>
 #include <string>
 
-#include "core/utils.hpp"
-#include "glad/glad.h"
-#include "glm/glm.hpp"
+#include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "core/utils.hpp"
 
 namespace k2 {
 

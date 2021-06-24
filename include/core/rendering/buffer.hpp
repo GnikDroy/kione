@@ -1,7 +1,7 @@
 #pragma once
 
-#include "glad/glad.h"
 #include <cassert>
+#include <glad/glad.h>
 
 namespace k2 {
 template <auto Type> class BasicBuffer {

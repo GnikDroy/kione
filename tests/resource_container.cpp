@@ -1,6 +1,7 @@
-#include "core/resource_container.hpp"
-#include "catch2/catch.hpp"
+#include <catch2/catch.hpp>
+
 #include "core/fnv.hpp"
+#include "core/resource_container.hpp"
 
 TEST_CASE("Resource Manager tests") {
     using k2::literals::operator""_fnv1a;

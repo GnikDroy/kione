@@ -2,8 +2,9 @@
 
 #include "core/rendering/shader.hpp"
 #include "core/utils.hpp"
-#include "glad/glad.h"
+
 #include <cassert>
+#include <glad/glad.h>
 
 namespace k2 {
 

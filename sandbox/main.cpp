@@ -3,8 +3,6 @@
 
 #include "kione2D.hpp"
 
-#include "glad/glad.h"
-
 #include "core/imgui_layer.hpp"
 #include "scene_layer.hpp"
 
@@ -14,7 +12,7 @@ public:
     bool running = true;
     std::vector<std::unique_ptr<k2::Layer>> layers;
 
-    Sandbox() { k2::Logger::app->info("Sandbox application started."); }
+    Sandbox() { k2::Log::app().info("Sandbox application started."); }
 
     void handle_events() {
         using namespace k2::literals;
@@ -27,7 +25,7 @@ public:
                 auto* e = reinterpret_cast<k2::WindowFramebufferResizeEvent*>(event.get());
                 glViewport(0, 0, e->width, e->height);
             } else if (event->type == "WindowCloseEvent"_fnv1a) {
-                k2::Logger::app->info("Window Close Event Received.");
+                k2::Log::app().info("Window Close Event Received.");
                 running = false;
             }
 
@@ -76,7 +74,7 @@ public:
         }
     }
 
-    ~Sandbox() override { k2::Logger::app->info("Sandbox application stopped."); }
+    ~Sandbox() override { k2::Log::app().info("Sandbox application stopped."); }
 };
 
 auto create_app() -> std::unique_ptr<k2::App> { return std::make_unique<Sandbox>(); }
