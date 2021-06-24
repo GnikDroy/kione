@@ -1,4 +1,5 @@
 #pragma once
+
 #include <vector>
 
 #include "glm/glm.hpp"
@@ -29,42 +30,58 @@ namespace k2 {
         Mesh() = default;
 
         Mesh(std::vector<Vertex> verts, std::vector<unsigned int> ind, std::vector<uint64_t> tex)
-                : vertices(std::move(verts)) ,
+                : vertices(std::move(verts)),
                   indices(std::move(ind)),
-                  textures(std::move(tex))
-          {
-            va.bind();
-
+                  textures(std::move(tex)) {
             vb = VertexBuffer{vertices.size() * sizeof(Vertex)};
-            vb.bind();
             vb.set(vertices.data(), vertices.size() * sizeof(Vertex));
 
             ib = IndexBuffer{indices.size() * sizeof(indices[0])};
-            ib.bind();
             ib.set(indices.data(), indices.size() * sizeof(indices[0]));
 
-            // vertex positions
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
-            // vertex normals
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
-            // vertex texture coords
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tex_coord)));
-            // vertex tangent
-            glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
-
-            va.unbind();
+            va.apply({
+                             {
+                                     .buffer = vb.get(),
+                                     .attribute_trait {
+                                             .location = 0,
+                                             .data_type = ShaderDataType::Float3,
+                                             .offset = offsetof(Vertex, position),
+                                     },
+                             },
+                             {
+                                     .buffer = vb.get(),
+                                     .attribute_trait {
+                                             .location = 1,
+                                             .data_type = ShaderDataType::Float3,
+                                             .offset = offsetof(Vertex, normal),
+                                     },
+                             },
+                             {
+                                     .buffer = vb.get(),
+                                     .attribute_trait {
+                                             .location = 2,
+                                             .data_type = ShaderDataType::Float2,
+                                             .offset = offsetof(Vertex, tex_coord),
+                                     },
+                             },
+                             {
+                                     .buffer = vb.get(),
+                                     .attribute_trait {
+                                             .location = 3,
+                                             .data_type = ShaderDataType::Float3,
+                                             .offset = offsetof(Vertex, tangent),
+                                     },
+                             },
+                     }, sizeof(Vertex), ib.get());
         }
 
-        Mesh(const Mesh&) = delete;
-        Mesh& operator=(const Mesh&) = delete;
+        Mesh(const Mesh &) = delete;
 
-        Mesh(Mesh&& other) { *this = std::move(other); }
+        Mesh &operator=(const Mesh &) = delete;
 
-        Mesh& operator=(Mesh&& other) {
+        Mesh(Mesh &&other) { *this = std::move(other); }
+
+        Mesh &operator=(Mesh &&other) {
             std::swap(other.va, va);
             std::swap(other.vb, vb);
             std::swap(other.ib, ib);
@@ -74,27 +91,23 @@ namespace k2 {
             return *this;
         }
 
-        void draw(const Program &program) const
-        {
-            auto & textures_map = Resources::get<Texture2D>();
+        void draw(const Program &program) const {
+            auto &textures_map = Resources::get<Texture2D>();
             size_t diffuse_num{}, specular_num{}, normal_num{};
 
-            for(size_t i = 0; i < textures.size(); i++)
-            {
-                auto & type = textures_map[textures[i]].type;
-                glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + i));
-                glBindTexture(GL_TEXTURE_2D, textures_map[textures[i]].id);
+            for (size_t i = 0; i < textures.size(); i++) {
+                auto &type = textures_map[textures[i]].type;
+                textures_map[textures[i]].bind((uint32_t)i);
 
                 if (type == Texture2D::Type::Diffuse) {
                     program.set_uniform(fmt::format("material.diffuse_{}", diffuse_num++), int(i));
-                } else if(type == Texture2D::Type::Specular){
+                } else if (type == Texture2D::Type::Specular) {
                     program.set_uniform(fmt::format("material.specular_{}", specular_num++), int(i));
-                } else if(type == Texture2D::Type::Normal){
+                } else if (type == Texture2D::Type::Normal) {
                     program.set_uniform(fmt::format("material.normal_{}", normal_num++), int(i));
                 }
 
             }
-            glActiveTexture(GL_TEXTURE0);
 
             // draw mesh
             va.bind();

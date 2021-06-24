@@ -49,27 +49,40 @@ namespace k2 {
         Renderer2D() {
             vbo = VertexBuffer{max_vertices * sizeof(Vertex)};
             ebo = IndexBuffer{max_vertices * sizeof(std::uint32_t)};
-            vao.bind();
-            vbo.bind();
-            ebo.bind();
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                                  reinterpret_cast<void *>(offsetof(Vertex, position)));
-
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                                  reinterpret_cast<void *>(offsetof(Vertex, color)));
-
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                                  reinterpret_cast<void *>(offsetof(Vertex, texture_coordinate)));
-
-            glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex),
-                                  reinterpret_cast<void *>(offsetof(Vertex, texture)));
-            ebo.unbind();
-            vbo.unbind();
-            vao.unbind();
+            vao.apply({
+                              {
+                                      .buffer = vbo.get(),
+                                      .attribute_trait {
+                                              .location = 0,
+                                              .data_type = ShaderDataType::Float3,
+                                              .offset = offsetof(Vertex, position),
+                                      },
+                              },
+                              {
+                                      .buffer = vbo.get(),
+                                      .attribute_trait {
+                                              .location = 1,
+                                              .data_type = ShaderDataType::Float4,
+                                              .offset = offsetof(Vertex, color),
+                                      },
+                              },
+                              {
+                                      .buffer = vbo.get(),
+                                      .attribute_trait {
+                                              .location = 2,
+                                              .data_type = ShaderDataType::Float2,
+                                              .offset = offsetof(Vertex, texture_coordinate),
+                                      },
+                              },
+                              {
+                                      .buffer = vbo.get(),
+                                      .attribute_trait{
+                                              .location = 3,
+                                              .data_type = ShaderDataType::Uint,
+                                              .offset = offsetof(Vertex, texture),
+                                      },
+                              }
+                      }, sizeof(Vertex), ebo.get());
         }
 
         Renderer2D(const Renderer2D &) = delete;
@@ -125,11 +138,9 @@ namespace k2 {
                 std::iota(tex_unit_vec.begin(), tex_unit_vec.end(), 0);
 
                 for (auto &[texture_id, texture_unit_index] : texture_unit_map) {
-                    glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + texture_unit_index));
                     [[maybe_unused]] auto &texture = Resources::get<Texture2D>(texture_id);
-                    glBindTexture(GL_TEXTURE_2D, texture.id);
+                    texture.bind(texture_unit_index);
                 }
-                glActiveTexture(GL_TEXTURE0);
 
                 default_shader.use()
                         .set_uniform("texture_list", std::span{tex_unit_vec.data(), tex_unit_vec.size()})

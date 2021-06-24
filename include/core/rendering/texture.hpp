@@ -43,6 +43,13 @@ namespace k2 {
             return id != 0;
         }
 
+        void bind(std::uint32_t texture_unit) const {
+            if (*this) {
+                glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + texture_unit));
+                glBindTexture(GL_TEXTURE_2D, id);
+            }
+        }
+
         static Texture2D create_white_texture() {
             Texture2D texture;
             glGenTextures(1, &texture.id);

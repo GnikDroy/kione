@@ -107,49 +107,49 @@ namespace k2 {
             glAttachShader(handle, shader.handle);
         }
 
-        const Program& set_uniform(const std::string &str, int i) const {
+        const Program &set_uniform(const std::string &str, int i) const {
             glUniform1i(glGetUniformLocation(handle, str.c_str()), i);
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::ivec2 vec) const {
+        const Program &set_uniform(const std::string &str, glm::ivec2 vec) const {
             glUniform2iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::ivec3 vec) const {
+        const Program &set_uniform(const std::string &str, glm::ivec3 vec) const {
             glUniform3iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::ivec4 vec) const {
+        const Program &set_uniform(const std::string &str, glm::ivec4 vec) const {
             glUniform4iv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, unsigned int i) const {
+        const Program &set_uniform(const std::string &str, unsigned int i) const {
             glUniform1ui(glGetUniformLocation(handle, str.c_str()), i);
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::uvec2 vec) const {
+        const Program &set_uniform(const std::string &str, glm::uvec2 vec) const {
             glUniform2uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::uvec3 vec) const {
+        const Program &set_uniform(const std::string &str, glm::uvec3 vec) const {
             glUniform3uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::uvec4 vec) const {
+        const Program &set_uniform(const std::string &str, glm::uvec4 vec) const {
             glUniform4uiv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
 
-        template <arithmetic T>
-        const Program& set_uniform(const std::string &str, const std::span<T>& vec) const {
+        template<arithmetic T>
+        const Program &set_uniform(const std::string &str, const std::span<T> &vec) const {
             if constexpr (std::is_same_v<T, std::uint32_t>) {
                 glUniform1uiv(glGetUniformLocation(handle, str.c_str()), (GLsizei) vec.size(), vec.data());
             } else if (std::is_same_v<T, std::int32_t>) {
@@ -163,72 +163,72 @@ namespace k2 {
         }
 
 
-        const Program& set_uniform(const std::string &str, float f) const {
+        const Program &set_uniform(const std::string &str, float f) const {
             glUniform1f(glGetUniformLocation(handle, str.c_str()), f);
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::vec2 vec) const {
+        const Program &set_uniform(const std::string &str, glm::vec2 vec) const {
             glUniform2fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::vec3 vec) const {
+        const Program &set_uniform(const std::string &str, glm::vec3 vec) const {
             glUniform3fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::vec4 vec) const {
+        const Program &set_uniform(const std::string &str, glm::vec4 vec) const {
             glUniform4fv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, double f) const {
+        const Program &set_uniform(const std::string &str, double f) const {
             glUniform1d(glGetUniformLocation(handle, str.c_str()), f);
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::dvec2 vec) const {
+        const Program &set_uniform(const std::string &str, glm::dvec2 vec) const {
             glUniform2dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::dvec3 vec) const {
+        const Program &set_uniform(const std::string &str, glm::dvec3 vec) const {
             glUniform3dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::dvec4 vec) const {
+        const Program &set_uniform(const std::string &str, glm::dvec4 vec) const {
             glUniform4dv(glGetUniformLocation(handle, str.c_str()), 1, glm::value_ptr(vec));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::mat2 mat) const {
+        const Program &set_uniform(const std::string &str, glm::mat2 mat) const {
             glUniformMatrix2fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::mat3 mat) const {
+        const Program &set_uniform(const std::string &str, glm::mat3 mat) const {
             glUniformMatrix3fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::mat4 mat) const {
+        const Program &set_uniform(const std::string &str, glm::mat4 mat) const {
             glUniformMatrix4fv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::dmat2 mat) const {
+        const Program &set_uniform(const std::string &str, glm::dmat2 mat) const {
             glUniformMatrix2dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::dmat3 mat) const {
+        const Program &set_uniform(const std::string &str, glm::dmat3 mat) const {
             glUniformMatrix3dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
         }
 
-        const Program& set_uniform(const std::string &str, glm::dmat4 mat) const {
+        const Program &set_uniform(const std::string &str, glm::dmat4 mat) const {
             glUniformMatrix4dv(glGetUniformLocation(handle, str.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
             return *this;
         }
@@ -237,7 +237,7 @@ namespace k2 {
             if (handle) glLinkProgram(handle);
         }
 
-        const Program& use() const {
+        const Program &use() const {
             if (handle) glUseProgram(handle);
             return *this;
         }
@@ -265,5 +265,14 @@ namespace k2 {
         ~Program() {
             glDeleteProgram(handle);
         }
+    };
+
+    enum class ShaderDataType {
+        Int, Int2, Int3, Int4,
+        Uint, Uint2, Uint3, Uint4,
+        Float, Float2, Float3, Float4,
+        Mat2x2, Mat3x3, Mat4x4,
+        Double, Double2, Double3, Double4,
+        Bool,
     };
 }
