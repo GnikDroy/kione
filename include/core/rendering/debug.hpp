@@ -1,0 +1,80 @@
+#pragma once
+
+#include "core/logger.hpp"
+
+#include <fmt/format.h>
+#include <glad/glad.h>
+#include <string>
+
+namespace k2 {
+
+inline bool enable_debug() {
+    // Not possible to enable debug if GLFW hasn't been setup that way.
+    // Only available in debug modes.
+#ifndef DEBUG
+    return false;
+#else
+    auto gl_debug = [](auto source, auto type, auto id, auto severity, auto length, auto message, auto) {
+        if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+            return;
+
+        auto source_str = [&]() {
+            switch (source) {
+            case GL_DEBUG_SOURCE_API: return "API";
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "Window";
+            case GL_DEBUG_SOURCE_SHADER_COMPILER: return "Shader Compiler";
+            case GL_DEBUG_SOURCE_THIRD_PARTY: return "Third Party";
+            case GL_DEBUG_SOURCE_APPLICATION: return "Application";
+            default: return "Other";
+            }
+        }();
+
+        auto type_str = [&]() {
+            switch (type) {
+            case GL_DEBUG_TYPE_ERROR: return "Error";
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated";
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "Undefined Behaviour";
+            case GL_DEBUG_TYPE_PORTABILITY: return "Portability";
+            case GL_DEBUG_TYPE_PERFORMANCE: return "Performance";
+            case GL_DEBUG_TYPE_MARKER: return "Marker";
+            case GL_DEBUG_TYPE_PUSH_GROUP: return "Push Group";
+            case GL_DEBUG_TYPE_POP_GROUP: return "Pop Group";
+            default: return "Other";
+            }
+        }();
+
+        switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:
+            k2::Logger::core->error(
+                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            k2::Logger::core->warn(
+                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+            break;
+        case GL_DEBUG_SEVERITY_LOW:
+            k2::Logger::core->info(
+                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+            break;
+        default:
+            k2::Logger::core->trace(
+                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+        }
+    };
+
+    auto debug_set = []() {
+        int flags;
+        glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+        return flags & GL_CONTEXT_FLAG_DEBUG_BIT;
+    }();
+
+    if (debug_set) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(gl_debug, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
+    return debug_set;
+#endif
+}
+}
