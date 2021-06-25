@@ -54,6 +54,22 @@ function(entt_build)
 endfunction()
 entt_build()
 
+# Setup cereal
+# Using a fork because the main repository doesn't have controls to disable sandbox generation
+function(cereal_build)
+    set(SKIP_PERFORMANCE_COMPARISON "Skip building performance comparison (requires boost)" ON)
+    FetchContent_Declare(
+            Cereal
+            GIT_REPOSITORY https://github.com/IohannRabeson/cereal
+            GIT_TAG        disable_sandbox
+            GIT_SHALLOW 1
+            GIT_PROGRESS 1
+    )
+
+    FetchContent_MakeAvailable(Cereal)
+endfunction()
+cereal_build()
+
 # Setup Catch 2
 FetchContent_Declare(
   Catch2
@@ -134,6 +150,24 @@ endfunction()
 glad_build()
 
 
+# Setup Icon Fonts (Font Awesome)
+FetchContent_Declare(
+        iconFontCppHeaders
+        GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders
+        GIT_TAG        main
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
+)
+
+FetchContent_GetProperties(IconFontCppHeaders)
+if(NOT IconFontCppHeaders_POPULATED)
+    FetchContent_Populate(IconFontCppHeaders)
+    add_library(IconFontCppHeaders INTERFACE)
+    add_library(IconFontCppHeaders::IconFontCppHeaders ALIAS IconFontCppHeaders)
+    # Note that {lowercasename_SOURCE_DIR} is populated
+    target_include_directories(IconFontCppHeaders INTERFACE ${iconfontcppheaders_SOURCE_DIR})
+endif()
+
 # Setup imgui
 FetchContent_Declare(
   imgui
@@ -143,21 +177,22 @@ FetchContent_Declare(
   GIT_PROGRESS 1
 )
 
-FetchContent_GetProperties(imgui)
-if(NOT imgui_POPULATED)
-  FetchContent_Populate(imgui)
-  add_library(imgui
+FetchContent_GetProperties(ImGui)
+if(NOT ImGui_POPULATED)
+  FetchContent_Populate(ImGui)
+  add_library(ImGui
     ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp ${imgui_SOURCE_DIR}/imgui_demo.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
-  set_target_properties(imgui
+  add_library(ImGui::ImGui ALIAS ImGui)
+  set_target_properties(ImGui
           PROPERTIES
           ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
           LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
           CXX_STANDARD 17
           )
-  target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
-  target_link_libraries(imgui glfw glad)
+  target_include_directories(ImGui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
+  target_link_libraries(ImGui glfw glad)
 endif()
 
 # Setup stb
@@ -176,6 +211,7 @@ function(stb_build)
         FetchContent_Populate(stb)
     endif()
     add_library(stb INTERFACE)
+    add_library(stb::stb ALIAS stb)
     target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 endfunction()
 stb_build()

@@ -14,8 +14,9 @@ add_library(
   platform/desktop/clipboard.cpp
   stb_image.cpp
 )
+add_library(kione2D::kione2D ALIAS kione2D)
 
-target_include_directories(kione2D PRIVATE ${PROJECT_SOURCE_DIR}/include) 
+target_include_directories(kione2D PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_precompile_headers(kione2D PRIVATE
   <iostream>
   <memory>
@@ -33,19 +34,19 @@ target_precompile_headers(kione2D PRIVATE
   <stdexcept>
   <type_traits>
   <concepts>
-  
+
   [["fmt/core.h"]]
   [["fmt/ranges.h"]]
   [["fmt/format.h"]]
-  
+
   [["entt/entt.hpp"]]
-  
+
   [["spdlog/spdlog.h"]]
   [["spdlog/sinks/stdout_color_sinks.h"]]
   [["spdlog/sinks/basic_file_sink.h"]]
 )
 
-target_link_libraries(kione2D EnTT OpenGL::GL glfw glad glm imgui stb assimp fmt::fmt spdlog::spdlog)
+target_link_libraries(kione2D EnTT::EnTT cereal::cereal OpenGL::GL glfw glad glm::glm ImGui::ImGui IconFontCppHeaders::IconFontCppHeaders stb::stb assimp::assimp fmt::fmt spdlog::spdlog)
 
 set_target_properties(kione2D
     PROPERTIES

@@ -1,11 +1,10 @@
-find_package(OpenGL REQUIRED)
-
 add_executable(
   tests
   main.cpp
   resource_container.cpp
   vector.cpp
 )
+add_executable(kione2D::tests ALIAS tests)
 
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include) 
 target_precompile_headers(tests PRIVATE
@@ -25,7 +24,7 @@ target_precompile_headers(tests PRIVATE
   [["fmt/ranges.h"]]
   [["fmt/format.h"]]
 )
-target_link_libraries(tests kione2D fmt::fmt Catch2::Catch2)
+target_link_libraries(tests kione2D::kione2D fmt::fmt Catch2::Catch2)
 
 set_target_properties(tests
     PROPERTIES

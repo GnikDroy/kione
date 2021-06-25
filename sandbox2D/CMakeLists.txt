@@ -2,9 +2,10 @@ add_executable(
   sandbox2D
   main.cpp
 )
+add_executable(kione2D::sandbox2D ALIAS sandbox2D)
 
 target_include_directories(sandbox2D PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(sandbox2D kione2D)
+target_link_libraries(sandbox2D kione2D::kione2D)
 
 set_target_properties(sandbox2D
     PROPERTIES
