@@ -16,7 +16,6 @@ struct Event;
 struct WindowConfig {
     std::string title { "Kione 2D" };
     std::uint32_t x_pos {}, y_pos {}, width = 1280, height = 720;
-    std::function<void(Event)> event_handler;
 };
 
 class Window {

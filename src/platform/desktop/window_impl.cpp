@@ -3,8 +3,7 @@
 #include <glad/glad.h>
 
 namespace k2 {
-Window::Impl::Impl(Window* win, const WindowConfig& config)
-    : event_handler { config.event_handler } {
+Window::Impl::Impl(Window* win, const WindowConfig& config) {
     glfw_data = {
         .title = config.title,
         .vsync = true,
