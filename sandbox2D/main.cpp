@@ -2,6 +2,7 @@
 #include <ranges>
 
 #include "kione2D.hpp"
+#include "platform/entry_point.hpp"
 
 #include "core/imgui_layer.hpp"
 #include "core/rendering/debug.hpp"

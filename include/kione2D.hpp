@@ -25,5 +25,3 @@
 #include "events/keyboard.hpp"
 #include "events/mouse.hpp"
 #include "events/window.hpp"
-
-#include "core/entry_point.hpp"
