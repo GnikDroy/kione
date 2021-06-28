@@ -5,74 +5,113 @@
 #include "events/mouse.hpp"
 #include "platform/desktop/window_impl.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <array>
+#include <sstream>
+
+// cannot make constexpr since ImVec4 is not constexpr :/
+static ImVec4 ImVec4Color(const std::string& hex_code) {
+    // Must be of the form #rrggbbaa
+    // Might support rgb() and rgba() later
+    if (hex_code.starts_with('#')) {
+        std::stringstream stream(hex_code);
+        stream.ignore(hex_code.length(), '#');
+        std::uint32_t color {};
+        stream << std::hex;
+        stream >> color;
+        assert(!stream.fail() && "Cannot interpret color value. Make sure color is of type #rrggbbaa");
+        return { (color >> 24) / 255.f, ((color >> 16) & 0x00FF) / 255.f, ((color >> 8) & (0x0000FF)) / 255.f,
+            (color & (0x000000FF)) / 255.f };
+    }
+    assert(false && "Invalid color value.");
+    return { 1.0f, 1.0f, 1.0f, 1.0f };
+}
+
 static void ImGuiStyleDark() {
+    auto& io = ImGui::GetIO();
     auto& style = ImGui::GetStyle();
-    style.WindowPadding = { 2, 2 };
-    style.WindowBorderSize = 0;
-    style.DisplaySafeAreaPadding = { 0, 6 };
+    auto* colors = ImGui::GetStyle().Colors;
 
-    style.FrameRounding = 4;
-    style.WindowRounding = 2;
-    style.FrameBorderSize = 1;
-    style.ScrollbarRounding = 6;
-    style.IndentSpacing = 16;
-    style.GrabRounding = 4;
-    style.ItemInnerSpacing = { 6, 4 };
-    style.TabRounding = 2;
+    colors[ImGuiCol_Text] = ImVec4Color("#e5e5e5ff");
+    colors[ImGuiCol_TextDisabled] = ImVec4Color("#7f7f7fff");
+    colors[ImGuiCol_WindowBg] = ImVec4Color("#0c0c0cff");
+    colors[ImGuiCol_ChildBg] = ImVec4Color("#0c0c0cff");
+    colors[ImGuiCol_PopupBg] = ImVec4Color("#000000e5");
+    colors[ImGuiCol_Border] = ImVec4Color("#333333ff");
+    colors[ImGuiCol_BorderShadow] = ImVec4Color("#ffffff00");
+    colors[ImGuiCol_FrameBg] = ImVec4Color("#000000cc");
+    colors[ImGuiCol_FrameBgHovered] = ImVec4Color("#d65e0033");
+    colors[ImGuiCol_FrameBgActive] = ImVec4Color("#d65e00ff");
+    colors[ImGuiCol_TitleBg] = ImVec4Color("#0f0f0fff");
+    colors[ImGuiCol_TitleBgActive] = ImVec4Color("#141414ff");
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4Color("#0f0f0f66");
+    colors[ImGuiCol_MenuBarBg] = ImVec4Color("#232323ff");
+    colors[ImGuiCol_ScrollbarBg] = ImVec4Color("#23232366");
+    colors[ImGuiCol_ScrollbarGrab] = ImVec4Color("#4f4f4f4c");
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4Color("#ffffff4c");
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4Color("#ffffff7f");
+    colors[ImGuiCol_CheckMark] = ImVec4Color("#e5e5e5ff");
+    colors[ImGuiCol_SliderGrab] = ImVec4Color("#4f4f4fff");
+    colors[ImGuiCol_SliderGrabActive] = ImVec4Color("#ffffff7f");
+    colors[ImGuiCol_Button] = ImVec4Color("#232323ff");
+    colors[ImGuiCol_ButtonHovered] = ImVec4Color("#d65e0033");
+    colors[ImGuiCol_ButtonActive] = ImVec4Color("#d65e00ff");
+    colors[ImGuiCol_Header] = ImVec4Color("#232323ff");
+    colors[ImGuiCol_HeaderHovered] = ImVec4Color("#d65e0033");
+    colors[ImGuiCol_HeaderActive] = ImVec4Color("#d65e00ff");
+    colors[ImGuiCol_Separator] = ImVec4Color("#7f7f6d7f");
+    colors[ImGuiCol_SeparatorHovered] = ImVec4Color("#bf7219c6");
+    colors[ImGuiCol_SeparatorActive] = ImVec4Color("#bf7219ff");
+    colors[ImGuiCol_ResizeGrip] = ImVec4Color("#f9a5423f");
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4Color("#f9a542aa");
+    colors[ImGuiCol_ResizeGripActive] = ImVec4Color("#f9a542f2");
+    colors[ImGuiCol_Tab] = ImVec4Color("#2b190aef");
+    colors[ImGuiCol_TabHovered] = ImVec4Color("#d65e0099");
+    colors[ImGuiCol_TabActive] = ImVec4Color("#aa4c00ad");
+    colors[ImGuiCol_TabUnfocused] = ImVec4Color("#0f0c0caf");
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4Color("#5b2b07a3");
+    colors[ImGuiCol_PlotLines] = ImVec4Color("#636363ff");
+    colors[ImGuiCol_PlotLinesHovered] = ImVec4Color("#59eaffff");
+    colors[ImGuiCol_PlotHistogram] = ImVec4Color("#0090e5ff");
+    colors[ImGuiCol_PlotHistogramHovered] = ImVec4Color("#0066ffff");
+    colors[ImGuiCol_TextSelectedBg] = ImVec4Color("#f9a54259");
+    colors[ImGuiCol_DragDropTarget] = ImVec4Color("#0090e5ff");
+    colors[ImGuiCol_NavHighlight] = ImVec4Color("#f9a542ff");
+    colors[ImGuiCol_NavWindowingHighlight] = ImVec4Color("#000000b2");
+    colors[ImGuiCol_NavWindowingDimBg] = ImVec4Color("#33333333");
+    colors[ImGuiCol_ModalWindowDimBg] = ImVec4Color("#33333359");
 
-    ImVec4* colors = ImGui::GetStyle().Colors;
-    colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
-    colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
-    colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
-    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-    colors[ImGuiCol_Border] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
-    colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.12f, 0.20f, 0.28f, 1.00f);
-    colors[ImGuiCol_FrameBgActive] = ImVec4(0.09f, 0.12f, 0.14f, 1.00f);
-    colors[ImGuiCol_TitleBg] = ImVec4(0.09f, 0.12f, 0.14f, 0.65f);
-    colors[ImGuiCol_TitleBgActive] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-    colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
-    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.39f);
-    colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.18f, 0.22f, 0.25f, 1.00f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.09f, 0.21f, 0.31f, 1.00f);
-    colors[ImGuiCol_CheckMark] = ImVec4(0.28f, 0.56f, 1.00f, 1.00f);
-    colors[ImGuiCol_SliderGrab] = ImVec4(0.28f, 0.56f, 1.00f, 1.00f);
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.37f, 0.61f, 1.00f, 1.00f);
-    colors[ImGuiCol_Button] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_ButtonHovered] = ImVec4(0.28f, 0.56f, 1.00f, 1.00f);
-    colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
-    colors[ImGuiCol_Header] = ImVec4(0.20f, 0.25f, 0.29f, 0.55f);
-    colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-    colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    colors[ImGuiCol_Separator] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
-    colors[ImGuiCol_SeparatorActive] = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
-    colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-    colors[ImGuiCol_Tab] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-    colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_TabUnfocused] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
-    colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-    colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-    colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-    colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-    colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
-    colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
-    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+    style.WindowPadding = ImVec2(4.f, 6.f);
+    style.FramePadding = ImVec2(8.f, 6.f);
+    style.ItemSpacing = ImVec2(8.f, 6.f);
+    style.ItemInnerSpacing = ImVec2(8.f, 6.f);
+    style.IndentSpacing = 20.f;
+
+    style.ScrollbarSize = 20.f;
+    style.GrabMinSize = 8.f;
+    style.WindowBorderSize = 0.f;
+    style.ChildBorderSize = 0.f;
+    style.PopupBorderSize = 1.f;
+    style.FrameBorderSize = 1.f;
+    style.TabBorderSize = 0.f;
+
+    style.WindowRounding = 5.f;
+    style.ChildRounding = 0.f;
+    style.FrameRounding = 5.f;
+    style.PopupRounding = 5.f;
+    style.ScrollbarRounding = 5.f;
+    style.GrabRounding = 5.f;
+    style.TabRounding = 5.f;
+
+    style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+    style.WindowRounding = 0.f;
+    style.WindowMenuButtonPosition = ImGuiDir_Right;
+
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 }
 
 namespace k2 {
@@ -87,12 +126,20 @@ ImguiLayer::ImguiLayer(k2::Window& win)
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
+    auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     ImGui::StyleColorsDark();
     ImGuiStyleDark();
+    io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 20);
+
+    ImFontConfig config;
+    config.MergeMode = true;
+    static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
+    io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 20.0f, &config, icon_ranges.data());
 
     ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
     ImGui_ImplOpenGL3_Init();
@@ -138,12 +185,16 @@ void ImguiLayer::start() {
 }
 
 void ImguiLayer::render() {
-
-    static bool show_demo = true;
-    ImGui::ShowDemoWindow(&show_demo);
-
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+#ifdef _WIN32
+        auto* context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(context);
+#endif
+    }
 };
 
 }

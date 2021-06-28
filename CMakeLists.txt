@@ -65,7 +65,6 @@ function(cereal_build)
             GIT_SHALLOW 1
             GIT_PROGRESS 1
     )
-
     FetchContent_MakeAvailable(Cereal)
 endfunction()
 cereal_build()
@@ -172,7 +171,7 @@ endif()
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG        v1.83
+  GIT_TAG        origin/docking
   GIT_SHALLOW 1
   GIT_PROGRESS 1
 )
@@ -251,7 +250,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Add our source files
 add_subdirectory(src)
 
-# Testing only available is stated explicitly
+# Testing only available if stated explicitly
 if(K2_BUILD_TESTS)
   message(STATUS "Building k2 tests.")
   add_subdirectory(tests)
@@ -264,9 +263,16 @@ if(K2_BUILD_SANDBOX)
     add_subdirectory(sandbox)
 endif()
 
-# Setup sandbox build
+# Setup sandbox2D build
 set(K2_BUILD_SANDBOX2D ON CACHE BOOL "Enable building sandbox2D")
 if(K2_BUILD_SANDBOX2D)
-    message(STATUS "Building k2 sandbox application.")
+    message(STATUS "Building k2 sandbox2D application.")
     add_subdirectory(sandbox2D)
+endif()
+
+# Setup editor build
+set(K2_BUILD_EDITOR ON CACHE BOOL "Enable building editor")
+if(K2_BUILD_EDITOR)
+    message(STATUS "Building k2 editor.")
+    add_subdirectory(editor)
 endif()
