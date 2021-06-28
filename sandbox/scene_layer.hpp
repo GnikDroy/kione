@@ -9,7 +9,7 @@ class SceneLayer : public k2::Layer {
     k2::Window& window;
 
     entt::registry registry {};
-    k2::EntityEditor<entt::registry::entity_type> entity_editor;
+    k2::ComponentInspector<entt::registry::entity_type> component_inspector;
 
     k2::Program light_program {};
     k2::Program skybox_program {};
@@ -57,8 +57,8 @@ public:
         light_program = program_loader("res/shaders/phong_vs.glsl", "res/shaders/phong_fs.glsl");
         skybox_program = program_loader("res/shaders/skybox_vs.glsl", "res/shaders/skybox_fs.glsl");
 
-        entity_editor.register_component<Transform>("Transform");
-        entity_editor.register_component<PointLight>("Point Light");
+        component_inspector.register_component<Transform>("Transform");
+        component_inspector.register_component<PointLight>("Point Light");
         setup_scene();
     }
 
@@ -149,7 +149,7 @@ public:
                     .set_uniform("material.shininess", 32.0f);
                 model.draw(light_program);
             });
-            entity_editor.render_simple_combo(registry, entity);
+            component_inspector.render(registry, entity);
         });
     }
 

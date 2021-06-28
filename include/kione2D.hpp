@@ -2,8 +2,9 @@
 
 #include "core/app.hpp"
 #include "core/clipboard.hpp"
+#include "core/component_inspector.hpp"
 #include "core/ecs.hpp"
-#include "core/entity_editor.hpp"
+#include "core/entity_selector.hpp"
 #include "core/keyboard.hpp"
 #include "core/logger.hpp"
 #include "core/mouse.hpp"

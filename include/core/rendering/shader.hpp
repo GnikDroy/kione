@@ -16,10 +16,10 @@
 namespace k2 {
 
 struct Shader {
-    GLuint handle {};
-    GLenum type {};
+    std::uint32_t handle {};
+    std::uint32_t type {};
 
-    Shader(GLenum shader_type, const std::string& source)
+    Shader(std::uint32_t shader_type, const std::string& source)
         : type { shader_type } {
         handle = glCreateShader(type);
         const char* ptr[] = { source.c_str() };
@@ -28,7 +28,7 @@ struct Shader {
         glCompileShader(handle);
     }
 
-    Shader(const GLenum shader_type, const std::filesystem::path& path)
+    Shader(const std::uint32_t shader_type, const std::filesystem::path& path)
         : type { shader_type } {
         std::ifstream file(path, std::ios::binary);
         if (file) {
@@ -55,18 +55,18 @@ struct Shader {
     }
 
     operator bool() const {
-        GLint ret {};
+        std::int32_t ret {};
         glGetShaderiv(handle, GL_COMPILE_STATUS, &ret);
         return ret != GL_FALSE;
     }
 
     std::optional<std::string> error_msg() const {
         if (!*this) {
-            GLint length {};
+            std::int32_t length {};
             glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &length);
 
             std::string error_msg(length, '\0');
-            GLint new_length {};
+            std::int32_t new_length {};
             glGetShaderInfoLog(handle, length, &new_length, error_msg.data());
             error_msg.resize(new_length);
             return error_msg;

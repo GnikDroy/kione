@@ -6,7 +6,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <imgui.h>
 
-#include "core/entity_editor.hpp"
+#include "core/component_inspector.hpp"
 
 struct Transform {
     glm::vec3 position;
@@ -15,7 +15,7 @@ struct Transform {
 };
 
 namespace k2 {
-template <> void ComponentEditorWidget<Transform>(entt::registry& reg, entt::registry::entity_type e) {
+template <> void ComponentInspectorWidget<Transform>(entt::registry& reg, entt::registry::entity_type e) {
     auto& transform = reg.get<Transform>(e);
     ImGui::DragFloat3("Position", glm::value_ptr(transform.position), 0.2f);
     ImGui::DragFloat2("Rotation", glm::value_ptr(transform.rotation), 0.2f);
