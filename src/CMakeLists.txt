@@ -46,7 +46,21 @@ target_precompile_headers(kione2D PRIVATE
   [["spdlog/sinks/basic_file_sink.h"]]
 )
 
-target_link_libraries(kione2D EnTT::EnTT cereal::cereal OpenGL::GL glfw glad glm::glm ImGui::ImGui IconFontCppHeaders::IconFontCppHeaders stb::stb assimp::assimp fmt::fmt spdlog::spdlog)
+target_link_libraries(kione2D
+    OpenGL::GL
+    glfw glad
+    glm::glm
+    ImGui::ImGui
+    IconFontCppHeaders::IconFontCppHeaders
+
+    stb::stb
+    assimp::assimp
+
+    EnTT::EnTT
+    cereal::cereal
+
+    fmt::fmt
+    spdlog::spdlog )
 
 set_target_properties(kione2D
     PROPERTIES

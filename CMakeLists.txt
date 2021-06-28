@@ -19,6 +19,8 @@ endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(FETCHCONTENT_QUIET FALSE)
+
     set(CMAKE_CXX_STANDARD 20)
     set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -39,7 +41,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 Include(FetchContent)
-set(FETCHCONTENT_QUIET FALSE)
 
 # Setup EnTT
 function(entt_build)
@@ -242,7 +243,6 @@ function(assimp_build)
     add_subdirectory(${assimp_SOURCE_DIR} ${assimp_BINARY_DIR})
 endfunction()
 assimp_build()
-
 
 # Export compile commands for all of our source files
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
