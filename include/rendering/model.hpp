@@ -2,8 +2,8 @@
 
 #include "core/fnv.hpp"
 #include "core/logger.hpp"
-#include "core/rendering/mesh.hpp"
 #include "core/resources.hpp"
+#include "mesh.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>

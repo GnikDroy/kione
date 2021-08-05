@@ -3,10 +3,10 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "core/rendering/buffer.hpp"
-#include "core/rendering/texture.hpp"
-#include "core/rendering/vertex_array.hpp"
+#include "buffer.hpp"
 #include "core/resources.hpp"
+#include "texture.hpp"
+#include "vertex_array.hpp"
 
 namespace k2 {
 struct Vertex {

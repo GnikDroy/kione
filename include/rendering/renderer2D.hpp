@@ -1,9 +1,10 @@
 #pragma once
 
-#include "core/rendering/buffer.hpp"
-#include "core/rendering/camera.hpp"
-#include "core/rendering/vertex_array.hpp"
+#include "buffer.hpp"
 #include "core/resources.hpp"
+#include "vertex_array.hpp"
+
+#include "components/camera.hpp"
 
 #include <unordered_map>
 #include <unordered_set>

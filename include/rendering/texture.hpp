@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 
 #include "core/logger.hpp"
-#include "core/rendering/image.hpp"
+#include "image.hpp"
 
 namespace k2 {
 struct Texture2D {
