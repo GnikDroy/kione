@@ -3,10 +3,10 @@
 #include <optional>
 #include <tuple>
 
-#include "core/rendering/image.hpp"
-#include "core/rendering/shader.hpp"
-#include "core/rendering/texture.hpp"
 #include "core/resource_container.hpp"
+#include "rendering/image.hpp"
+#include "rendering/shader.hpp"
+#include "rendering/texture.hpp"
 
 namespace k2 {
 template <class... Args> class BasicResources {

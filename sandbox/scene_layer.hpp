@@ -1,15 +1,14 @@
 #pragma once
 
 #include "components.hpp"
-#include "core/rendering/model.hpp"
 #include "kione2D.hpp"
+#include "rendering/model.hpp"
 #include "skybox.hpp"
 
 class SceneLayer : public k2::Layer {
     k2::Window& window;
 
     entt::registry registry {};
-    k2::ComponentInspector<entt::registry::entity_type> component_inspector;
 
     k2::Program light_program {};
     k2::Program skybox_program {};
@@ -57,8 +56,6 @@ public:
         light_program = program_loader("res/shaders/phong_vs.glsl", "res/shaders/phong_fs.glsl");
         skybox_program = program_loader("res/shaders/skybox_vs.glsl", "res/shaders/skybox_fs.glsl");
 
-        component_inspector.register_component<Transform>("Transform");
-        component_inspector.register_component<PointLight>("Point Light");
         setup_scene();
     }
 
@@ -128,7 +125,6 @@ public:
             .set_uniform("projection", projection_mat);
         skybox.draw(skybox_program);
 
-        static auto entity = (entt::entity)0;
         registry.view<Transform, k2::Model>().each([&](auto, auto& transform, auto& model) {
             auto model_mat = [&]() {
                 auto translate = glm::translate(glm::mat4(1.0f), transform.position);
@@ -149,7 +145,6 @@ public:
                     .set_uniform("material.shininess", 32.0f);
                 model.draw(light_program);
             });
-            component_inspector.render(registry, entity);
         });
     }
 

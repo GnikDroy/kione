@@ -1,8 +1,8 @@
 #pragma once
 
 #include "components.hpp"
-#include "core/rendering/renderer2D.hpp"
 #include "kione2D.hpp"
+#include "rendering/renderer2D.hpp"
 
 #include <glm/glm.hpp>
 
@@ -43,7 +43,6 @@ class SceneLayer : public k2::Layer {
     k2::Window& window;
 
     entt::registry registry {};
-    k2::ComponentInspector<entt::registry::entity_type> component_inspector {};
 
     k2::Program program {};
     k2::Renderer2D renderer2D;
@@ -76,7 +75,6 @@ public:
         k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
         k2::Resources::get<k2::Texture2D>()["tex"_fnv1a] = k2::Texture2D { "res/textures/texture.jpg" };
 
-        component_inspector.register_component<Transform>("Transform");
         setup_scene();
     }
 

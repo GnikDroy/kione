@@ -5,7 +5,7 @@
 #include "platform/entry_point.hpp"
 
 #include "core/imgui_layer.hpp"
-#include "core/rendering/debug.hpp"
+#include "rendering/debug.hpp"
 #include "scene_layer.hpp"
 
 class Sandbox2D : public k2::App {

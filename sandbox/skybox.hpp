@@ -1,9 +1,9 @@
 #pragma once
 #include <array>
 
-#include "core/rendering/buffer.hpp"
-#include "core/rendering/texture.hpp"
-#include "core/rendering/vertex_array.hpp"
+#include "rendering/buffer.hpp"
+#include "rendering/texture.hpp"
+#include "rendering/vertex_array.hpp"
 
 static inline const float vertices[] = { -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
     -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
