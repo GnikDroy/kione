@@ -23,9 +23,9 @@ struct Texture2D {
     Texture2D(const Texture2D&) = delete;
     Texture2D& operator=(const Texture2D&) = delete;
 
-    Texture2D(Texture2D&& other) { *this = std::move(other); }
+    Texture2D(Texture2D&& other) noexcept { *this = std::move(other); }
 
-    Texture2D& operator=(Texture2D&& other) {
+    Texture2D& operator=(Texture2D&& other) noexcept {
         std::swap(other.id, id);
         type = other.type;
         return *this;
@@ -62,12 +62,15 @@ struct Texture2D {
                 glBindTexture(GL_TEXTURE_2D, id);
 
                 GLint format = [&]() {
-                    if (image.channels == 1)
+                    if (image.channels == 1) {
                         return GL_RED;
-                    if (image.channels == 3)
+                    }
+                    if (image.channels == 3) {
                         return GL_RGB;
-                    if (image.channels == 4)
+                    }
+                    if (image.channels == 4) {
                         return GL_RGBA;
+                    }
                     k2::Log::core().warn(
                         fmt::format("Incorrect number of channels ({}) for image: {}", image.channels, texture_path));
                     return GL_RGBA;
@@ -94,9 +97,9 @@ struct TextureCube {
     TextureCube(const TextureCube&) = delete;
     TextureCube& operator=(const TextureCube&) = delete;
 
-    TextureCube(TextureCube&& other) { *this = std::move(other); }
+    TextureCube(TextureCube&& other) noexcept { *this = std::move(other); }
 
-    TextureCube& operator=(TextureCube&& other) {
+    TextureCube& operator=(TextureCube&& other) noexcept {
         std::swap(other.id, id);
         std::swap(other.paths, paths);
         return *this;

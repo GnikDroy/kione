@@ -9,8 +9,8 @@ struct Image {
     int channels {};
     std::uint8_t* data {};
 
-    Image(const std::filesystem::path& path, int desired_channels = 0) {
-        stbi_set_flip_vertically_on_load(true);
+    explicit Image(const std::filesystem::path& path, int desired_channels = 0) {
+        stbi_set_flip_vertically_on_load(1);
         data = stbi_load(path.generic_string().c_str(), &width, &height, &channels, desired_channels);
     }
 

@@ -80,9 +80,9 @@ public:
 
     Mesh& operator=(const Mesh&) = delete;
 
-    Mesh(Mesh&& other) { *this = std::move(other); }
+    Mesh(Mesh&& other) noexcept { *this = std::move(other); }
 
-    Mesh& operator=(Mesh&& other) {
+    Mesh& operator=(Mesh&& other) noexcept {
         std::swap(other.va, va);
         std::swap(other.vb, vb);
         std::swap(other.ib, ib);
@@ -94,7 +94,9 @@ public:
 
     void draw(const Program& program) const {
         auto& textures_map = Resources::get<Texture2D>();
-        size_t diffuse_num {}, specular_num {}, normal_num {};
+        size_t diffuse_num {};
+        size_t specular_num {};
+        size_t normal_num {};
 
         for (size_t i = 0; i < textures.size(); i++) {
             auto& type = textures_map[textures[i]].type;
@@ -112,7 +114,7 @@ public:
         // draw mesh
         va.bind();
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
-        va.unbind();
+        k2::VertexArray::unbind();
     }
 };
 }

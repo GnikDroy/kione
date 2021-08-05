@@ -62,7 +62,7 @@ private:
                 .normal { glm::vec3(ai_mesh->mNormals[i].x, ai_mesh->mNormals[i].y, ai_mesh->mNormals[i].z) },
                 .tangent { glm::vec3(ai_mesh->mTangents[i].x, ai_mesh->mTangents[i].y, ai_mesh->mTangents[i].z) } };
 
-            if (ai_mesh->mTextureCoords[0]) {
+            if (ai_mesh->mTextureCoords[0] != nullptr) {
                 vertex.tex_coord = glm::vec2 { ai_mesh->mTextureCoords[0][i].x, ai_mesh->mTextureCoords[0][i].y };
             }
             vertices.push_back(vertex);
@@ -80,7 +80,7 @@ private:
         // process material
         std::vector<std::uint64_t> textures_vec;
         if (ai_mesh->mMaterialIndex >= 0) {
-            auto material = scene->mMaterials[ai_mesh->mMaterialIndex];
+            auto* material = scene->mMaterials[ai_mesh->mMaterialIndex];
             load_material_textures(material, aiTextureType_DIFFUSE, std::back_inserter(textures_vec));
             load_material_textures(material, aiTextureType_SPECULAR, std::back_inserter(textures_vec));
             load_material_textures(material, aiTextureType_NORMALS, std::back_inserter(textures_vec));

@@ -139,7 +139,7 @@ public:
 
     void bind() const { glBindVertexArray(handle); }
 
-    void apply(const std::initializer_list<VertexAttributeBinding>& attribute_bindings, size_t stride) {
+    void apply(const std::initializer_list<VertexAttributeBinding>& attribute_bindings, size_t stride) const {
         bind();
         for (const auto& attribute : attribute_bindings) {
             glBindBuffer(GL_ARRAY_BUFFER, attribute.buffer);
@@ -168,8 +168,9 @@ public:
     static void unbind() { glBindVertexArray(0); }
 
     ~VertexArray() {
-        if (handle)
+        if (handle != 0u) {
             glDeleteVertexArrays(1, &handle);
+        }
     }
 };
 }

@@ -46,9 +46,9 @@ struct Shader {
 
     Shader& operator=(const Shader&) = delete;
 
-    Shader(Shader&& other) { *this = std::move(other); }
+    Shader(Shader&& other) noexcept { *this = std::move(other); }
 
-    Shader& operator=(Shader&& other) {
+    Shader& operator=(Shader&& other) noexcept {
         std::swap(other.handle, handle);
         type = other.type;
         return *this;
@@ -86,9 +86,9 @@ struct Program {
 
     Program& operator=(const Program&) = delete;
 
-    Program(Program&& other) { *this = std::move(other); }
+    Program(Program&& other) noexcept { *this = std::move(other); }
 
-    Program& operator=(Program&& other) {
+    Program& operator=(Program&& other) noexcept {
         std::swap(other.handle, handle);
         return *this;
     }
@@ -99,8 +99,9 @@ struct Program {
     }
 
     void attach_shader(const Shader& shader) {
-        if (!handle)
+        if (handle == 0u) {
             handle = glCreateProgram();
+        }
         glAttachShader(handle, shader.handle);
     }
 
@@ -233,8 +234,9 @@ struct Program {
     }
 
     const Program& use() const {
-        if (handle)
+        if (handle != 0u) {
             glUseProgram(handle);
+        }
         return *this;
     }
 
@@ -245,7 +247,7 @@ struct Program {
     }
 
     std::optional<std::string> error_msg() const {
-        if (handle && !*this) {
+        if ((handle != 0u) && !*this) {
             GLint length {};
             glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);
 
