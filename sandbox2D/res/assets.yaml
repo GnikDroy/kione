@@ -1,0 +1,10 @@
+version: 0.0.1
+assets:
+  Font:
+      FontAwesome5: file:///res/fonts/fa-regular-400.ttf
+      NotoSansRegular: file:///res/fonts/NotoSans-Regular.ttf
+  Image:
+      cobble: file:///res/textures/texture.jpg
+  Shader:
+      2D_vs: file:///res/shaders/2D_vs.glsl
+      2D_fs: file:///res/shaders/2D_fs.glsl
