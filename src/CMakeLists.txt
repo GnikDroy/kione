@@ -58,6 +58,7 @@ target_link_libraries(kione2D
 
     EnTT::EnTT
     cereal::cereal
+    yaml-cpp
 
     fmt::fmt
     spdlog::spdlog )

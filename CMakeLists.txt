@@ -70,6 +70,18 @@ function(cereal_build)
 endfunction()
 cereal_build()
 
+# Setup yaml
+function(yaml_build)
+    set(YAML_CPP_BUILD_TESTS OFF)
+    FetchContent_Declare(
+            yaml-cpp
+            GIT_REPOSITORY https://github.com/jasonbeach/yaml-cpp
+            GIT_TAG cmake_install_fix
+    )
+    FetchContent_MakeAvailable(yaml-cpp)
+endfunction()
+yaml_build()
+
 # Setup Catch 2
 FetchContent_Declare(
   Catch2
