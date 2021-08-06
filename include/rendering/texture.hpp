@@ -33,7 +33,7 @@ struct Texture2D {
 
     ~Texture2D() { glDeleteTextures(1, &id); }
 
-    explicit Texture2D(const std::filesystem::path& path) { load(path); }
+    Texture2D(const Image& image) { load(image); }
 
     operator bool() const { return id != 0; }
 
@@ -53,10 +53,8 @@ struct Texture2D {
         return texture;
     }
 
-    Texture2D& load(const std::filesystem::path& texture_path) {
+    Texture2D& load(const Image& image) {
         if (id == 0) {
-            Image image { texture_path };
-
             if (image) {
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
@@ -72,16 +70,17 @@ struct Texture2D {
                         return GL_RGBA;
                     }
                     k2::Log::core().warn(
-                        fmt::format("Incorrect number of channels ({}) for image: {}", image.channels, texture_path));
+                        fmt::format("Incorrect number of channels ({}) for image, assuming RBGA / four channels image",
+                            image.channels));
                     return GL_RGBA;
                 }();
 
                 glTexImage2D(
                     GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.data);
                 glGenerateMipmap(GL_TEXTURE_2D);
-
             } else {
-                k2::Log::core().critical(fmt::format("Failed to load image at path: {}", texture_path.string()));
+                k2::Log::core().critical("Invalid image while loading texture");
+                throw std::invalid_argument("Invalid image.");
             }
         }
         return *this;

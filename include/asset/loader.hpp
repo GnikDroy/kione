@@ -20,9 +20,12 @@ template <Asset::Type T> class AssetLoader;
 template <> struct AssetLoader<Asset::Type::Image> {
     static k2::Image get_resource(const Asset& asset) {
         auto traits = asset.get_traits();
-        auto& desired_channels_sv = traits["desired_channels"];
-        auto desired_channels
-            = to_integer<int>(desired_channels_sv.data(), desired_channels_sv.data() + desired_channels_sv.size());
+        auto desired_channels = 0;
+        if (traits.count("desired_channels")) {
+            auto& desired_channels_sv = traits["desired_channels"];
+            desired_channels
+                = to_integer<int>(desired_channels_sv.data(), desired_channels_sv.data() + desired_channels_sv.size());
+        }
         auto raw = AssetScheme::get_raw(asset);
         return k2::Image { raw, desired_channels };
     }

@@ -18,9 +18,12 @@ template <> struct AssetSchemeImpl<Asset::Scheme::file> {
     static std::vector<std::uint8_t> get_raw(const Asset& asset) {
         assert(Asset::Scheme::file == asset.get_scheme() && "Asset of different scheme.");
         std::ifstream file_stream { asset.get_parts().path, std::ios::binary };
+        if (file_stream.fail()) {
+            throw std::runtime_error(fmt::format("Cannot open the file {}.", asset.get_parts().path));
+        }
         std::vector<std::uint8_t> raw;
-        std::copy(std::istream_iterator<std::uint8_t>(file_stream), std::istream_iterator<std::uint8_t>(),
-            std::back_inserter(raw));
+        std::copy(
+            (std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>(), std::back_inserter(raw));
         return raw;
     }
 };
@@ -37,7 +40,7 @@ public:
     static std::vector<std::uint8_t> get_raw(const Asset& asset) {
         switch (asset.get_scheme()) {
         case Asset::Scheme::file: return AssetSchemeImpl<Asset::Scheme::file>::get_raw(asset);
-        default: std::invalid_argument("Scheme not implemented");
+        default: throw std::invalid_argument("Scheme not implemented");
         }
     }
 };

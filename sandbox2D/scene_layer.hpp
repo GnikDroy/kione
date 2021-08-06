@@ -73,7 +73,7 @@ public:
         program = program_loader("res/shaders/2d_vs.glsl", "res/shaders/2d_fs.glsl");
 
         k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
-        k2::Resources::get<k2::Texture2D>()["tex"_fnv1a] = k2::Texture2D { "res/textures/texture.jpg" };
+        k2::Resources::get<k2::Texture2D>()["tex"_fnv1a] = k2::Texture2D { k2::Image("res/textures/texture.jpg") };
 
         setup_scene();
     }
