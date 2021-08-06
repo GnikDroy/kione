@@ -13,110 +13,10 @@
 #include <array>
 #include <sstream>
 
-// cannot make constexpr since ImVec4 is not constexpr :/
-static ImVec4 ImVec4Color(const std::string& hex_code) {
-    // Must be of the form #rrggbbaa
-    // Might support rgb() and rgba() later
-    if (hex_code.starts_with('#')) {
-        std::stringstream stream(hex_code);
-        stream.ignore(hex_code.length(), '#');
-        std::uint32_t color {};
-        stream << std::hex;
-        stream >> color;
-        assert(!stream.fail() && "Cannot interpret color value. Make sure color is of type #rrggbbaa");
-        return { (color >> 24) / 255.f, ((color >> 16) & 0x00FF) / 255.f, ((color >> 8) & (0x0000FF)) / 255.f,
-            (color & (0x000000FF)) / 255.f };
-    }
-    assert(false && "Invalid color value.");
-    return { 1.0f, 1.0f, 1.0f, 1.0f };
-}
-
-static void ImGuiStyleDark() {
-    auto& io = ImGui::GetIO();
-    auto& style = ImGui::GetStyle();
-    auto* colors = ImGui::GetStyle().Colors;
-
-    colors[ImGuiCol_Text] = ImVec4Color("#e5e5e5ff");
-    colors[ImGuiCol_TextDisabled] = ImVec4Color("#7f7f7fff");
-    colors[ImGuiCol_WindowBg] = ImVec4Color("#0c0c0cff");
-    colors[ImGuiCol_ChildBg] = ImVec4Color("#0c0c0cff");
-    colors[ImGuiCol_PopupBg] = ImVec4Color("#000000e5");
-    colors[ImGuiCol_Border] = ImVec4Color("#333333ff");
-    colors[ImGuiCol_BorderShadow] = ImVec4Color("#ffffff00");
-    colors[ImGuiCol_FrameBg] = ImVec4Color("#000000cc");
-    colors[ImGuiCol_FrameBgHovered] = ImVec4Color("#d65e0033");
-    colors[ImGuiCol_FrameBgActive] = ImVec4Color("#d65e00ff");
-    colors[ImGuiCol_TitleBg] = ImVec4Color("#0f0f0fff");
-    colors[ImGuiCol_TitleBgActive] = ImVec4Color("#141414ff");
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4Color("#0f0f0f66");
-    colors[ImGuiCol_MenuBarBg] = ImVec4Color("#232323ff");
-    colors[ImGuiCol_ScrollbarBg] = ImVec4Color("#23232366");
-    colors[ImGuiCol_ScrollbarGrab] = ImVec4Color("#4f4f4f4c");
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4Color("#ffffff4c");
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4Color("#ffffff7f");
-    colors[ImGuiCol_CheckMark] = ImVec4Color("#e5e5e5ff");
-    colors[ImGuiCol_SliderGrab] = ImVec4Color("#4f4f4fff");
-    colors[ImGuiCol_SliderGrabActive] = ImVec4Color("#ffffff7f");
-    colors[ImGuiCol_Button] = ImVec4Color("#232323ff");
-    colors[ImGuiCol_ButtonHovered] = ImVec4Color("#d65e0033");
-    colors[ImGuiCol_ButtonActive] = ImVec4Color("#d65e00ff");
-    colors[ImGuiCol_Header] = ImVec4Color("#232323ff");
-    colors[ImGuiCol_HeaderHovered] = ImVec4Color("#d65e0033");
-    colors[ImGuiCol_HeaderActive] = ImVec4Color("#d65e00ff");
-    colors[ImGuiCol_Separator] = ImVec4Color("#7f7f6d7f");
-    colors[ImGuiCol_SeparatorHovered] = ImVec4Color("#bf7219c6");
-    colors[ImGuiCol_SeparatorActive] = ImVec4Color("#bf7219ff");
-    colors[ImGuiCol_ResizeGrip] = ImVec4Color("#f9a5423f");
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4Color("#f9a542aa");
-    colors[ImGuiCol_ResizeGripActive] = ImVec4Color("#f9a542f2");
-    colors[ImGuiCol_Tab] = ImVec4Color("#2b190aef");
-    colors[ImGuiCol_TabHovered] = ImVec4Color("#d65e0099");
-    colors[ImGuiCol_TabActive] = ImVec4Color("#aa4c00ad");
-    colors[ImGuiCol_TabUnfocused] = ImVec4Color("#0f0c0caf");
-    colors[ImGuiCol_TabUnfocusedActive] = ImVec4Color("#5b2b07a3");
-    colors[ImGuiCol_PlotLines] = ImVec4Color("#636363ff");
-    colors[ImGuiCol_PlotLinesHovered] = ImVec4Color("#59eaffff");
-    colors[ImGuiCol_PlotHistogram] = ImVec4Color("#0090e5ff");
-    colors[ImGuiCol_PlotHistogramHovered] = ImVec4Color("#0066ffff");
-    colors[ImGuiCol_TextSelectedBg] = ImVec4Color("#f9a54259");
-    colors[ImGuiCol_DragDropTarget] = ImVec4Color("#0090e5ff");
-    colors[ImGuiCol_NavHighlight] = ImVec4Color("#f9a542ff");
-    colors[ImGuiCol_NavWindowingHighlight] = ImVec4Color("#000000b2");
-    colors[ImGuiCol_NavWindowingDimBg] = ImVec4Color("#33333333");
-    colors[ImGuiCol_ModalWindowDimBg] = ImVec4Color("#33333359");
-
-    style.WindowPadding = ImVec2(4.f, 6.f);
-    style.FramePadding = ImVec2(8.f, 6.f);
-    style.ItemSpacing = ImVec2(8.f, 6.f);
-    style.ItemInnerSpacing = ImVec2(8.f, 6.f);
-    style.IndentSpacing = 20.f;
-
-    style.ScrollbarSize = 20.f;
-    style.GrabMinSize = 8.f;
-    style.WindowBorderSize = 0.f;
-    style.ChildBorderSize = 0.f;
-    style.PopupBorderSize = 1.f;
-    style.FrameBorderSize = 1.f;
-    style.TabBorderSize = 0.f;
-
-    style.WindowRounding = 5.f;
-    style.ChildRounding = 0.f;
-    style.FrameRounding = 5.f;
-    style.PopupRounding = 5.f;
-    style.ScrollbarRounding = 5.f;
-    style.GrabRounding = 5.f;
-    style.TabRounding = 5.f;
-
-    style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
-    style.WindowRounding = 0.f;
-    style.WindowMenuButtonPosition = ImGuiDir_Right;
-
-    io.ConfigWindowsMoveFromTitleBarOnly = true;
-}
-
 namespace k2 {
-ImguiLayer::ImguiLayer(k2::Window& win)
-    : window(&win) {
+ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme)
+    : window(&win)
+    , theme(std::move(theme)) {
     if (initialized_windows.count(window) != 0) {
         throw std::runtime_error("Imgui layer for this window already exists.");
     }
@@ -133,7 +33,7 @@ ImguiLayer::ImguiLayer(k2::Window& win)
     //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     ImGui::StyleColorsDark();
-    ImGuiStyleDark();
+    this->theme->apply();
     io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 20);
 
     ImFontConfig config;

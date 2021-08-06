@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include "core/imgui_theme.hpp"
 #include "core/logger.hpp"
 
 namespace k2::editor {
@@ -26,22 +27,25 @@ private:
 };
 
 class LogViewer {
-    std::string buffer;
-
 public:
-    void render() {
+    void render(const Imgui::ImGuiTheme* theme) {
         auto&& lines = EditorLoggerSink::get().get(EditorLoggerSink::max_items);
-
-        size_t total_size {};
-        for (const auto& line : lines)
-            total_size += line.size();
-
-        buffer.clear();
-        buffer.reserve(total_size);
-        for (const auto& line : lines)
-            buffer += line;
-
-        ImGui::TextUnformatted(buffer.data(), buffer.data() + buffer.size());
+        for (const auto& [log_level, line] : lines) {
+            auto hash = [&] {
+                using namespace k2::literals;
+                switch (log_level) {
+                case Log::LogLevel::Trace: return "log_trace"_fnv1a;
+                case Log::LogLevel::Debug: return "log_debug"_fnv1a;
+                case Log::LogLevel::Info: return "log_info"_fnv1a;
+                case Log::LogLevel::Warn: return "log_warn"_fnv1a;
+                case Log::LogLevel::Err: return "log_err"_fnv1a;
+                case Log::LogLevel::Critical: return "log_critical"_fnv1a;
+                case Log::LogLevel::Off:
+                default: return "log_off"_fnv1a;
+                }
+            }();
+            ImGui::TextColored(theme->colors.at(hash), "%s", line.c_str());
+        }
     }
 };
 

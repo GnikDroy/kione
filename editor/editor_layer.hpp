@@ -33,7 +33,7 @@ public:
         auto var = AssetRegistry({ .url = "file:///res/assets.yaml" });
         k2::Log::core().info(fmt::format("Size: {}", var.assets.size()));
         for (auto& [id, asset] : var.assets) {
-            k2::Log::core().info(
+            k2::Log::core().trace(
                 fmt::format("Name: '{}', URL: '{}', Type: '{}'", id, asset.url, asset.get_type_strv()));
         }
     }
@@ -42,7 +42,7 @@ public:
         ImGui::DockSpaceOverViewport();
         static bool show_debug = true;
         if (show_debug) {
-            ImGui::Begin("Debug", &show_debug);
+            ImGui::Begin(ICON_FA_BUG "  Debug", &show_debug);
             debug_widget.render();
             ImGui::End();
         }
@@ -56,8 +56,8 @@ public:
 
         static bool show_log = true;
         if (show_log) {
-            ImGui::Begin(ICON_FA_BOOK_OPEN "  Log Viewer", &show_log);
-            log_viewer.render();
+            ImGui::Begin(ICON_FA_BOOK "  Log Viewer", &show_log);
+            log_viewer.render(theme.get());
             ImGui::End();
         }
 

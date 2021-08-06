@@ -46,7 +46,7 @@ namespace Log {
         explicit RingBufferSink(size_t num_items = 0);
         std::any& get_sink();
         void set_pattern(const std::string& pattern);
-        std::vector<std::string> get(size_t num_items = 0);
+        std::vector<std::pair<LogLevel, std::string>> get(size_t num_items = 0);
     };
 
     Logger& app();

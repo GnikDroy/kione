@@ -1,10 +1,63 @@
 #include "core/logger.hpp"
+
 #include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/spdlog.h>
 
 #include <any>
 
 namespace k2::Log {
+
+static LogLevel convert_log_level(const spdlog::level::level_enum& level) {
+    switch (level) {
+    case spdlog::level::trace: return LogLevel::Trace;
+    case spdlog::level::debug: return LogLevel::Debug;
+    case spdlog::level::info: return LogLevel::Info;
+    case spdlog::level::warn: return LogLevel::Warn;
+    case spdlog::level::err: return LogLevel::Err;
+    case spdlog::level::critical: return LogLevel::Critical;
+    case spdlog::level::off:
+    default: return LogLevel::Off;
+    }
+}
+
+namespace sinks {
+    /*
+     * Ring buffer sink modification from spdlog.
+     * The class in spdlog is final so cannot inherit.
+     */
+    template <typename Mutex> class ringbuffer_sink final : public spdlog::sinks::base_sink<Mutex> {
+    public:
+        explicit ringbuffer_sink(size_t n_items)
+            : q_ { n_items } { }
+
+        std::vector<std::pair<LogLevel, std::string>> get(size_t lim = 0) {
+            std::lock_guard<Mutex> lock(spdlog::sinks::base_sink<Mutex>::mutex_);
+            auto items_available = q_.size();
+            auto n_items = lim > 0 ? (std::min)(lim, items_available) : items_available;
+            std::vector<std::pair<LogLevel, std::string>> ret;
+            ret.reserve(n_items);
+            for (size_t i = (items_available - n_items); i < items_available; i++) {
+                spdlog::memory_buf_t formatted;
+                spdlog::sinks::base_sink<Mutex>::formatter_->format(q_.at(i), formatted);
+                ret.emplace_back(convert_log_level(q_.at(i).level), fmt::to_string(formatted));
+            }
+            return ret;
+        }
+
+    protected:
+        void sink_it_(const spdlog::details::log_msg& msg) override {
+            q_.push_back(spdlog::details::log_msg_buffer { msg });
+        }
+        void flush_() override { }
+
+    private:
+        spdlog::details::circular_q<spdlog::details::log_msg_buffer> q_;
+    };
+
+    using ringbuffer_sink_mt = ringbuffer_sink<std::mutex>;
+    using ringbuffer_sink_st = ringbuffer_sink<spdlog::details::null_mutex>;
+}
+
 struct Logger::Impl {
     explicit Impl(const std::string& name) {
         auto console_sink = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
@@ -69,12 +122,12 @@ Logger& Logger::critical(const std::string& message) {
 }
 
 Logger& app() {
-    static Logger logger { "APP" };
+    static Logger logger { "App" };
     return logger;
 }
 
 Logger& core() {
-    static Logger logger { "CORE" };
+    static Logger logger { "Core" };
     return logger;
 }
 
@@ -86,7 +139,7 @@ template <> struct LoggerInnerType<LoggerSinkType::SingleThreaded> { using type 
 
 template <> struct LoggerInnerType<LoggerSinkType::MultiThreaded> { using type = std::mutex; };
 
-template <LoggerSinkType V> using RingBufferSinkT = spdlog::sinks::ringbuffer_sink<LoggerInnerTypeV<V>>;
+template <LoggerSinkType V> using RingBufferSinkT = sinks::ringbuffer_sink<LoggerInnerTypeV<V>>;
 
 template <LoggerSinkType V>
 RingBufferSink<V>::RingBufferSink(size_t num_items)
@@ -94,10 +147,10 @@ RingBufferSink<V>::RingBufferSink(size_t num_items)
 
 template <LoggerSinkType T> std::any& RingBufferSink<T>::get_sink() { return impl; }
 
-template <LoggerSinkType V> std::vector<std::string> RingBufferSink<V>::get(size_t num_items) {
-    return std::reinterpret_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))
-        ->last_formatted(num_items);
+template <LoggerSinkType V> std::vector<std::pair<LogLevel, std::string>> RingBufferSink<V>::get(size_t num_items) {
+    return std::reinterpret_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))->get(num_items);
 }
+
 template <LoggerSinkType V> void RingBufferSink<V>::set_pattern(const std::string& pattern) {
     return std::reinterpret_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))
         ->set_pattern(pattern);

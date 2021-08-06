@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/imgui_theme.hpp"
 #include "layer.hpp"
 #include <unordered_set>
 
@@ -10,8 +11,11 @@ class ImguiLayer : public Layer {
     static inline std::unordered_set<k2::Window*> initialized_windows {};
     k2::Window* window;
 
+protected:
+    std::unique_ptr<Imgui::ImGuiTheme> theme;
+
 public:
-    explicit ImguiLayer(k2::Window& win);
+    ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme = std::make_unique<Imgui::ImGuiThemeDark>());
 
     ImguiLayer(const ImguiLayer&) = delete;
     ImguiLayer& operator=(const ImguiLayer&) = delete;
