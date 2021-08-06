@@ -49,7 +49,7 @@ function(entt_build)
     FetchContent_Declare(
         EnTT
         GIT_REPOSITORY https://github.com/skypjack/entt
-        GIT_TAG        master)
+        GIT_TAG        v3.8.1)
 
     FetchContent_MakeAvailable(EnTT)
 endfunction()
@@ -215,8 +215,6 @@ function(stb_build)
             GIT_TAG        master
             GIT_SHALLOW 1
             GIT_PROGRESS 1
-            CONFIGURE_COMMAND ""
-            BUILD_COMMAND ""
     )
     FetchContent_GetProperties(stb)
     if(NOT stb_POPULATED)
@@ -227,6 +225,76 @@ function(stb_build)
     target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 endfunction()
 stb_build()
+
+# Setup lua
+function(lua_build)
+    FetchContent_Declare(
+            lua
+            GIT_REPOSITORY https://github.com/lua/lua
+            GIT_TAG        v5.4.3
+            GIT_SHALLOW 1
+            GIT_PROGRESS 1
+    )
+    FetchContent_GetProperties(lua)
+    if(NOT lua_POPULATED)
+        FetchContent_Populate(lua)
+    endif()
+    add_library(lua STATIC
+        ${lua_SOURCE_DIR}/lapi.c
+        ${lua_SOURCE_DIR}/lcode.c
+        ${lua_SOURCE_DIR}/lctype.c
+        ${lua_SOURCE_DIR}/ldebug.c
+        ${lua_SOURCE_DIR}/ldo.c
+        ${lua_SOURCE_DIR}/ldump.c
+        ${lua_SOURCE_DIR}/lfunc.c
+        ${lua_SOURCE_DIR}/lgc.c
+        ${lua_SOURCE_DIR}/llex.c
+        ${lua_SOURCE_DIR}/lmem.c
+        ${lua_SOURCE_DIR}/lobject.c
+        ${lua_SOURCE_DIR}/lopcodes.c
+        ${lua_SOURCE_DIR}/lparser.c
+        ${lua_SOURCE_DIR}/lstate.c
+        ${lua_SOURCE_DIR}/lstring.c
+        ${lua_SOURCE_DIR}/ltable.c
+        ${lua_SOURCE_DIR}/ltm.c
+        ${lua_SOURCE_DIR}/lundump.c
+        ${lua_SOURCE_DIR}/lvm.c
+        ${lua_SOURCE_DIR}/lzio.c
+        ${lua_SOURCE_DIR}/lauxlib.c
+        ${lua_SOURCE_DIR}/lbaselib.c
+        ${lua_SOURCE_DIR}/lcorolib.c
+        ${lua_SOURCE_DIR}/ldblib.c
+        ${lua_SOURCE_DIR}/liolib.c
+        ${lua_SOURCE_DIR}/lmathlib.c
+        ${lua_SOURCE_DIR}/loadlib.c
+        ${lua_SOURCE_DIR}/loslib.c
+        ${lua_SOURCE_DIR}/lstrlib.c
+        ${lua_SOURCE_DIR}/ltablib.c
+        ${lua_SOURCE_DIR}/lutf8lib.c
+        ${lua_SOURCE_DIR}/linit.c
+    )
+    add_library(lua::lua ALIAS lua)
+    target_include_directories(lua PUBLIC ${lua_SOURCE_DIR})
+endfunction()
+lua_build()
+
+function(sol2_build)
+    FetchContent_Declare(
+            sol2
+            GIT_REPOSITORY https://github.com/ThePhD/sol2
+            GIT_TAG        v3.2.2
+            GIT_SHALLOW 1
+            GIT_PROGRESS 1
+    )
+    FetchContent_MakeAvailable(sol2)
+#    if(NOT sol2_POPULATED)
+#        FetchContent_Populate(sol2)
+#    endif()
+#    add_library(sol2 INTERFACE)
+#    add_library(sol2 ALIAS sol2)
+#    target_include_directories(sol2 INTERFACE ${sol2_SOURCE_DIR})
+endfunction()
+sol2_build()
 
 # Setup assimp
 function(assimp_build)
@@ -239,7 +307,7 @@ function(assimp_build)
     FetchContent_Declare(
             assimp
             GIT_REPOSITORY https://github.com/assimp/assimp
-            GIT_TAG        master
+            GIT_TAG        76e3092b2a0a12001c1426309678d2f375b03904
             GIT_SHALLOW 1
             GIT_PROGRESS 1
     )

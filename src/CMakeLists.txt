@@ -55,6 +55,8 @@ target_link_libraries(kione2D
 
     stb::stb
     assimp::assimp
+    lua::lua
+    sol2::sol2
 
     EnTT::EnTT
     cereal::cereal
