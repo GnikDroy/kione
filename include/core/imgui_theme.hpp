@@ -113,7 +113,7 @@ struct ImGuiThemeDark : ImGuiTheme {
 
         style.ScrollbarSize = 20.f;
         style.GrabMinSize = 8.f;
-        style.WindowBorderSize = 0.f;
+        style.WindowBorderSize = 1.f;
         style.ChildBorderSize = 0.f;
         style.PopupBorderSize = 1.f;
         style.FrameBorderSize = 1.f;
@@ -129,7 +129,7 @@ struct ImGuiThemeDark : ImGuiTheme {
 
         style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
         style.WindowRounding = 0.f;
-        style.WindowMenuButtonPosition = ImGuiDir_Right;
+        style.WindowMenuButtonPosition = ImGuiDir_None;
 
         io.ConfigWindowsMoveFromTitleBarOnly = true;
     }
