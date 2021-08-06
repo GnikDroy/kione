@@ -19,6 +19,7 @@ public:
     ~Editor() override { k2::Log::app().info("Editor application closed."); }
 
     void run() override {
+        glEnable(GL_MULTISAMPLE);
         while (running) {
             window.update();
             handle_events();
