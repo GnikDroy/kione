@@ -16,7 +16,7 @@ public:
         assert(size != 0 && "Zero sized buffer.");
         glGenBuffers(1, &handle);
         glBindBuffer(Type, handle);
-        glBufferData(Type, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
+        glNamedBufferStorage(handle, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_STORAGE_BIT);
     }
 
     BasicBuffer(const BasicBuffer&) = delete;
@@ -32,18 +32,13 @@ public:
     void set(const void* data, size_t size, size_t offset = 0) const {
         assert(size + offset <= capacity && "Not enough capacity.");
         if (capacity != 0) {
-            glBindBuffer(Type, handle);
-            glBufferSubData(Type, offset, size, data);
+            glNamedBufferSubData(handle, offset, size, data);
         }
     }
 
     operator bool() const { return handle != 0; }
 
-    void bind() const { glBindBuffer(Type, handle); }
-
     auto get() const { return handle; }
-
-    static void unbind() { glBindBuffer(Type, 0); }
 
     ~BasicBuffer() {
         if (handle)

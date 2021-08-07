@@ -38,13 +38,11 @@ public:
             vbo = k2::VertexBuffer(std::size(vertices) * sizeof(float));
 
             vao.bind();
-            vbo.bind();
             vbo.set(vertices, std::size(vertices) * sizeof(float));
 
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
 
-            k2::VertexBuffer::unbind();
             k2::VertexArray::unbind();
         }
         return *this;

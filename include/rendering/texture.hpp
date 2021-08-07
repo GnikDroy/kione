@@ -49,7 +49,8 @@ struct Texture2D {
         glGenTextures(1, &texture.id);
         glBindTexture(GL_TEXTURE_2D, texture.id);
         std::uint8_t data[] = { 0xFF, 0xFF, 0xFF, 0xFF };
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 1, 1);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
         return texture;
     }
 
@@ -59,24 +60,25 @@ struct Texture2D {
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
 
-                GLint format = [&]() {
+                auto [sized_format, format] = [&]() -> std::pair<GLuint, GLuint> {
                     if (image.channels == 1) {
-                        return GL_RED;
+                        return { GL_R8, GL_RED };
                     }
                     if (image.channels == 3) {
-                        return GL_RGB;
+                        return { GL_RGB8, GL_RGB };
                     }
                     if (image.channels == 4) {
-                        return GL_RGBA;
+                        return { GL_RGBA8, GL_RGBA };
                     }
                     k2::Log::core().warn(
-                        fmt::format("Incorrect number of channels ({}) for image, assuming RBGA / four channels image",
-                            image.channels));
-                    return GL_RGBA;
+                        fmt::format("Incorrect number of channels ({}) for image, assuming RBGA8.", image.channels));
+                    return { GL_RGBA8, GL_RGBA };
                 }();
 
-                glTexImage2D(
-                    GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.data);
+                const auto levels = (GLsizei)(std::floor(std::log2(std::max(image.width, image.height))) + 1);
+                glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, image.width, image.height);
+                glTexSubImage2D(
+                    GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, format, GL_UNSIGNED_BYTE, image.data);
                 glGenerateMipmap(GL_TEXTURE_2D);
             } else {
                 k2::Log::core().critical("Invalid image while loading texture");

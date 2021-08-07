@@ -6,6 +6,7 @@
 
 #include "components/camera.hpp"
 
+#include <span>
 #include <unordered_map>
 #include <unordered_set>
 

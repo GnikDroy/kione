@@ -48,7 +48,7 @@ class SceneLayer : public k2::Layer {
     k2::Renderer2D renderer2D;
 
 public:
-    explicit SceneLayer(k2::Window& /*window*/)
+    explicit SceneLayer(k2::Window& window)
         : window { window } {
         auto program_loader = [](auto vertex, auto fragment) {
             namespace fs = std::filesystem;
