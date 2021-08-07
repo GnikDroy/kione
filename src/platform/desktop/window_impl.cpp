@@ -17,7 +17,7 @@ Window::Impl::Impl(Window* win, const WindowConfig& config) {
 #endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
-#ifdef DEBUG
+#ifndef NDEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 #endif
 

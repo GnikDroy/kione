@@ -11,7 +11,7 @@ namespace k2 {
 inline bool enable_debug() {
     // Not possible to enable debug if GLFW hasn't been setup that way.
     // Only available in debug modes.
-#ifndef DEBUG
+#ifdef NDEBUG
     return false;
 #else
     auto gl_debug = [](auto source, auto type, auto id, auto severity, auto length, auto message, auto) {
@@ -45,19 +45,19 @@ inline bool enable_debug() {
 
         switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH:
-            k2::Logger::core->error(
+            k2::Log::core().error(
                 fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            k2::Logger::core->warn(
+            k2::Log::core().warn(
                 fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
             break;
         case GL_DEBUG_SEVERITY_LOW:
-            k2::Logger::core->info(
+            k2::Log::core().info(
                 fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
             break;
         default:
-            k2::Logger::core->trace(
+            k2::Log::core().trace(
                 fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
         }
     };
@@ -69,10 +69,13 @@ inline bool enable_debug() {
     }();
 
     if (debug_set) {
+        k2::Log::core().info("GL Debug handler injected.");
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(gl_debug, nullptr);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    } else {
+        k2::Log::core().info("GL Debug handler NOT present.");
     }
     return debug_set;
 #endif
