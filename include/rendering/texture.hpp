@@ -2,12 +2,38 @@
 
 #include <fmt/format.h>
 #include <glad/glad.h>
+#include <span>
 
 #include "core/logger.hpp"
 #include "image.hpp"
 
 namespace k2 {
 struct Texture2D {
+private:
+    static auto predict_sized_format(std::size_t channels) {
+        switch (channels) {
+        case 1: return GL_R8;
+        case 3: return GL_RGB8;
+        case 4: return GL_RGBA8;
+        default: {
+            k2::Log::core().warn(fmt::format("Incorrect number of channels ({}) for image, assuming RBGA8.", channels));
+            return GL_RGBA8;
+        }
+        }
+    }
+    static auto predict_format_from_sized(std::size_t sized) {
+        switch (sized) {
+        case GL_R8: return GL_RED;
+        case GL_RGB8: return GL_RGB;
+        case GL_RGBA8: return GL_RGBA;
+        case GL_DEPTH24_STENCIL8: return GL_DEPTH_STENCIL;
+        case GL_DEPTH_COMPONENT: return GL_DEPTH_COMPONENT;
+        case GL_STENCIL_INDEX8: return GL_STENCIL_INDEX;
+        default: throw std::invalid_argument("Unsupported sized format received.");
+        }
+    }
+
+public:
     enum class Type {
         Diffuse,
         Specular,
@@ -33,7 +59,30 @@ struct Texture2D {
 
     ~Texture2D() { glDeleteTextures(1, &id); }
 
-    Texture2D(const Image& image) { load(image); }
+    Texture2D(const Image& image, bool generate_mipmaps = true) { load(image, generate_mipmaps); }
+
+    Texture2D(std::size_t width, std::size_t height, std::span<const std::uint8_t> data = {},
+        GLuint sized_format = GL_RGBA8, bool generate_mipmaps = true) {
+        glGenTextures(1, &id);
+        auto levels = (GLsizei)(std::floor(std::log2(std::max(width, height))) + 1);
+        if (!generate_mipmaps) {
+            levels = 1;
+        }
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, (GLsizei)width, (GLsizei)height);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (!data.empty()) {
+            if (width * height > data.size()) {
+                throw std::invalid_argument("Insufficient data provided.");
+            }
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (GLsizei)width, (GLsizei)height,
+                predict_format_from_sized(sized_format), GL_UNSIGNED_BYTE, data.data());
+            if (generate_mipmaps) {
+                glGenerateMipmap(GL_TEXTURE_2D);
+            }
+        }
+    }
 
     operator bool() const { return id != 0; }
 
@@ -54,32 +103,22 @@ struct Texture2D {
         return texture;
     }
 
-    Texture2D& load(const Image& image) {
+    Texture2D& load(const Image& image, bool generate_mipmaps = true) {
         if (id == 0) {
             if (image) {
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
-
-                auto [sized_format, format] = [&]() -> std::pair<GLuint, GLuint> {
-                    if (image.channels == 1) {
-                        return { GL_R8, GL_RED };
-                    }
-                    if (image.channels == 3) {
-                        return { GL_RGB8, GL_RGB };
-                    }
-                    if (image.channels == 4) {
-                        return { GL_RGBA8, GL_RGBA };
-                    }
-                    k2::Log::core().warn(
-                        fmt::format("Incorrect number of channels ({}) for image, assuming RBGA8.", image.channels));
-                    return { GL_RGBA8, GL_RGBA };
-                }();
-
-                const auto levels = (GLsizei)(std::floor(std::log2(std::max(image.width, image.height))) + 1);
+                auto sized_format = predict_sized_format(image.channels);
+                auto levels = (GLsizei)(std::floor(std::log2(std::max(image.width, image.height))) + 1);
+                if (!generate_mipmaps) {
+                    levels = 1;
+                }
                 glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, image.width, image.height);
-                glTexSubImage2D(
-                    GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, format, GL_UNSIGNED_BYTE, image.data);
-                glGenerateMipmap(GL_TEXTURE_2D);
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height,
+                    predict_format_from_sized(sized_format), GL_UNSIGNED_BYTE, image.data);
+                if (generate_mipmaps) {
+                    glGenerateMipmap(GL_TEXTURE_2D);
+                }
             } else {
                 k2::Log::core().critical("Invalid image while loading texture");
                 throw std::invalid_argument("Invalid image.");

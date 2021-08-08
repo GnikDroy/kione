@@ -49,7 +49,7 @@ public:
         layers.push_back(std::make_unique<k2::ImguiLayer>(window));
         auto* imgui_layer = reinterpret_cast<k2::ImguiLayer*>(layers[1].get());
 
-        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST | GL_STENCIL_TEST);
 
         auto current_frame = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         auto last_frame = current_frame;
@@ -68,7 +68,7 @@ public:
 
             // Clear Screen
             glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
             // Render
             imgui_layer->start();

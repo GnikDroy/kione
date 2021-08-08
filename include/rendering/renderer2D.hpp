@@ -1,8 +1,10 @@
 #pragma once
 
-#include "buffer.hpp"
 #include "core/resources.hpp"
-#include "vertex_array.hpp"
+
+#include "rendering/buffer.hpp"
+#include "rendering/frame_buffer.hpp"
+#include "rendering/vertex_array.hpp"
 
 #include "components/camera.hpp"
 
@@ -52,6 +54,7 @@ private:
     VertexArray vao;
     VertexBuffer vbo;
     IndexBuffer ebo;
+    FrameBuffer frame_buffer;
 
 public:
     Renderer2D() {
@@ -96,6 +99,9 @@ public:
 
     Renderer2D& operator=(const Renderer2D&) = delete;
 
+    FrameBuffer& set_frame_buffer(FrameBuffer&& fb) { return frame_buffer = std::move(fb); }
+
+    FrameBuffer& get_frame_buffer() { return frame_buffer; }
     /*
      * Batch rendering
      * deferred + forward rendering
@@ -160,7 +166,11 @@ public:
             vao.bind();
             vbo.set(vertices.data(), sizeof(vertices[0]) * vertices.size());
             ebo.set(indices.data(), sizeof(indices[0]) * indices.size());
-            glDrawElements(draw_mode, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+            glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer.get_id());
+            glDrawElements(draw_mode, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
+            if (!frame_buffer.is_swap_chain_target()) {
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            }
             vao.unbind();
         }
 
