@@ -143,7 +143,7 @@ public:
         for (const auto& [draw_mode, vertices] : vertices_buffer) {
             auto& indices = indices_buffer[draw_mode];
 
-            std::vector<std::uint32_t> tex_unit_vec(texture_unit_map.size());
+            std::vector<std::int32_t> tex_unit_vec(texture_unit_map.size());
             std::iota(tex_unit_vec.begin(), tex_unit_vec.end(), 0);
 
             for (auto& [texture_id, texture_unit_index] : texture_unit_map) {

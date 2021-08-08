@@ -148,11 +148,11 @@ struct Program {
     template <arithmetic T> const Program& set_uniform(const std::string& str, const std::span<T>& vec) const {
         if constexpr (std::is_same_v<T, std::uint32_t>) {
             glProgramUniform1uiv(handle, glGetUniformLocation(handle, str.c_str()), (GLsizei)vec.size(), vec.data());
-        } else if (std::is_same_v<T, std::int32_t>) {
+        } else if constexpr (std::is_same_v<T, std::int32_t>) {
             glProgramUniform1iv(handle, glGetUniformLocation(handle, str.c_str()), (GLsizei)vec.size(), vec.data());
-        } else if (std::is_same_v<T, float>) {
+        } else if constexpr (std::is_same_v<T, float>) {
             glProgramUniform1fv(handle, glGetUniformLocation(handle, str.c_str()), (GLsizei)vec.size(), vec.data());
-        } else if (std::is_same_v<T, double>) {
+        } else if constexpr (std::is_same_v<T, double>) {
             glProgramUniform1dv(handle, glGetUniformLocation(handle, str.c_str()), (GLsizei)vec.size(), vec.data());
         }
         return *this;
