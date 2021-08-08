@@ -11,7 +11,6 @@
 #include "editor_resources.hpp"
 
 namespace k2 {
-class EditorInternal;
 class EditorLayer : public k2::ImguiLayer {
     k2::ComponentInspector<entt::entity> component_inspector;
     k2::EntitySelector<entt::entity> entity_selector;

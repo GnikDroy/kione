@@ -30,6 +30,8 @@ class LogViewer {
 public:
     void render(const Imgui::ImGuiTheme* theme) {
         auto&& lines = EditorLoggerSink::get().get(EditorLoggerSink::max_items);
+        static ImGuiTextFilter filter;
+        filter.Draw(ICON_FA_SEARCH " Search");
         for (const auto& [log_level, line] : lines) {
             auto hash = [&] {
                 using namespace k2::literals;
@@ -44,7 +46,9 @@ public:
                 default: return "log_off"_fnv1a;
                 }
             }();
-            ImGui::TextColored(theme->colors.at(hash), "%s", line.c_str());
+            if (filter.PassFilter(line.c_str(), line.c_str() + line.size())) {
+                ImGui::TextColored(theme->colors.at(hash), "%s", line.c_str());
+            }
         }
     }
 };
