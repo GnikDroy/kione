@@ -1,77 +1,26 @@
 #pragma once
 
-#include "components.hpp"
+#include "core/scene.hpp"
 #include "kione2D.hpp"
 #include "rendering/renderer2D.hpp"
+#include "serializers/core/scene.hpp"
 
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
 #include <glm/glm.hpp>
-
 #include <numeric>
 
 using namespace k2::literals;
-
-std::vector<k2::Renderer2D::Vertex> vertices {
-    k2::Renderer2D::Vertex {
-        .position = { 1.0f, -1.0f, 0.0f },
-        .color = { 1.0f, 1.0f, 1.0f, 1.0f },
-        .texture_coordinate = { 1.0f, 0.0f },
-        .texture = "tex"_fnv1a,
-    },
-    k2::Renderer2D::Vertex {
-        .position = { -1.0f, 1.0f, 0.0f },
-        .color = { 1.0f, 1.0f, 1.0f, 1.0f },
-        .texture_coordinate = { 0.0f, 1.0f },
-        .texture = "tex"_fnv1a,
-    },
-    k2::Renderer2D::Vertex {
-        .position = { -1.0f, -1.0f, 0.0f },
-        .color = { 1.0f, 1.0f, 1.0f, 1.0f },
-        .texture_coordinate = { 0.0f, 0.0f },
-        .texture = "tex"_fnv1a,
-    },
-    k2::Renderer2D::Vertex {
-        .position = { 1.0f, 1.0f, 0.0f },
-        .color = { 1.0f, 1.0f, 1.0f, 1.0f },
-        .texture_coordinate = { 1.0f, 1.0f },
-        .texture = "tex"_fnv1a,
-    },
-};
-
-std::vector<std::uint32_t> indices { 0, 1, 2, 0, 3, 1 };
 
 class SceneLayer : public k2::Layer {
     k2::Window& window;
 
     entt::registry registry {};
-
-    k2::Program program {};
     k2::Renderer2D renderer2D;
 
 public:
     explicit SceneLayer(k2::Window& window)
         : window { window } {
-        auto program_loader = [](auto vertex, auto fragment) {
-            namespace fs = std::filesystem;
-            auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path(vertex));
-            if (!vertex_shader) {
-                k2::Log::app().critical(vertex_shader.error_msg().value());
-            }
-
-            auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, fs::path(fragment));
-            if (!fragment_shader) {
-                k2::Log::app().critical(fragment_shader.error_msg().value());
-            }
-
-            k2::Program ret { std::move(vertex_shader), std::move(fragment_shader) };
-            ret.link();
-
-            if (!ret) {
-                k2::Log::app().critical(ret.error_msg().value());
-            }
-            return ret;
-        };
-        program = program_loader("res/shaders/2d_vs.glsl", "res/shaders/2d_fs.glsl");
-
         k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
         k2::Resources::get<k2::Texture2D>()["tex"_fnv1a] = k2::Texture2D { k2::Image("res/textures/texture.jpg") };
 
@@ -83,7 +32,21 @@ public:
     SceneLayer& operator=(const SceneLayer&) = delete;
 
     void setup_scene() {
-        renderer2D.camera = k2::Camera {
+        auto entity = registry.create();
+
+        auto& sprite = registry.emplace<k2::SpriteComponent>(entity);
+        sprite = k2::SpriteComponent {
+            .color = { 1.0f, 0.0f, 0.0f, 1.0f },
+            .texture = "tex"_fnv1a,
+        };
+
+        auto& transform = registry.emplace<k2::TransformComponent>(entity);
+        transform = k2::TransformComponent {
+            .scale { 300.0f, 300.0f, 1.0f },
+        };
+
+        auto& camera = registry.emplace<k2::Camera>(entity);
+        camera = k2::Camera {
             .position { 0, 0, 1000.f },
             .target { 0, 0, 0 },
             .up { 0, 1.0f, 0 },
@@ -97,13 +60,35 @@ public:
                 .near_clip = 1000.f,
             } },
         };
+
+        // Test saving empty scene in a file.
+        {
+            k2::Scene scene {};
+            std::ostringstream os;
+            cereal::JSONOutputArchive archive(os);
+            archive(scene);
+            k2::Log::app().info(os.str());
+        }
+
+        // Test saving a scene in a file.
+        k2::Scene scene { .registry = std::move(registry) };
+
+        {
+            std::ostringstream os;
+            cereal::JSONOutputArchive archive(os);
+            archive(scene);
+            k2::Log::app().info(os.str());
+        }
+
+        registry = std::move(scene.registry);
     }
 
     void update(float) override { }
 
     void render() override {
-        auto transform = glm::scale(glm::mat4(1.0f), glm::vec3(300.f, 300.f, 1.f));
-        renderer2D.draw(vertices, indices, transform);
+        registry.view<k2::Camera>().each([&](auto, const auto& camera) { renderer2D.camera = camera; });
+        registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
+            [&](auto, const auto& transform, const auto& sprite) { renderer2D.draw(transform, sprite); });
         renderer2D.render();
     }
 

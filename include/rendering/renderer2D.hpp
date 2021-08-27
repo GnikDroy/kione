@@ -7,6 +7,7 @@
 #include "rendering/vertex_array.hpp"
 
 #include "components/camera.hpp"
+#include "components/sprite.hpp"
 
 #include <span>
 #include <unordered_map>
@@ -102,13 +103,11 @@ public:
     FrameBuffer& set_frame_buffer(FrameBuffer&& fb) { return frame_buffer = std::move(fb); }
 
     FrameBuffer& get_frame_buffer() { return frame_buffer; }
+
     /*
-     * Batch rendering
-     * deferred + forward rendering
-     * supports different textures, normal maps, light sources, directional and ambient light
-     * color of vertices/textures
-     * supports drawing to a render target
-     * shadows?
+     * TODO: deferred lighting + forward renderer
+     * TODO: light sources, directional and ambient light
+     * TODO: shadows?
      */
     void draw(std::span<const Renderer2D::Vertex> vertices, std::span<const std::uint32_t> indices,
         const glm::mat3& transform = glm::mat4(1.0f), const std::uint32_t draw_mode = GL_TRIANGLES) {
@@ -143,6 +142,37 @@ public:
             vertices_vec.push_back(vertex);
         }
         indices_vec.insert(indices_vec.end(), indices.begin(), indices.end());
+    }
+
+    void draw(const TransformComponent& transform, const SpriteComponent& sprite) {
+        std::array<k2::Renderer2D::Vertex, 4> vertices {
+            k2::Renderer2D::Vertex {
+                .position = { 1.0f, -1.0f, 0.0f },
+                .color = sprite.color,
+                .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y },
+                .texture = sprite.texture,
+            },
+            k2::Renderer2D::Vertex {
+                .position = { -1.0f, 1.0f, 0.0f },
+                .color = sprite.color,
+                .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y + sprite.uv_rect.h },
+                .texture = sprite.texture,
+            },
+            k2::Renderer2D::Vertex {
+                .position = { -1.0f, -1.0f, 0.0f },
+                .color = sprite.color,
+                .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y },
+                .texture = sprite.texture,
+            },
+            k2::Renderer2D::Vertex {
+                .position = { 1.0f, 1.0f, 0.0f },
+                .color = sprite.color,
+                .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y + sprite.uv_rect.h },
+                .texture = sprite.texture,
+            },
+        };
+        const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
+        draw(vertices, indices, transform.get_matrix());
     }
 
     void render() {
