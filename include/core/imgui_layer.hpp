@@ -9,9 +9,9 @@ class Window;
 
 class ImguiLayer : public Layer {
     static inline std::unordered_set<k2::Window*> initialized_windows {};
-    k2::Window* window;
 
 protected:
+    k2::Window* window;
     std::unique_ptr<Imgui::ImGuiTheme> theme;
 
 public:
