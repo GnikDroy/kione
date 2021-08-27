@@ -5,6 +5,9 @@
 #include <imgui.h>
 
 namespace k2::editor {
+// TODO: Optimize
+// Store dirent and current_path instead of querying every frame. Add reload button.
+
 class FileExplorerWidget {
     std::filesystem::path current_directory = std::filesystem::current_path();
 
@@ -15,24 +18,37 @@ public:
         constexpr auto icon_padding = 20.f;
 
         auto avail_width = ImGui::GetContentRegionAvail().x;
-        auto num_columns = static_cast<int>(avail_width / (icon_size + icon_padding));
+        auto num_columns = std::max(1, static_cast<int>(avail_width / (icon_size + icon_padding)));
 
-        if (ImGui::Button(ICON_FA_BACKWARD)) {
-            current_directory = current_directory.parent_path();
-        }
-        ImGui::SameLine();
-        ImGui::Text("%s", current_directory.string().c_str());
-        ImGui::SameLine();
         static ImGuiTextFilter filter;
-        filter.Draw(ICON_FA_SEARCH " Search", 200.0f);
+        if (ImGui::BeginTable("##FileExplorerHeader", 2, ImGuiTableFlags_SizingStretchProp)) {
+            ImGui::TableNextColumn();
+            if (ImGui::Button(ICON_FA_BACKWARD)) {
+                current_directory = current_directory.parent_path();
+            }
+            ImGui::SameLine();
+            {
+                constexpr auto max_str_size = 80;
+                auto str = current_directory.string();
+                auto ptr = str.c_str();
+                if (str.size() > max_str_size + 3) {
+                    ptr = ptr + (str.size() - max_str_size - 2);
+                    for (auto i = 0; i < 3; i++) {
+                        str[str.size() - max_str_size - i] = '.';
+                    }
+                }
+                ImGui::TextUnformatted(ptr);
+            }
+
+            ImGui::TableNextColumn();
+            filter.Draw(ICON_FA_SEARCH, 200.0f);
+            ImGui::EndTable();
+        }
+
         if (ImGui::BeginTable("Directory View", num_columns)) {
-            std::uint64_t count {};
             for (const auto& entry : fs::directory_iterator(current_directory)) {
                 std::string path = entry.path().filename().string();
                 if (filter.PassFilter(path.c_str(), path.c_str() + path.size())) {
-                    if (count && count % num_columns == 0) {
-                        ImGui::TableNextRow();
-                    }
                     ImGui::TableNextColumn();
 
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
@@ -45,7 +61,6 @@ public:
                             current_directory /= entry.path().filename();
                     }
                     ImGui::TextWrapped("%s", entry.path().filename().string().c_str());
-                    count++;
                 }
             }
             ImGui::EndTable();
