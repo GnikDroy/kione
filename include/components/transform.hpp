@@ -1,7 +1,19 @@
 #pragma once
 #include <cstdint>
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+namespace k2 {
 
 struct TransformComponent {
-    std::int64_t x, y, z;
-    float rotation, scale;
+    glm::vec3 translation;
+    glm::quat orientation;
+    glm::vec3 scale;
+
+    glm::mat4 get_matrix() const {
+        return glm::scale(glm::mat4(1.0f), scale) * glm::toMat4(orientation)
+            * glm::translate(glm::mat4(1.0f), translation);
+    }
 };
+
+}

@@ -10,7 +10,18 @@ template <class T, class U> using result = std::pair<T, U>;
 template <class T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
+template <arithmetic T> struct Rect {
+    T x {};
+    T y {};
+    T w {};
+    T h {};
+};
+
+using Rectf = Rect<float>;
+using Recti = Rect<int>;
+
 template <class...> constexpr std::false_type always_false {};
+template <std::size_t...> constexpr std::false_type always_false_n {};
 
 std::vector<std::string_view> string_view_split(const std::string_view& str, char delim = ' ') {
     std::vector<std::string_view> vec;
