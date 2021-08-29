@@ -47,6 +47,7 @@ public:
 
     void update(float) override {
         ImGui::DockSpaceOverViewport();
+        main_menu_widget.render(*this);
         component_inspector.render(*this);
         entity_selector.render(*this);
         log_viewer.render(*this);

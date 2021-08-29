@@ -9,11 +9,12 @@ class EditorLayer;
 namespace k2::editor {
 class IImGuiWindow {
 protected:
-    bool show = true;
-    std::string title;
     virtual void render_internal(EditorLayer& editor) = 0;
 
 public:
+    bool show = true;
+    std::string title;
+
     explicit IImGuiWindow(std::string title, bool show = true)
         : title(std::move(title))
         , show(show) { }

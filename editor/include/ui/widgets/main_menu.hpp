@@ -9,10 +9,6 @@ namespace k2::editor {
 class MainMenuWidget : public IWidget {
 public:
     void render(EditorLayer&) override;
-
-private:
-    void render_file_menu();
-    void render_view_menu();
 };
 
 }
