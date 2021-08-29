@@ -82,8 +82,12 @@ template <> void ComponentWidget<k2::Camera>(entt::registry& reg, entt::registry
 template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& sprite = reg.get<k2::SpriteComponent>(e);
     ImGui::ColorEdit4("Color", glm::value_ptr(sprite.color));
+
     std::array<char, 50> input {};
+    std::snprintf(input.data(), input.size(), "%llu", sprite.texture);
     ImGui::InputText("Resource ID", input.data(), input.size());
+    std::istringstream str_stream { input.data() };
+    str_stream >> sprite.texture;
 
     k2::editor::RectInputWidget("UV Rect", sprite.uv_rect);
 }
