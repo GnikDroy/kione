@@ -254,10 +254,10 @@ void RectInputWidget(const std::string& label, k2::Rect<T>& rect, const k2::Rect
     }
 }
 
-void OrientationInputWidget(const std::string& label, glm::quat& quat) {
-    auto euler_angles = glm::degrees(glm::eulerAngles(quat));
-    Vec3InputWidget(label.c_str(), euler_angles);
+inline void OrientationInputWidget(const std::string& label, glm::quat& quaternion) {
+    auto euler_angles = glm::degrees(glm::eulerAngles(quaternion));
+    Vec3InputWidget(label, euler_angles);
     euler_angles = glm::radians(euler_angles);
-    quat = glm::quat(euler_angles);
+    quaternion = glm::quat(euler_angles);
 }
 }

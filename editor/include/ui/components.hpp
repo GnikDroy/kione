@@ -1,28 +1,25 @@
 #pragma once
 #include <entt/entt.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <imgui.h>
-#include <imgui_internal.h>
 
 #include "components/camera.hpp"
 #include "components/relation.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
 #include "components/transform.hpp"
-#include "ui/common.hpp"
 
-namespace k2 {
-template <> void ComponentInspectorWidget<k2::TransformComponent>(entt::registry& reg, entt::registry::entity_type e) {
+#include "ui/common.hpp"
+#include "ui/widgets/component_inspector.hpp"
+
+namespace k2::editor {
+template <> void ComponentWidget<k2::TransformComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& transform = reg.get<TransformComponent>(e);
     k2::editor::Vec3InputWidget("Translation", transform.translation);
     k2::editor::Vec3InputWidget("Scale", transform.scale);
     k2::editor::OrientationInputWidget("Orientation", transform.orientation);
 }
 
-template <> void ComponentInspectorWidget<k2::Camera>(entt::registry& reg, entt::registry::entity_type e) {
+template <> void ComponentWidget<k2::Camera>(entt::registry& reg, entt::registry::entity_type e) {
     auto& camera = reg.get<k2::Camera>(e);
     k2::editor::Vec3InputWidget("Position", camera.position);
     k2::editor::Vec3InputWidget("Target", camera.target);
@@ -82,16 +79,16 @@ template <> void ComponentInspectorWidget<k2::Camera>(entt::registry& reg, entt:
         camera.projection_traits);
 }
 
-template <> void ComponentInspectorWidget<k2::SpriteComponent>(entt::registry& reg, entt::registry::entity_type e) {
+template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& sprite = reg.get<k2::SpriteComponent>(e);
     ImGui::ColorEdit4("Color", glm::value_ptr(sprite.color));
-    std::array<char, 50> input;
+    std::array<char, 50> input {};
     ImGui::InputText("Resource ID", input.data(), input.size());
 
     k2::editor::RectInputWidget("UV Rect", sprite.uv_rect);
 }
 
-template <> void ComponentInspectorWidget<k2::TagComponent>(entt::registry& reg, entt::registry::entity_type e) {
+template <> void ComponentWidget<k2::TagComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& tag = reg.get<k2::TagComponent>(e);
     ImGui::InputText("Tag", tag.tag.data(), tag.tag.size());
 }

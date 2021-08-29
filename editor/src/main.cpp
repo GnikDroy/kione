@@ -2,12 +2,12 @@
 #include "platform/entry_point.hpp"
 
 #include "editor_layer.hpp"
-#include "widgets/log_viewer.hpp"
+#include "ui/widgets/log_viewer.hpp"
 
 #include <memory>
 
 class Editor : public k2::App {
-    k2::Window window { { .title { "Kione" } } };
+    k2::Window window { { .title { "Kione Editor" } } };
     k2::EditorLayer editor_layer;
     bool running = true;
 
@@ -27,7 +27,6 @@ public:
             editor_layer.start();
             editor_layer.update(0.0f);
 
-            glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             editor_layer.render();
         }
@@ -39,10 +38,10 @@ public:
             const auto event = std::move(window.events.front());
             window.events.pop();
 
-            if (event->type == "WindowFramebufferResizeEvent"_fnv1a) {
+            if (event->type == k2::WindowFramebufferResizeEvent::hash) {
                 auto* e = reinterpret_cast<k2::WindowFramebufferResizeEvent*>(event.get());
                 glViewport(0, 0, e->width, e->height);
-            } else if (event->type == "WindowCloseEvent"_fnv1a) {
+            } else if (event->type == k2::WindowCloseEvent::hash) {
                 k2::Log::app().info("Window Close Event Received.");
                 running = false;
             }

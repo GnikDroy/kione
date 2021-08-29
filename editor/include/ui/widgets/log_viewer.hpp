@@ -1,0 +1,32 @@
+#pragma once
+
+#include "core/imgui_theme.hpp"
+#include "core/logger.hpp"
+#include "ui/widgets/widget.hpp"
+
+namespace k2::editor {
+
+class EditorLoggerSink {
+public:
+    constexpr static inline size_t max_items = 2000;
+
+    using SinkType = k2::Log::RingBufferSink<Log::LoggerSinkType::MultiThreaded>;
+    inline static SinkType& get() {
+        static EditorLoggerSink instance;
+        return instance.sink;
+    }
+
+private:
+    SinkType sink;
+    EditorLoggerSink()
+        : sink(max_items) {
+        Log::core().add_sink(sink.get_sink());
+        Log::app().add_sink(sink.get_sink());
+    }
+};
+
+class LogViewer : public IWidget {
+public:
+    void render(EditorLayer&) override;
+};
+}
