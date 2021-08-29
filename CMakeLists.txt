@@ -144,6 +144,16 @@ function(glfw_build)
 endfunction()
 glfw_build()
 
+# Setup nfd
+FetchContent_Declare(
+        nfd
+        GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended
+        GIT_TAG        322d1bc2a98c7b8236195d458643ac8e76391011
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
+)
+FetchContent_MakeAvailable(nfd)
+
 # Setup glad
 function(glad_build)
     set(GLAD_PROFILE    "core"  CACHE INTERNAL "")
@@ -287,12 +297,6 @@ function(sol2_build)
             GIT_PROGRESS 1
     )
     FetchContent_MakeAvailable(sol2)
-#    if(NOT sol2_POPULATED)
-#        FetchContent_Populate(sol2)
-#    endif()
-#    add_library(sol2 INTERFACE)
-#    add_library(sol2 ALIAS sol2)
-#    target_include_directories(sol2 INTERFACE ${sol2_SOURCE_DIR})
 endfunction()
 sol2_build()
 

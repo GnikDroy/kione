@@ -52,6 +52,7 @@ target_link_libraries(kione2D
     glm::glm
     ImGui::ImGui
     IconFontCppHeaders::IconFontCppHeaders
+    nfd
 
     stb::stb
     assimp::assimp
