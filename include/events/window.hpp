@@ -5,49 +5,57 @@
 namespace k2 {
 using namespace k2::literals;
 struct WindowCloseEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowCloseEvent"_fnv1a;
     WindowCloseEvent()
-        : Event("WindowCloseEvent"_fnv1a) { }
+        : Event(hash) { }
 };
 
 struct WindowResizeEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowResizeEvent"_fnv1a;
     WindowResizeEvent()
-        : Event("WindowResizeEvent"_fnv1a) {};
+        : Event(hash) {};
     int width {}, height {};
 };
 
 struct WindowFramebufferResizeEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowFramebufferResizeEvent"_fnv1a;
     WindowFramebufferResizeEvent()
-        : Event("WindowFramebufferResizeEvent"_fnv1a) { }
+        : Event(hash) { }
     int width {}, height {};
 };
 
 struct WindowContentScaleChangeEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowContentScaleChangeEvent"_fnv1a;
     WindowContentScaleChangeEvent()
-        : Event("WindowContentScaleChangeEvent"_fnv1a) { }
+        : Event(hash) { }
     float x {}, y {};
 };
 
 struct WindowRepositionEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowRepositionEvent"_fnv1a;
     WindowRepositionEvent()
-        : Event("WindowRepositionEvent"_fnv1a) { }
+        : Event(hash) { }
     int x {}, y {};
 };
 
 struct WindowIconifyEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowIconifyEvent"_fnv1a;
     WindowIconifyEvent()
-        : Event("WindowIconifyEvent"_fnv1a) { }
+        : Event(hash) { }
     bool iconified {};
 };
 
 struct WindowMaximizeEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowMaximizeEvent"_fnv1a;
     WindowMaximizeEvent()
-        : Event("WindowMaximizeEvent"_fnv1a) { }
+        : Event(hash) { }
     bool maximized {};
 };
 
 struct WindowFocusChangeEvent : public Event {
+    constexpr static inline std::uint64_t hash = "WindowFocusChangeEvent"_fnv1a;
     WindowFocusChangeEvent()
-        : Event("WindowFocusChangeEvent"_fnv1a) { }
+        : Event(hash) { }
     bool focused {};
 };
 } // namespace k2

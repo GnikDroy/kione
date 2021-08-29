@@ -6,8 +6,9 @@
 namespace k2 {
 using namespace k2::literals;
 struct KeyboardKeyEvent : public Event {
+    constexpr static inline std::uint64_t hash = "KeyboardKeyEvent"_fnv1a;
     KeyboardKeyEvent()
-        : Event("KeyboardKeyEvent"_fnv1a) { }
+        : Event(hash) { }
     KeyboardDevice::KeyCode code {};
     int scan_code {};
     KeyboardDevice::KeyState state {};
@@ -15,8 +16,9 @@ struct KeyboardKeyEvent : public Event {
 };
 
 struct KeyboardCharEvent : public Event {
+    constexpr static inline std::uint64_t hash = "KeyboardCharEvent"_fnv1a;
     KeyboardCharEvent()
-        : Event("KeyboardCharEvent"_fnv1a) { }
+        : Event(hash) { }
     unsigned int code {};
 };
 } // namespace k2

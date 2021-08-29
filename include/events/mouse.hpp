@@ -6,34 +6,39 @@
 namespace k2 {
 using namespace k2::literals;
 struct MouseButtonEvent : public Event {
+    constexpr static inline std::uint64_t hash = "MouseButtonEvent"_fnv1a;
     MouseButtonEvent()
-        : Event("MouseButtonEvent"_fnv1a) { }
+        : Event(hash) { }
     MouseDevice::ButtonCode code {};
     KeyboardDevice::KeyState state {};
     KeyboardDevice::KeyMod mods {};
 };
 
 struct MouseDropEvent : public Event {
+    constexpr static inline std::uint64_t hash = "MouseDropEvent"_fnv1a;
     MouseDropEvent()
-        : Event("MouseDropEvent"_fnv1a) { }
+        : Event(hash) { }
     std::vector<std::string> paths;
 };
 
 struct CursorPositionEvent : public Event {
+    constexpr static inline std::uint64_t hash = "CursorPositionEvent"_fnv1a;
     CursorPositionEvent()
-        : Event("CursorPositionEvent"_fnv1a) { }
+        : Event(hash) { }
     double x {}, y {};
 };
 
 struct CursorEnterExitEvent : public Event {
+    constexpr static inline std::uint64_t hash = "CursorEnterExitEvent"_fnv1a;
     CursorEnterExitEvent()
-        : Event("CursorEnterExitEvent"_fnv1a) { }
+        : Event(hash) { }
     bool state {};
 };
 
 struct ScrollEvent : public Event {
+    constexpr static inline std::uint64_t hash = "ScrollEvent"_fnv1a;
     ScrollEvent()
-        : Event("ScrollEvent"_fnv1a) { }
+        : Event(hash) { }
     double x {}, y {};
 };
 } // namespace k2
