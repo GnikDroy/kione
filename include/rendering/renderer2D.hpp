@@ -123,7 +123,7 @@ public:
      * TODO: shadows?
      */
     void draw(std::span<const Renderer2D::Vertex> vertices, std::span<const std::uint32_t> indices,
-        const glm::mat3& transform = glm::mat4(1.0f), const std::uint32_t draw_mode = GL_TRIANGLES) {
+        const glm::mat4& transform = glm::mat4(1.0f), const std::uint32_t draw_mode = GL_TRIANGLES) {
         std::unordered_set<ResourceID> textures_new {};
         for (const auto& vertex : vertices) {
             textures_new.insert(vertex.texture);
@@ -154,7 +154,9 @@ public:
             vertex.texture = texture_unit_map[vertex.texture];
             vertices_vec.push_back(vertex);
         }
-        indices_vec.insert(indices_vec.end(), indices.begin(), indices.end());
+
+        std::ranges::transform(indices, std::back_inserter(indices_vec),
+            [offset = vertices_vec.size() - vertices.size()](auto& i) { return i + std::uint32_t(offset); });
     }
 
     void draw(const TransformComponent& transform, const SpriteComponent& sprite) {
