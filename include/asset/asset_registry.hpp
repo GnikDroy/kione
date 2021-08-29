@@ -3,10 +3,10 @@
 
 namespace k2 {
 struct AssetRegistry {
-    constexpr static inline std::string_view version = "0.0.1";
     std::unordered_map<std::string, Asset> assets;
 
-    AssetRegistry(const Asset& base_asset, bool recursively = true) { load(base_asset, recursively); }
+    AssetRegistry() = default;
+    explicit AssetRegistry(const Asset& asset, bool recursively = true) { load(asset, recursively); }
 
     // TODO: refactor
     AssetRegistry& load(const Asset& base_asset, bool recursively = true) {
@@ -24,7 +24,7 @@ struct AssetRegistry {
             stack.pop();
 
             if (asset.get_scheme() == Asset::Scheme::file) {
-                path_map[asset.get_id()] = asset.get_parts().path;
+                path_map[asset.get_id()] = asset.get_url_divisions().path;
             }
 
             if (!visited.count(fnv1a(asset.url))) {
@@ -32,9 +32,9 @@ struct AssetRegistry {
                 auto&& scope = get_scope(asset.get_id(), name_map, parent_map);
                 auto&& base = get_path(asset.get_id(), path_map, parent_map);
                 if (asset.get_scheme() == Asset::Scheme::file
-                    && std::filesystem::path(asset.get_parts().path).is_relative()) {
+                    && std::filesystem::path(asset.get_url_divisions().path).is_relative()) {
                     patch_url(asset, "", base);
-                    path_map[asset.get_id()] = asset.get_parts().path;
+                    path_map[asset.get_id()] = asset.get_url_divisions().path;
                 }
                 auto bundle = AssetLoader<Asset::Type::AssetBundle>::get_resource(asset);
                 merge(bundle, scope, base);
@@ -55,15 +55,16 @@ struct AssetRegistry {
     }
 
     // TODO: refactor
-    AssetRegistry& merge(const AssetBundle& bundle, const std::string& scope, const std::filesystem::path& base) {
+    AssetRegistry& merge(
+        const AssetBundle& bundle, const std::string& scope = "", const std::filesystem::path& base = "") {
         namespace fs = std::filesystem;
         for (auto& [name, asset] : bundle.assets) {
             auto scoped_name = scope.empty() || name.empty() ? (scope + name) : (scope + "." + name);
 
             assets[scoped_name] = asset;
 
-            // File paths can be relative so we patch that while including to registry.
-            if (asset.get_scheme() == Asset::Scheme::file && fs::path(asset.get_parts().path).is_relative()) {
+            // File paths can be relative, so we patch that while including to registry.
+            if (asset.get_scheme() == Asset::Scheme::file && fs::path(asset.get_url_divisions().path).is_relative()) {
                 auto asset_copy = asset;
                 patch_url(asset_copy, name, base);
                 assets[scoped_name] = asset_copy;
@@ -77,7 +78,7 @@ private:
     static void patch_url(Asset& asset, const std::string& name, const std::filesystem::path& base) {
         namespace fs = std::filesystem;
         auto new_path = base;
-        auto&& parts = asset.get_parts();
+        auto&& parts = asset.get_url_divisions();
         if (!name.empty()) {
             new_path /= fs::path(parts.path);
         } else {
@@ -94,7 +95,7 @@ private:
     // TODO: rename
     static std::string get_scope(Asset::ID id, const std::unordered_map<Asset::ID, std::string>& name_map,
         const std::unordered_map<Asset::ID, Asset::ID>& parent_map) {
-        std::string scope = "";
+        std::string scope;
         for (; parent_map.count(id); id = parent_map.at(id)) {
             scope = name_map.at(id) + (scope.empty() ? "" : ("." + scope));
         }

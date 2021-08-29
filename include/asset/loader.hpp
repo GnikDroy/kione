@@ -45,7 +45,7 @@ template <> struct AssetLoader<Asset::Type::Shader> {
 
 template <> struct AssetLoader<Asset::Type::Model> {
     // TODO: Custom Assimp IO logic.
-    static k2::Model get_resource(const Asset& asset) { return k2::Model { asset.get_parts().path }; }
+    static k2::Model get_resource(const Asset& asset) { return k2::Model { asset.get_url_divisions().path }; }
 };
 
 template <> struct AssetLoader<Asset::Type::AssetBundle> {

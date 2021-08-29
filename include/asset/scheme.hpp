@@ -12,14 +12,14 @@ template <Asset::Scheme T> struct AssetSchemeImpl;
 template <> struct AssetSchemeImpl<Asset::Scheme::file> {
     static std::unique_ptr<std::istream> get_stream(const Asset& asset) {
         assert(Asset::Scheme::file == asset.get_scheme() && "Asset of different scheme.");
-        return std::make_unique<std::ifstream>(asset.get_parts().path, std::ios::binary);
+        return std::make_unique<std::ifstream>(asset.get_url_divisions().path, std::ios::binary);
     }
 
     static std::vector<std::uint8_t> get_raw(const Asset& asset) {
         assert(Asset::Scheme::file == asset.get_scheme() && "Asset of different scheme.");
-        std::ifstream file_stream { asset.get_parts().path, std::ios::binary };
+        std::ifstream file_stream { asset.get_url_divisions().path, std::ios::binary };
         if (file_stream.fail()) {
-            throw std::runtime_error(fmt::format("Cannot open the file {}.", asset.get_parts().path));
+            throw std::runtime_error(fmt::format("Cannot open the file {}.", asset.get_url_divisions().path));
         }
         std::vector<std::uint8_t> raw;
         std::copy(

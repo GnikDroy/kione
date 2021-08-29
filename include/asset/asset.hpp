@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "core/fnv.hpp"
+#include "core/utils.hpp"
 
 namespace k2 {
 
@@ -16,14 +17,16 @@ struct Asset {
 
     struct URL {
         std::string_view scheme, authority, path, query, fragment;
+        bool operator==(const URL& url) const = default;
+        bool operator!=(const URL& url) const = default;
     };
 
     std::string url;
     Type type;
 
-    ID get_id() const { return fnv1a(url); }
+    [[nodiscard]] ID get_id() const { return fnv1a(url); }
 
-    std::string_view get_type_strv() const {
+    [[nodiscard]] std::string_view get_type_strv() const {
         switch (type) {
         case k2::Asset::Type::AssetBundle: return "AssetBundle";
         case k2::Asset::Type::Image: return "Image";
@@ -50,12 +53,12 @@ struct Asset {
         }
     }
 
-    URL get_parts() const {
+    [[nodiscard]] URL get_url_divisions() const {
         URL parts;
         static const std::regex url_regex {
             R"(([\d\w]+?):)" // Scheme
             R"((?:\/\/([^\/]*))?)" // Authority
-            R"((?:\/([^\?]*))?)" // Path
+            R"((?:\/([^\?#]*))?)" // Path
             R"((?:\?([^#]*))?)" // Query
             R"((?:\#(.*)?)?)" // Fragment
         };
@@ -72,21 +75,23 @@ struct Asset {
         return parts;
     };
 
-    Scheme get_scheme() const {
+    [[nodiscard]] Scheme get_scheme() const {
         using namespace k2::literals;
-        auto scheme_strv = get_parts().scheme;
+        auto scheme_strv = get_url_divisions().scheme;
 
         switch (fnv1a(scheme_strv.data(), scheme_strv.size())) {
-        case "https"_fnv1a: return Scheme::file;
+        case "https"_fnv1a: return Scheme::https;
         case "file"_fnv1a: return Scheme::file;
         default: throw std::invalid_argument("Scheme not implemented");
         }
     }
 
-    std::unordered_map<std::string_view, std::string_view> get_traits() const {
+    [[nodiscard]] std::unordered_map<std::string_view, std::string_view> get_traits() const {
         std::unordered_map<std::string_view, std::string_view> map;
-        auto query = get_parts().query;
-        auto pairs = string_view_split(query);
+        auto query = get_url_divisions().query;
+        if (query.empty())
+            return {};
+        auto pairs = string_view_split(query, '&');
 
         for (auto pair_sv : pairs) {
             auto end = std::min(pair_sv.find('='), pair_sv.size());
