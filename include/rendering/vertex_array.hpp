@@ -14,7 +14,7 @@ struct VertexAttributeTraits {
     size_t offset {};
     bool normalized {};
 
-    constexpr size_t num() const {
+    [[nodiscard]] constexpr size_t num() const {
         switch (data_type) {
         case ShaderDataType::Int: return 1;
         case ShaderDataType::Int2: return 2;
@@ -37,12 +37,12 @@ struct VertexAttributeTraits {
         case ShaderDataType::Double4: return 4;
 
         case ShaderDataType::Bool: return 1;
+        default: assert(false && "ShaderDataType not implemented.");
         }
-        assert(false && "ShaderDataType not implemented.");
         return 0;
     }
 
-    constexpr size_t size() const {
+    [[nodiscard]] constexpr size_t size() const {
         switch (data_type) {
         case ShaderDataType::Int: return 4;
         case ShaderDataType::Int2: return 4 * 2;

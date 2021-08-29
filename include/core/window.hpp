@@ -37,14 +37,14 @@ public:
 
     void update();
 
-    std::uint32_t get_width() const;
-    std::uint32_t get_height() const;
+    [[nodiscard]] ::uint32_t get_width() const;
+    [[nodiscard]] ::uint32_t get_height() const;
 
-    void* get_native_handle() const;
-    void* get_native_display() const;
+    [[nodiscard]] void* get_native_handle() const;
+    [[nodiscard]] void* get_native_display() const;
 
     void set_vsync(bool status);
-    bool is_vsync() const;
+    [[nodiscard]] bool is_vsync() const;
 
     std::queue<std::unique_ptr<Event>> events;
 };

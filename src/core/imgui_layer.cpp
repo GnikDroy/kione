@@ -50,7 +50,7 @@ ImguiLayer::~ImguiLayer() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     initialized_windows.erase(window);
-};
+}
 
 bool ImguiLayer::handle_event(const Event* event) {
     using namespace k2::literals;
@@ -95,6 +95,6 @@ void ImguiLayer::render() {
         glfwMakeContextCurrent(context);
 #endif
     }
-};
+}
 
 }

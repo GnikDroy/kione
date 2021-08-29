@@ -21,20 +21,22 @@ using Rectf = Rect<float>;
 using Recti = Rect<int>;
 
 template <class...> constexpr std::false_type always_false {};
-template <std::size_t...> constexpr std::false_type always_false_n {};
 
-std::vector<std::string_view> string_view_split(const std::string_view& str, char delim = ' ') {
+// Works similar to the python split() function.
+// No inconsistency between ' ' and other characters (unlike in python)
+// splitting with ' ' is similar to splitting with any other characters (unlike in python).
+inline std::vector<std::string_view> string_view_split(const std::string_view& str, char deliminator = ' ') {
     std::vector<std::string_view> vec;
-    std::size_t start {}, next {};
+    std::size_t start {}, next;
     do {
-        next = std::min(str.find(delim, start), str.size());
+        next = std::min(str.find(deliminator, start), str.size());
         vec.emplace_back(str.data() + start, next - start);
         start = next + 1;
     } while (next != str.size());
     return vec;
 }
 
-template <class T, class... Args> T to_integer(const char* first, const char* last, Args... args) {
+template <arithmetic T, class... Args> T to_integer(const char* first, const char* last, Args... args) {
     T t;
     std::from_chars_result res = std::from_chars(first, last, t, args...);
     if (res.ec == std::errc::invalid_argument) {

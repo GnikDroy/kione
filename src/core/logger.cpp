@@ -1,7 +1,6 @@
 #include "core/logger.hpp"
 
 #include <spdlog/sinks/ringbuffer_sink.h>
-#include <spdlog/spdlog.h>
 
 #include <any>
 
@@ -31,7 +30,7 @@ namespace sinks {
             : q_ { n_items } { }
 
         std::vector<std::pair<LogLevel, std::string>> get(size_t lim = 0) {
-            std::lock_guard<Mutex> lock(spdlog::sinks::base_sink<Mutex>::mutex_);
+            [[maybe_unused]] std::lock_guard<Mutex> lock(spdlog::sinks::base_sink<Mutex>::mutex_);
             auto items_available = q_.size();
             auto n_items = lim > 0 ? (std::min)(lim, items_available) : items_available;
             std::vector<std::pair<LogLevel, std::string>> ret;
@@ -72,7 +71,7 @@ struct Logger::Impl {
         logger->flush_on(spdlog::level::trace);
     }
 
-    void register_logger(std::any& sink_handle) {
+    void register_logger(std::any& sink_handle) const {
         logger->sinks().push_back(std::any_cast<spdlog::sink_ptr>(sink_handle));
     }
     std::shared_ptr<spdlog::logger> logger;

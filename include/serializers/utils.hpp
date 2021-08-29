@@ -16,9 +16,9 @@ template <class Archive> void serialize(Archive& ar, glm::vec4& vec) {
     ar(vec.x, vec.y, vec.z, vec.w);
 }
 
-template <class Archive> void serialize(Archive& ar, glm::quat& quat) {
+template <class Archive> void serialize(Archive& ar, glm::quat& quaternion) {
     ar(cereal::make_size_tag(4));
-    ar(quat.x, quat.y, quat.z, quat.w);
+    ar(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 }
 
 template <class Archive> void serialize(Archive& ar, glm::mat4& mat) {

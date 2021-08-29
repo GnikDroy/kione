@@ -25,16 +25,16 @@ struct Camera {
         float right;
         float top;
         float bottom;
-        float far_clip;
-        float near_clip;
+        float far_clip = -1000.0f;
+        float near_clip = 1000.0f;
     };
 
     using PerspectiveTraits = ProjectionTraits<Projection::Perspective>;
     using OrthographicTraits = ProjectionTraits<Projection::Orthographic>;
 
-    glm::vec3 position;
-    glm::vec3 target;
-    glm::vec3 up;
+    glm::vec3 position { 0, 0, 10.f };
+    glm::vec3 target { 0, 0, 0 };
+    glm::vec3 up { 0, 1.0f, 0 };
 
     std::variant<PerspectiveTraits, OrthographicTraits> projection_traits;
 

@@ -5,7 +5,6 @@
 namespace k2 {
 struct TagComponent {
     std::array<char, 50> tag {};
-
-    std::string_view str() const { return { tag.data() }; }
+    [[nodiscard]] std::string_view str() const { return { tag.data() }; }
 };
 }

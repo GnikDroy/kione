@@ -16,7 +16,7 @@ private:
         case 3: return GL_RGB8;
         case 4: return GL_RGBA8;
         default: {
-            k2::Log::core().warn(fmt::format("Incorrect number of channels ({}) for image, assuming RBGA8.", channels));
+            k2::Log::core().warn(fmt::format("Incorrect number of channels ({}) for image, assuming RGBA8.", channels));
             return GL_RGBA8;
         }
         }
@@ -59,7 +59,7 @@ public:
 
     ~Texture2D() { glDeleteTextures(1, &id); }
 
-    Texture2D(const Image& image, bool generate_mipmaps = true) { load(image, generate_mipmaps); }
+    explicit Texture2D(const Image& image, bool generate_mipmaps = true) { load(image, generate_mipmaps); }
 
     Texture2D(std::size_t width, std::size_t height, std::span<const std::uint8_t> data = {},
         GLuint sized_format = GL_RGBA8, bool generate_mipmaps = true) {
@@ -84,7 +84,7 @@ public:
         }
     }
 
-    operator bool() const { return id != 0; }
+    explicit operator bool() const { return id != 0; }
 
     void bind(std::uint32_t texture_unit) const {
         if (*this) {
@@ -97,9 +97,9 @@ public:
         Texture2D texture;
         glGenTextures(1, &texture.id);
         glBindTexture(GL_TEXTURE_2D, texture.id);
-        std::uint8_t data[] = { 0xFF, 0xFF, 0xFF, 0xFF };
+        std::array<std::uint8_t, 4> data = { 0xFF, 0xFF, 0xFF, 0xFF };
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 1, 1);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
         return texture;
     }
 
@@ -152,7 +152,7 @@ struct TextureCube {
         load(paths);
     }
 
-    operator bool() const { return id != 0; }
+    explicit operator bool() const { return id != 0; }
 
     TextureCube& load(const std::array<std::filesystem::path, 6>& texture_paths) {
         if (id == 0) {

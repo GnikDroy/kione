@@ -9,7 +9,7 @@
 namespace k2 {
 
 inline bool enable_debug() {
-    // Not possible to enable debug if GLFW hasn't been setup that way.
+    // Not possible to enable debug if GLFW hasn't been set up that way.
     // Only available in debug modes.
 #ifdef NDEBUG
     return false;

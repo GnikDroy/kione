@@ -21,9 +21,9 @@ public:
      * @brief Returns the number of resources currently held by the game.
      * @return Total number of resources held.
      */
-    std::size_t size() const { return resources.size(); }
+    [[nodiscard]] std::size_t size() const { return resources.size(); }
 
-    bool contains(ResourceID resource_id) const { return resources.count(resource_id); }
+    [[nodiscard]] bool contains(ResourceID resource_id) const { return resources.count(resource_id); }
 
     ResourceType& operator[](ResourceID id) { return resources[id]; }
 

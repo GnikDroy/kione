@@ -49,62 +49,62 @@ Window::Impl::Impl(Window* win, const WindowConfig& config) {
     glEnable(GL_MULTISAMPLE);
 
     glfwSetWindowCloseCallback(window.get(), [](auto glfw_window) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowCloseEvent>();
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 
     glfwSetWindowSizeCallback(window.get(), [](auto glfw_window, auto width, auto height) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowResizeEvent>();
         event->width = width;
         event->height = height;
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 
     glfwSetFramebufferSizeCallback(window.get(), [](auto glfw_window, auto width, auto height) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowFramebufferResizeEvent>();
         event->width = width;
         event->height = height;
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 
     glfwSetWindowContentScaleCallback(window.get(), [](auto glfw_window, auto x, auto y) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowContentScaleChangeEvent>();
         event->x = x;
         event->y = y;
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 
     glfwSetWindowPosCallback(window.get(), [](auto glfw_window, auto x, auto y) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowRepositionEvent>();
         event->x = x;
         event->y = y;
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 
     glfwSetWindowFocusCallback(window.get(), [](auto glfw_window, int focus) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowFocusChangeEvent>();
         event->focused = static_cast<bool>(focus);
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 
     glfwSetWindowIconifyCallback(window.get(), [](auto glfw_window, int iconified) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowIconifyEvent>();
         event->iconified = static_cast<bool>(iconified);
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 
     glfwSetWindowMaximizeCallback(window.get(), [](auto glfw_window, int maximized) {
-        auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto window_ = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
         auto event = std::make_unique<WindowMaximizeEvent>();
         event->maximized = static_cast<bool>(maximized);
-        window->events.push(std::move(event));
+        window_->events.push(std::move(event));
     });
 }
 
