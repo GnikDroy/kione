@@ -13,9 +13,10 @@ class ImguiLayer : public Layer {
 
 protected:
     k2::Window* window;
-    std::unique_ptr<Imgui::ImGuiTheme> theme;
 
 public:
+    std::unique_ptr<Imgui::ImGuiTheme> theme;
+
     explicit ImguiLayer(
         k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme = std::make_unique<Imgui::ImGuiThemeDark>());
 

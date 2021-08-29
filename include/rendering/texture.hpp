@@ -1,6 +1,8 @@
 #pragma once
 
+#include <fmt/core.h>
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <glad/glad.h>
 #include <span>
 

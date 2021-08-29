@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace k2 {
 constexpr std::uint64_t fnv1a(const char* str, std::size_t len) {

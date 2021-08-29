@@ -8,7 +8,10 @@
 
 #include "components/camera.hpp"
 #include "components/sprite.hpp"
+#include "components/transform.hpp"
+#include "core/scene.hpp"
 
+#include <numeric>
 #include <span>
 #include <unordered_map>
 #include <unordered_set>
@@ -104,6 +107,16 @@ public:
 
     FrameBuffer& get_frame_buffer() { return frame_buffer; }
 
+    void clear(std::uint32_t mask = GL_COLOR_BUFFER_BIT) {
+        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer.get_id());
+        glClear(mask);
+        if (!frame_buffer.is_swap_chain_target()) {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+    }
+
+    void set_clear_color(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
+
     /*
      * TODO: deferred lighting + forward renderer
      * TODO: light sources, directional and ambient light
@@ -173,6 +186,15 @@ public:
         };
         const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
         draw(vertices, indices, transform.get_matrix());
+    }
+
+    void draw(const Scene& scene) {
+        // TODO: how to select main camera here?
+        // TODO: do i even select the main camera here?
+        scene.registry.view<k2::Camera>().each([&](auto, const auto& cam) { camera = cam; });
+
+        scene.registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
+            [&](auto, const auto& transform, const auto& sprite) { draw(transform, sprite); });
     }
 
     void render() {

@@ -2,6 +2,7 @@
 #include <any>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace k2 {
 namespace Log {

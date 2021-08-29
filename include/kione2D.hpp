@@ -27,3 +27,5 @@
 #include "events/window.hpp"
 
 #include "components/camera.hpp"
+#include "components/sprite.hpp"
+#include "components/transform.hpp"

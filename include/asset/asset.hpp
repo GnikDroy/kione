@@ -1,8 +1,10 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <optional>
 #include <regex>
+#include <unordered_map>
 #include <yaml-cpp/yaml.h>
 
 #include "core/fnv.hpp"

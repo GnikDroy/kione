@@ -1,6 +1,10 @@
 #pragma once
 
 #include "asset/asset.hpp"
+#include <filesystem>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fstream>
 #include <memory>
 
 namespace k2 {

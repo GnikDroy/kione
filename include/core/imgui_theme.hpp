@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 namespace k2::Imgui {
 
