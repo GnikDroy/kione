@@ -1,15 +1,7 @@
 #pragma once
 
-#include <IconsFontAwesome5.h>
-#include <cassert>
 #include <entt/entt.hpp>
-#include <functional>
-#include <imgui.h>
-#include <map>
-#include <set>
-#include <string>
 
-#include "components/tag.hpp"
 #include "ui/widgets/widget.hpp"
 
 namespace k2::editor {

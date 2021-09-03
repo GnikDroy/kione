@@ -60,27 +60,6 @@ public:
                 .near_clip = 1000.f,
             } },
         };
-
-        // Test saving empty scene in a file.
-        {
-            k2::Scene scene {};
-            std::ostringstream os;
-            cereal::JSONOutputArchive archive(os);
-            archive(scene);
-            k2::Log::app().info(os.str());
-        }
-
-        // Test saving a scene in a file.
-        k2::Scene scene { .registry = std::move(registry) };
-
-        {
-            std::ostringstream os;
-            cereal::JSONOutputArchive archive(os);
-            archive(scene);
-            k2::Log::app().info(os.str());
-        }
-
-        registry = std::move(scene.registry);
     }
 
     void update(float) override { }
