@@ -4,14 +4,14 @@ layout (location = 0) out vec4 FragColor;
 
 in vec4 color;
 in vec2 texture_coordinate;
-flat in uint texture_index;
+flat in float texture_index;
 
 uniform sampler2D texture_list[32];
 
 void main()
 {
     vec4 out_color;
-    switch (texture_index) {
+    switch (int(texture_index)) {
         case 0: out_color = color * texture(texture_list[0], texture_coordinate); break;
         case 1: out_color = color * texture(texture_list[1], texture_coordinate); break;
         case 2: out_color = color * texture(texture_list[2], texture_coordinate); break;
@@ -38,7 +38,8 @@ void main()
         case 23: out_color = color * texture(texture_list[23], texture_coordinate); break;
         case 24: out_color = color * texture(texture_list[24], texture_coordinate); break;
         case 25: out_color = color * texture(texture_list[25], texture_coordinate); break;
-
+        default :
+        out_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
     }
     FragColor = out_color;
 }

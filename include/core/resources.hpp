@@ -23,6 +23,7 @@ public:
     template <class T> static ResourceContainer<T>& get() { return std::get<ResourceContainer<T>>(get().resources); }
 
     template <class T> static T& get(ResourceID id) { return get<T>()[id]; }
+    template <class T> static T* try_get(ResourceID id) { return get<T>().contains(id) ? &get<T>(id) : nullptr; }
 };
 
 using Resources = BasicResources<Shader, Image, Texture2D, TextureCube>;

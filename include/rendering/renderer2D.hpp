@@ -25,6 +25,12 @@ public:
         glm::vec2 texture_coordinate;
         ResourceID texture;
     };
+    struct VertexShaderInput {
+        glm::vec3 position;
+        glm::vec4 color;
+        glm::vec2 texture_coordinate;
+        float texture;
+    };
     Camera camera;
 
 private:
@@ -49,7 +55,7 @@ private:
         return ret;
     }("res/shaders/2D_vs.glsl", "res/shaders/2D_fs.glsl");
 
-    std::unordered_map<std::uint32_t, std::vector<Renderer2D::Vertex>> vertices_buffer {};
+    std::unordered_map<std::uint32_t, std::vector<Renderer2D::VertexShaderInput>> vertices_buffer {};
     std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> indices_buffer {};
     std::unordered_map<ResourceID, std::uint32_t> texture_unit_map {};
 
@@ -62,14 +68,14 @@ private:
 
 public:
     Renderer2D() {
-        vbo = VertexBuffer { max_vertices * sizeof(Vertex) };
+        vbo = VertexBuffer { max_vertices * sizeof(VertexShaderInput) };
         ebo = IndexBuffer { max_vertices * sizeof(std::uint32_t) };
         vao.apply({ {
                         .buffer = vbo.get(),
                         .attribute_trait {
                             .location = 0,
                             .data_type = ShaderDataType::Float3,
-                            .offset = offsetof(Vertex, position),
+                            .offset = offsetof(VertexShaderInput, position),
                         },
                     },
                       {
@@ -77,7 +83,7 @@ public:
                           .attribute_trait {
                               .location = 1,
                               .data_type = ShaderDataType::Float4,
-                              .offset = offsetof(Vertex, color),
+                              .offset = offsetof(VertexShaderInput, color),
                           },
                       },
                       {
@@ -85,18 +91,18 @@ public:
                           .attribute_trait {
                               .location = 2,
                               .data_type = ShaderDataType::Float2,
-                              .offset = offsetof(Vertex, texture_coordinate),
+                              .offset = offsetof(VertexShaderInput, texture_coordinate),
                           },
                       },
                       {
                           .buffer = vbo.get(),
                           .attribute_trait {
                               .location = 3,
-                              .data_type = ShaderDataType::Uint,
-                              .offset = offsetof(Vertex, texture),
+                              .data_type = ShaderDataType::Float,
+                              .offset = offsetof(VertexShaderInput, texture),
                           },
                       } },
-            sizeof(Vertex), ebo.get());
+            sizeof(VertexShaderInput), ebo.get());
     }
 
     Renderer2D(const Renderer2D&) = delete;
@@ -151,8 +157,10 @@ public:
 
         for (auto vertex : vertices) {
             vertex.position = glm::vec3(transform * glm::vec4(vertex.position, 1.0f));
-            vertex.texture = texture_unit_map[vertex.texture];
-            vertices_vec.push_back(vertex);
+            vertices_vec.push_back(VertexShaderInput { .position { vertex.position },
+                .color { vertex.color },
+                .texture_coordinate { vertex.texture_coordinate },
+                .texture = float(texture_unit_map[vertex.texture]) });
         }
 
         std::ranges::transform(indices, std::back_inserter(indices_vec),
@@ -207,8 +215,10 @@ public:
             std::iota(tex_unit_vec.begin(), tex_unit_vec.end(), 0);
 
             for (auto& [texture_id, texture_unit_index] : texture_unit_map) {
-                [[maybe_unused]] auto& texture = Resources::get<Texture2D>(texture_id);
-                texture.bind(texture_unit_index);
+                auto* texture = Resources::try_get<Texture2D>(texture_id);
+                if (texture) {
+                    texture->bind(texture_unit_index);
+                }
             }
 
             default_shader.use()
