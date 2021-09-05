@@ -3,10 +3,10 @@
 
 namespace k2 {
 struct AssetRegistry {
-    std::unordered_map<std::string, Asset> assets;
+    std::unordered_map<ResourceID, std::pair<std::string, Asset>> assets;
 
     AssetRegistry() = default;
-    explicit AssetRegistry(const Asset& asset, bool recursively = true) { load(asset, recursively); }
+    explicit AssetRegistry(const Asset& base_asset, bool recursively = true) { load(base_asset, recursively); }
 
     // TODO: refactor
     AssetRegistry& load(const Asset& base_asset, bool recursively = true) {
@@ -36,7 +36,7 @@ struct AssetRegistry {
                     patch_url(asset, "", base);
                     path_map[asset.get_id()] = asset.get_url_divisions().path;
                 }
-                auto bundle = AssetLoader<Asset::Type::AssetBundle>::get_resource(asset);
+                auto bundle = AssetLoader::get<AssetBundle>(asset);
                 merge(bundle, scope, base);
                 if (recursively) {
                     for (auto& [name, sub_asset] : bundle.assets) {
@@ -61,13 +61,13 @@ struct AssetRegistry {
         for (auto& [name, asset] : bundle.assets) {
             auto scoped_name = scope.empty() || name.empty() ? (scope + name) : (scope + "." + name);
 
-            assets[scoped_name] = asset;
+            assets[fnv1a(scoped_name)] = { scoped_name, asset };
 
             // File paths can be relative, so we patch that while including to registry.
             if (asset.get_scheme() == Asset::Scheme::file && fs::path(asset.get_url_divisions().path).is_relative()) {
-                auto asset_copy = asset;
-                patch_url(asset_copy, name, base);
-                assets[scoped_name] = asset_copy;
+                auto asset_ = asset;
+                patch_url(asset_, name, base);
+                assets[fnv1a(scoped_name)] = { scoped_name, asset_ };
             }
         }
         return *this;

@@ -12,13 +12,13 @@ namespace k2 {
 
 // A generic class responsible for loading / processing assets from memory into their respective resource.
 // For example from memory to the GPU
-// Capable of returning a resource, or a stream from an asset.
-// Some assets might not need complete loading. Sound files for instance can be streamed directly from the filesystem.
-// And it might be useful to just have the url in store.
-template <Asset::Type T> class AssetLoader;
+struct AssetLoader {
+    template <class T> static T get(const Asset& asset);
 
-template <> struct AssetLoader<Asset::Type::Image> {
-    static k2::Image get_resource(const Asset& asset) {
+    template <> k2::Image get(const Asset& asset) {
+        if (asset.type != Asset::Type::Image) {
+            throw std::invalid_argument("Invalid Asset Type!");
+        }
         auto traits = asset.get_traits();
         auto desired_channels = 0;
         if (traits.count("desired_channels")) {
@@ -29,27 +29,33 @@ template <> struct AssetLoader<Asset::Type::Image> {
         auto raw = AssetScheme::get_raw(asset);
         return k2::Image { raw, desired_channels };
     }
-};
 
-template <> struct AssetLoader<Asset::Type::Shader> {
-    static k2::Shader get_resource(const Asset& asset) {
+    template <> k2::Texture2D get(const Asset& asset) { return k2::Texture2D { AssetLoader::get<k2::Image>(asset) }; }
+
+    template <> k2::Shader get(const Asset& asset) {
+        if (asset.type != Asset::Type::Shader) {
+            throw std::invalid_argument("Invalid Asset Type!");
+        }
         auto traits = asset.get_traits();
         auto& type_sv = traits["type"];
         auto type = to_integer<std::uint32_t>(type_sv.data(), type_sv.data() + type_sv.size());
         auto stream = AssetScheme::get_stream(asset);
 
         std::string source { std::istreambuf_iterator<char>(*stream.get()), std::istreambuf_iterator<char>() };
-        return k2::Shader { type, source };
+        return { type, source };
     }
-};
 
-template <> struct AssetLoader<Asset::Type::Model> {
-    // TODO: Custom Assimp IO logic.
-    static k2::Model get_resource(const Asset& asset) { return k2::Model { asset.get_url_divisions().path }; }
-};
+    template <> k2::Model get(const Asset& asset) {
+        if (asset.type != Asset::Type::Model) {
+            throw std::invalid_argument("Invalid Asset Type!");
+        }
+        return k2::Model { asset.get_url_divisions().path };
+    }
 
-template <> struct AssetLoader<Asset::Type::AssetBundle> {
-    static AssetBundle get_resource(const Asset& asset) {
+    template <> k2::AssetBundle get(const Asset& asset) {
+        if (asset.type != Asset::Type::AssetBundle) {
+            throw std::invalid_argument("Invalid Asset Type!");
+        }
         auto stream = AssetScheme::get_stream(asset);
         auto bundle = YAML::Load(*stream).as<AssetBundle>();
         bundle.assets[""] = asset;

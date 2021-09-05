@@ -9,8 +9,6 @@
 #include "ui/windows/log_viewer.hpp"
 #include "ui/windows/viewport2D.hpp"
 
-#include "editor_resources.hpp"
-
 namespace k2 {
 class EditorLayer : public k2::ImguiLayer {
 public:
@@ -23,37 +21,10 @@ public:
     k2::editor::Viewport2DWindow viewport2D { ICON_FA_BINOCULARS "  Viewport 2D" };
 
     Scene scene;
+    AssetRegistry assets { { .url = "file:///res/icons/bundle.yaml" } };
 
-    explicit EditorLayer(k2::Window& window)
-        : k2::ImguiLayer(window) {
-        using namespace k2::literals;
-        k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
-
-        auto var = AssetRegistry({ .url = "file:///res/icons/bundle.yaml" });
-        for (auto& [id, asset] : var.assets) {
-            k2::Log::core().trace(
-                fmt::format("Name: '{}', URL: '{}', Type: '{}'", id, asset.url, asset.get_type_strv()));
-        }
-
-        for (auto& [id, asset] : var.assets) {
-            if (asset.type == Asset::Type::Image) {
-                auto image = AssetLoader<Asset::Type::Image>::get_resource(asset);
-                editor::Resources::get<Texture2D>()[fnv1a(id)] = Texture2D { image };
-                editor::Resources::get<Image>()[fnv1a(id)] = std::move(image);
-            }
-        }
-    }
-
-    void update(float) override {
-        ImGui::DockSpaceOverViewport();
-        main_menu_widget.render(*this);
-        component_inspector.render(*this);
-        entity_selector.render(*this);
-        log_viewer.render(*this);
-        debug_widget.render(*this);
-        file_explorer.render(*this);
-        viewport2D.render(*this);
-    }
+    explicit EditorLayer(k2::Window& window);
+    void update(float) override;
 };
 
 }

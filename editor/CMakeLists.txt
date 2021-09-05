@@ -1,6 +1,7 @@
 add_executable(
         editor
         src/main.cpp
+        src/editor_layer.cpp
         src/ui/widgets/asset.cpp
         src/ui/widgets/component_inspector.cpp
         src/ui/widgets/debug.cpp
