@@ -19,6 +19,7 @@ static void render_file_menu(EditorLayer& editor_layer) {
                 cereal::JSONInputArchive archive { scene_file_stream };
                 Scene new_scene;
                 archive(new_scene);
+                new_scene.registry.set<EditorLayer&>(editor_layer);
                 editor_layer.scene = std::move(new_scene);
                 Log::core().info(fmt::format("Opening file: {}", std::string_view { path.get() }));
             }

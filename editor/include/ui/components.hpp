@@ -83,17 +83,14 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
     auto& sprite = reg.get<k2::SpriteComponent>(e);
     ImGui::ColorEdit4("Color", glm::value_ptr(sprite.color));
 
-    std::array<char, 50> input {};
-    std::snprintf(input.data(), input.size(), "%llu", sprite.texture);
-    ImGui::InputText("Resource ID", input.data(), input.size());
-    std::istringstream str_stream { input.data() };
-    str_stream >> sprite.texture;
+    auto& editor_layer = reg.ctx<EditorLayer&>();
+    ResourceInputWidget("Texture", sprite.texture, editor_layer.assets);
 
     k2::editor::RectInputWidget("UV Rect", sprite.uv_rect);
 }
 
 template <> void ComponentWidget<k2::TagComponent>(entt::registry& reg, entt::registry::entity_type e) {
-    auto& tag = reg.get<k2::TagComponent>(e);
-    ImGui::InputText("Tag", tag.tag.data(), tag.tag.size());
+    auto& tag = reg.get<k2::TagComponent>(e).tag;
+    ImGui::InputText("Tag", tag.data(), tag.size());
 }
 }

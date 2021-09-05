@@ -260,4 +260,22 @@ inline void OrientationInputWidget(const std::string& label, glm::quat& quaterni
     euler_angles = glm::radians(euler_angles);
     quaternion = glm::quat(euler_angles);
 }
+
+inline void ResourceInputWidget(const std::string& label, ResourceID& id, const AssetRegistry& asset_registry) {
+    std::array<char, 50> input {};
+    if (asset_registry.assets.count(id)) {
+        auto& name = asset_registry.assets.at(id).first;
+        std::memcpy(input.data(), name.c_str(), input.size());
+        input[std::clamp(name.size(), 0ull, input.size() - 1)] = 0;
+        ImGui::InputText(label.c_str(), input.data(), input.size());
+    } else {
+        std::string_view invalid_txt { "Invalid ID!" };
+        std::memcpy(input.data(), invalid_txt.data(), input.size());
+        input[std::clamp(invalid_txt.size(), 0ull, input.size() - 1)] = 0;
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::InputText(label.c_str(), input.data(), input.size());
+        ImGui::PopStyleColor();
+    }
+    id = fnv1a(input.data());
+}
 }
