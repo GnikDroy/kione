@@ -11,8 +11,8 @@ struct TransformComponent {
     glm::vec3 scale;
 
     [[nodiscard]] glm::mat4 get_matrix() const {
-        return glm::scale(glm::mat4(1.0f), scale) * glm::toMat4(orientation)
-            * glm::translate(glm::mat4(1.0f), translation);
+        return glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(orientation)
+            * glm::scale(glm::mat4(1.0f), scale);
     }
 };
 
