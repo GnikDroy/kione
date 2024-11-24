@@ -1,15 +1,17 @@
 #include "editor_layer.hpp"
 #include "editor_resources.hpp"
+#include <format>
 
 namespace k2 {
 EditorLayer::EditorLayer(k2::Window& window)
     : k2::ImguiLayer(window) {
+    scene.registry.ctx().emplace<EditorLayer&>(*this);
     using namespace k2::literals;
     k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
 
     for (auto& [id, pair] : assets.assets) {
         auto&& [name, asset] = pair;
-        k2::Log::core().trace(fmt::format("Name: '{}', URL: '{}', Type: '{}'", name, asset.url, asset.get_type_strv()));
+        k2::Log::core().trace(std::format("Name: '{}', URL: '{}', Type: '{}'", name, asset.url, asset.get_type_strv()));
     }
 
     for (auto& [id, pair] : assets.assets) {

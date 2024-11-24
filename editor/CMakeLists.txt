@@ -47,10 +47,7 @@ target_precompile_headers(editor PRIVATE
         <utility>
         <variant>
         <vector>
-
-        [["fmt/core.h"]]
-        [["fmt/format.h"]]
-        [["fmt/ranges.h"]]
+        <format>
 
         [["entt/entt.hpp"]]
         )
@@ -62,7 +59,7 @@ set_target_properties(editor
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-        CXX_STANDARD 20
+        CXX_STANDARD 23
         )
 
 if (WIN32)

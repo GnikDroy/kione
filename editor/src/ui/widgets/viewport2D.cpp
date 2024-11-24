@@ -70,7 +70,7 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
     // Show the color attachment in viewport
     std::uint32_t texture_id = renderer2D.get_frame_buffer().get_traits().attachments.front().id;
 
-    ImGui::Image((void*)(std::uintptr_t)texture_id,
+    ImGui::Image((std::uint64_t)texture_id,
         { (float)renderer2D.get_frame_buffer().get_traits().width,
             (float)renderer2D.get_frame_buffer().get_traits().height },
         { 0, 1 }, { 1, 0 });

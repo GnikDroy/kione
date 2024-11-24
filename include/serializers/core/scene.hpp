@@ -11,16 +11,23 @@ namespace cereal {
 template <class Archive> void save(Archive& ar, const k2::Scene& scene) {
     auto& registry = scene.registry;
     entt::snapshot { registry }
-        .entities(ar)
-        .component<k2::TransformComponent, k2::SpriteComponent, k2::RelationComponent, k2::Camera, k2::TagComponent>(
-            ar);
+        .get<entt::entity>(ar)
+        .get<k2::TransformComponent>(ar)
+        .get<k2::SpriteComponent>(ar)
+        .get<k2::RelationComponent>(ar)
+        .get<k2::Camera>(ar)
+        .get<k2::TagComponent>(ar);
 }
 
 template <class Archive> void load(Archive& ar, k2::Scene& scene) {
     auto& registry = scene.registry;
     entt::snapshot_loader { registry }
-        .entities(ar)
-        .component<k2::TransformComponent, k2::SpriteComponent, k2::RelationComponent, k2::Camera, k2::TagComponent>(ar)
+        .get<entt::entity>(ar)
+        .get<k2::TransformComponent>(ar)
+        .get<k2::SpriteComponent>(ar)
+        .get<k2::RelationComponent>(ar)
+        .get<k2::Camera>(ar)
+        .get<k2::TagComponent>(ar)
         .orphans();
 }
 }

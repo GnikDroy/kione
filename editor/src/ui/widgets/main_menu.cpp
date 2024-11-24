@@ -19,9 +19,9 @@ static void render_file_menu(EditorLayer& editor_layer) {
                 cereal::JSONInputArchive archive { scene_file_stream };
                 Scene new_scene;
                 archive(new_scene);
-                new_scene.registry.set<EditorLayer&>(editor_layer);
+                new_scene.registry.ctx().emplace<EditorLayer&>(editor_layer);
                 editor_layer.scene = std::move(new_scene);
-                Log::core().info(fmt::format("Opening file: {}", std::string_view { path.get() }));
+                Log::core().info(std::format("Opening file: {}", std::string_view { path.get() }));
             }
         }
         if (ImGui::MenuItem("Save As", "CTRL+SHIFT+S")) {
@@ -31,7 +31,7 @@ static void render_file_menu(EditorLayer& editor_layer) {
                 std::ofstream scene_file_stream { path.get() };
                 cereal::JSONOutputArchive archive(scene_file_stream);
                 archive(editor_layer.scene);
-                Log::core().info(fmt::format("Saving file as: {}", std::string_view { path.get() }));
+                Log::core().info(std::format("Saving file as: {}", std::string_view { path.get() }));
             }
         }
         ImGui::EndMenu();

@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include "asset/asset.hpp"
-#include <fmt/format.h>
+#include <format>
 #include <string>
 #include <vector>
 
@@ -117,8 +117,8 @@ TEST_CASE("Asset query pair extraction.") {
     };
 
     for (auto& [url, map] : cases) {
-        INFO(fmt::format("{}", k2::Asset { .url = url }.get_traits()));
-        INFO(fmt::format("{}", map));
+        INFO(std::format("{}", k2::Asset { .url = url }.get_traits()));
+        INFO(std::format("{}", map));
         REQUIRE(k2::Asset { .url = url }.get_traits() == map);
     }
 }

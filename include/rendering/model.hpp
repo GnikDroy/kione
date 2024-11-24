@@ -22,6 +22,9 @@ class Model {
 public:
     Model() = default;
 
+    Model(const Model&) = delete;
+    Model& operator=(const Model&) = delete;
+
     explicit Model(const std::filesystem::path& path)
         : path { path } {
         Assimp::Importer importer;

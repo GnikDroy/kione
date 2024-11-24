@@ -1,8 +1,6 @@
 #pragma once
 
-#include <fmt/core.h>
-#include <fmt/format.h>
-#include <fmt/ostream.h>
+#include <format>
 #include <glad/glad.h>
 #include <span>
 
@@ -18,7 +16,7 @@ private:
         case 3: return GL_RGB8;
         case 4: return GL_RGBA8;
         default: {
-            k2::Log::core().warn(fmt::format("Incorrect number of channels ({}) for image, assuming RGBA8.", channels));
+            k2::Log::core().warn(std::format("Incorrect number of channels ({}) for image, assuming RGBA8.", channels));
             return GL_RGBA8;
         }
         }
@@ -174,8 +172,8 @@ struct TextureCube {
                             return GL_RGB;
                         if (image.channels == 4)
                             return GL_RGBA;
-                        k2::Log::core().warn(fmt::format(
-                            "Incorrect number of channels ({}) for image: {}", image.channels, texture_path));
+                        k2::Log::core().warn(std::format(
+                            "Incorrect number of channels ({}) for image: {}", image.channels, texture_path.string()));
                         return GL_RGBA;
                     }();
 
@@ -188,7 +186,7 @@ struct TextureCube {
                     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
                 } else {
-                    k2::Log::core().critical(fmt::format("Failed to load image at path: {}", texture_path.string()));
+                    k2::Log::core().critical(std::format("Failed to load image at path: {}", texture_path.string()));
                 }
             }
         }

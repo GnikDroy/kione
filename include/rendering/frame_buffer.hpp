@@ -86,7 +86,7 @@ struct FrameBuffer {
         }
         auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
-            Log::core().error(fmt::format("Couldn't fully create framebuffer GL Ret: {}", status));
+            Log::core().error(std::format("Couldn't fully create framebuffer GL Ret: {}", status));
             throw std::runtime_error("Couldn't fully create framebuffer.");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

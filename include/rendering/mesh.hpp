@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <format>
 
 #include "buffer.hpp"
 #include "core/resources.hpp"
@@ -103,11 +104,11 @@ public:
             textures_map[textures[i]].bind((uint32_t)i);
 
             if (type == Texture2D::Type::Diffuse) {
-                program.set_uniform(fmt::format("material.diffuse_{}", diffuse_num++), int(i));
+                program.set_uniform(std::format("material.diffuse_{}", diffuse_num++), int(i));
             } else if (type == Texture2D::Type::Specular) {
-                program.set_uniform(fmt::format("material.specular_{}", specular_num++), int(i));
+                program.set_uniform(std::format("material.specular_{}", specular_num++), int(i));
             } else if (type == Texture2D::Type::Normal) {
-                program.set_uniform(fmt::format("material.normal_{}", normal_num++), int(i));
+                program.set_uniform(std::format("material.normal_{}", normal_num++), int(i));
             }
         }
 

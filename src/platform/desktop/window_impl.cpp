@@ -1,3 +1,5 @@
+#include <format>
+
 #include "platform/desktop/window_impl.hpp"
 #include "events/window.hpp"
 #include <glad/glad.h>
@@ -31,8 +33,12 @@ Window::Impl::Impl(Window* win, const WindowConfig& config) {
         glfw_window_count++;
     }
 
-    glfwSetErrorCallback(
-        [](auto error_code, auto msg) { k2::Log::core().error(fmt::format("GLFW Error {} : {}", error_code, msg)); });
+    glfwSetErrorCallback([](auto error_code, auto msg) { 
+        k2::Log::core().error(std::format("GLFW Error {} : {}",
+            (uint32_t) error_code,
+            (const char*) msg)
+        );
+    });
 
     glfwSetWindowUserPointer(window.get(), win);
 
@@ -44,7 +50,7 @@ Window::Impl::Impl(Window* win, const WindowConfig& config) {
         k2::Log::core().info("GLAD initialization successful.");
     }
 
-    k2::Log::core().info(fmt::format("OpenGL version is {}", glGetString(GL_VERSION)));
+    k2::Log::core().info(std::format("OpenGL version is {}", (const char*) glGetString(GL_VERSION)));
     glViewport(0, 0, static_cast<int32_t>(config.width), static_cast<int32_t>(config.height));
     glEnable(GL_MULTISAMPLE);
 

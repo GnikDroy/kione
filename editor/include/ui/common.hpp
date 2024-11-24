@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+
 #include "core/utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

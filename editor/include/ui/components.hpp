@@ -30,8 +30,7 @@ template <> void ComponentWidget<k2::Camera>(entt::registry& reg, entt::registry
         items[int(k2::Camera::Projection::Perspective)] = "Perspective";
         items[int(k2::Camera::Projection::Orthographic)] = "Orthographic";
         return items;
-    }
-    ();
+    }();
     int item = int(camera.projection_traits.index());
     ImGui::Combo("Projection Type", &item, items.data(), int(items.size()));
 
@@ -83,7 +82,7 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
     auto& sprite = reg.get<k2::SpriteComponent>(e);
     ImGui::ColorEdit4("Color", glm::value_ptr(sprite.color));
 
-    auto& editor_layer = reg.ctx<EditorLayer&>();
+    auto& editor_layer = reg.ctx().get<EditorLayer&>();
     ResourceInputWidget("Texture", sprite.texture, editor_layer.assets);
 
     k2::editor::RectInputWidget("UV Rect", sprite.uv_rect);

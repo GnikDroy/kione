@@ -5,11 +5,8 @@
 #include <cmath>
 #include <concepts>
 #include <cstdint>
+#include <format>
 #include <numeric>
-
-#include <fmt/core.h>
-#include <fmt/format.h>
-#include <fmt/ranges.h>
 
 #include "core/utils.hpp"
 
@@ -301,10 +298,10 @@ template <arithmetic T> using Vector3 = Vector<T, 3>;
 
 } // namespace k2
 
-template <class T, std::size_t N> struct fmt::formatter<k2::Vector<T, N>> {
-    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+template <class T, std::size_t N> struct std::formatter<k2::Vector<T, N>> {
+    constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
 
-    template <typename FormatContext> auto format(const k2::Vector<T, N>& vec, FormatContext& ctx) {
+    auto format(const k2::Vector<T, N>& vec, std::format_context& ctx) const {
         if constexpr (N == 2) {
             return format_to(ctx.out(), "[{}, {}]", vec.x, vec.y);
         } else if constexpr (N == 3) {
@@ -316,5 +313,5 @@ template <class T, std::size_t N> struct fmt::formatter<k2::Vector<T, N>> {
 };
 
 template <k2::arithmetic T, std::size_t N> std::ostream& operator<<(std::ostream& out, const k2::Vector<T, N>& vec) {
-    return out << fmt::format("{}", vec);
+    return out << std::format("{}", vec);
 }

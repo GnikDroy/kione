@@ -22,14 +22,11 @@ target_precompile_headers(K2_tests PRIVATE
   <stdexcept>
   <type_traits>
   <concepts>
+  <format>
 
-  [["fmt/core.h"]]
-  [["fmt/ranges.h"]]
-  [["fmt/format.h"]]
 )
 target_link_libraries(K2_tests
     kione2D::kione2D
-    fmt::fmt
     Catch2::Catch2)
 
 set_target_properties(K2_tests
@@ -37,7 +34,7 @@ set_target_properties(K2_tests
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    CXX_STANDARD 20
+    CXX_STANDARD 23
 )
 target_compile_options(K2_tests PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest>

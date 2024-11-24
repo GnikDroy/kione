@@ -1,27 +1,27 @@
-cmake_minimum_required(VERSION 3.17)
-
+cmake_minimum_required(VERSION 3.16)
 project(
     kione2D
     VERSION 0.1
     LANGUAGES CXX C)
 
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
 # Set the default build type
-set(default_build_type "Debug")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(default_build_type "Debug")
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
         STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(FETCHCONTENT_QUIET FALSE)
 
-    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD 23)
     set(CMAKE_CXX_EXTENSIONS OFF)
 
     # Let's nicely support folders in IDEs
@@ -49,7 +49,7 @@ function(entt_build)
     FetchContent_Declare(
         EnTT
         GIT_REPOSITORY https://github.com/skypjack/entt
-        GIT_TAG        v3.8.1)
+        GIT_TAG        v3.14.0)
 
     FetchContent_MakeAvailable(EnTT)
 endfunction()
@@ -94,26 +94,19 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 # Setup spdlog
-FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog
-  GIT_TAG        v1.8.1
-  GIT_SHALLOW 1
-  GIT_PROGRESS 1
-  )
+function(spdlog_build)
+    set(SPDLOG_USE_STD_FORMAT ON CACHE INTERNAL "spdlog uses std::format" FORCE)
+    FetchContent_Declare(
+      spdlog
+      GIT_REPOSITORY https://github.com/gabime/spdlog
+      GIT_TAG        v1.15.0
+      GIT_SHALLOW 1
+      GIT_PROGRESS 1
+      )
+    FetchContent_MakeAvailable(spdlog)
+endfunction()
+spdlog_build()
 
-FetchContent_MakeAvailable(spdlog)
-
-# Setup fmtlib
-FetchContent_Declare(
-  fmtlib
-  GIT_REPOSITORY https://github.com/fmtlib/fmt
-  GIT_TAG        7.0.3
-  GIT_SHALLOW 1
-  GIT_PROGRESS 1
-  )
-
-FetchContent_MakeAvailable(fmtlib)
 
 # Setup glm
 FetchContent_Declare(
@@ -148,7 +141,7 @@ glfw_build()
 FetchContent_Declare(
         nfd
         GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended
-        GIT_TAG        322d1bc2a98c7b8236195d458643ac8e76391011
+        GIT_TAG        v1.2.1
         GIT_SHALLOW 1
         GIT_PROGRESS 1
 )
@@ -305,13 +298,22 @@ function(assimp_build)
 #    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Generation of shared libs. Set this to OFF to get static lib" FORCE)
     set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE INTERNAL "If supplementary tools for Assimp are built in addition to the library" FORCE)
     set(ASSIMP_BUILD_TESTS OFF CACHE INTERNAL "If the test suite for Assimp is built in addition to the library." FORCE)
+    set(ASSIMP_INSTALL_PDB OFF CACHE INTERNAL "Install pdb" FORCE)
+
+    set(ASSIMP_INSTALL ON CACHE INTERNAL "Don't install assimp" FORCE)
+    set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE INTERNAL "Enable obj importer" FORCE)
+    set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE INTERNAL "Enable fbx importer" FORCE)
+    set(ASSIMP_BUILD_BLEND_IMPORTER ON CACHE INTERNAL "Enable blend importer" FORCE)
+    set(ASSIMP_BUILD_COLLADA_IMPORTER ON CACHE INTERNAL "Enable collada importer" FORCE)
+    set(ASSIMP_BUILD_ALL_IMPORTER OFF CACHE INTERNAL "Enable all importer" FORCE)
+
     # NOTE: This might be useful later.
     set(ASSIMP_NO_EXPORT ON CACHE INTERNAL "Disable Assimp's export functionality" FORCE)
 
     FetchContent_Declare(
             assimp
             GIT_REPOSITORY https://github.com/assimp/assimp
-            GIT_TAG        76e3092b2a0a12001c1426309678d2f375b03904
+            GIT_TAG        v5.4.3
             GIT_SHALLOW 1
             GIT_PROGRESS 1
     )

@@ -47,7 +47,8 @@ void FileExplorerWidget::render(EditorLayer&) {
 
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                 auto texture_id = predict_icon_texture(entry);
-                ImGui::ImageButton((void*)(std::uintptr_t)texture_id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
+                ImGui::ImageButton((const char*)entry.path().string().c_str(), (std::uint64_t)texture_id,
+                    { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
                 ImGui::PopStyleColor();
 
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
@@ -64,25 +65,13 @@ void FileExplorerWidget::render(EditorLayer&) {
 std::uint64_t FileExplorerWidget::predict_icon_type(const std::filesystem::directory_entry& dirent) {
     using namespace k2::literals;
     if (dirent.is_directory()) {
-        return "folder"_fnv1a;
+        return "icon_folder"_fnv1a;
     }
     auto&& ext = dirent.path().extension();
     if (ext == ".jpg" || ext == ".png" || ext == ".bmp" || ext == ".jpeg" || ext == ".gif") {
-        return "image"_fnv1a;
+        return "icon_image"_fnv1a;
     }
-    if (ext == ".cpp" || ext == ".hpp" || ext == ".h" || ext == ".c" || ext == ".glsl") {
-        return "scripts"_fnv1a;
-    }
-    if (ext == ".mp3" || ext == ".wav" || ext == ".ogg") {
-        return "audio"_fnv1a;
-    }
-    if (ext == ".mp4" || ext == ".avi" || ext == ".flv") {
-        return "video"_fnv1a;
-    }
-    if (dirent.path().filename() == "bundle.yaml") {
-        return "asset_bundle"_fnv1a;
-    }
-    return "file"_fnv1a;
+    return "icon_file"_fnv1a;
 }
 
 ResourceID FileExplorerWidget::predict_icon_texture(const std::filesystem::directory_entry& dirent) {

@@ -2,7 +2,7 @@
 
 #include "core/logger.hpp"
 
-#include <fmt/format.h>
+#include <format>
 #include <glad/glad.h>
 #include <string>
 
@@ -46,19 +46,19 @@ inline bool enable_debug() {
         switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH:
             k2::Log::core().error(
-                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+                std::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
             k2::Log::core().warn(
-                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+                std::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
             break;
         case GL_DEBUG_SEVERITY_LOW:
             k2::Log::core().info(
-                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+                std::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
             break;
         default:
             k2::Log::core().trace(
-                fmt::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
+                std::format("GL ({}) [{}] [{}]: {}", id, type_str, source_str, std::string(message, message + length)));
         }
     };
 

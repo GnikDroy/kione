@@ -40,8 +40,8 @@ private:
     std::map<ComponentTypeID, ComponentInfo> component_infos;
 
     bool entity_has_component(Registry& registry, EntityType entity, ComponentTypeID type_id) {
-        ComponentTypeID type[] = { type_id };
-        return registry.runtime_view(std::cbegin(type), std::cend(type)).contains(entity);
+        const auto* storage_ptr = registry.storage(type_id);
+        return storage_ptr != nullptr && storage_ptr ->contains(entity);
     }
 
 public:

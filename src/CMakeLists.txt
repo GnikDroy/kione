@@ -35,10 +35,6 @@ target_precompile_headers(kione2D PRIVATE
   <type_traits>
   <concepts>
 
-  [["fmt/core.h"]]
-  [["fmt/ranges.h"]]
-  [["fmt/format.h"]]
-
   [["entt/entt.hpp"]]
 
   [["spdlog/spdlog.h"]]
@@ -63,7 +59,6 @@ target_link_libraries(kione2D
     cereal::cereal
     yaml-cpp
 
-    fmt::fmt
     spdlog::spdlog )
 
 set_target_properties(kione2D
@@ -71,7 +66,7 @@ set_target_properties(kione2D
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    CXX_STANDARD 20
+    CXX_STANDARD 23
 )
 
 target_compile_options(kione2D PRIVATE

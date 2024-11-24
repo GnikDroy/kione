@@ -6,7 +6,11 @@ struct AssetRegistry {
     std::unordered_map<ResourceID, std::pair<std::string, Asset>> assets;
 
     AssetRegistry() = default;
-    explicit AssetRegistry(const Asset& base_asset, bool recursively = true) { load(base_asset, recursively); }
+    explicit AssetRegistry(const Asset& base_asset, bool recursively = true) {
+        k2::Log::core().info(std::format("Loading asset: {}", base_asset.url));
+        load(base_asset, recursively);
+        k2::Log::core().info(std::format("Loaded asset: {}", base_asset.url));
+    }
 
     // TODO: refactor
     AssetRegistry& load(const Asset& base_asset, bool recursively = true) {

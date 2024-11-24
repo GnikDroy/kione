@@ -38,7 +38,7 @@ namespace sinks {
             for (size_t i = (items_available - n_items); i < items_available; i++) {
                 spdlog::memory_buf_t formatted;
                 spdlog::sinks::base_sink<Mutex>::formatter_->format(q_.at(i), formatted);
-                ret.emplace_back(convert_log_level(q_.at(i).level), fmt::to_string(formatted));
+                ret.emplace_back(convert_log_level(q_.at(i).level), formatted); // TODO
             }
             return ret;
         }
@@ -60,7 +60,7 @@ namespace sinks {
 struct Logger::Impl {
     explicit Impl(const std::string& name) {
         auto console_sink = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
-        auto file_sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(fmt::format("{}.log", name), true);
+        auto file_sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(std::format("{}.log", name), true);
 
         console_sink->set_pattern("%^[%T] %n: %v%$");
         file_sink->set_pattern("[%T] [%l] %n: %v");
