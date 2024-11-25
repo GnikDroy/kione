@@ -29,5 +29,8 @@ target_compile_options(K2_sandbox2D PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
 )
 
-add_custom_command(TARGET K2_sandbox2D PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:K2_sandbox2D>/res/)
+add_custom_command(TARGET K2_sandbox2D POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:K2_sandbox2D>/res/
+    COMMENT "cp ${CMAKE_CURRENT_SOURCE_DIR/res/} $<TARGET_FILE_DIR:K2_sandbox2D>/res/"
+)

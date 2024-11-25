@@ -22,20 +22,22 @@ public:
     void handle_events() {
         using namespace k2::literals;
         while (!window.events.empty()) {
-            const auto event = std::move(window.events.front());
+            const auto ev = std::move(window.events.front());
             window.events.pop();
 
-            // Handle all basic events
-            if (event->type == "WindowFramebufferResizeEvent"_fnv1a) {
-                auto* e = reinterpret_cast<k2::WindowFramebufferResizeEvent*>(event.get());
-                glViewport(0, 0, e->width, e->height);
-            } else if (event->type == "WindowCloseEvent"_fnv1a) {
+            HANDLE_EVENT(k2::WindowFramebufferResizeEvent, ev.get(), event, {
+                auto width = event.width;
+                auto height = event.height;
+                glViewport(0, 0, width, height);
+            })
+
+            HANDLE_EVENT(k2::WindowCloseEvent, ev.get(), event, {
                 k2::Log::app().info("Window Close Event Received.");
                 running = false;
-            }
+            })
 
             for (auto& layer : std::views::reverse(layers)) {
-                if (layer->handle_event(event.get())) {
+                if (layer->handle_event(ev.get())) {
                     break;
                 }
             }

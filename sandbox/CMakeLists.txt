@@ -1,6 +1,6 @@
 add_executable(
-  K2_sandbox
-  main.cpp
+    K2_sandbox
+    main.cpp
 )
 add_executable(kione2D::sandbox ALIAS K2_sandbox)
 
@@ -17,8 +17,9 @@ set_target_properties(K2_sandbox
 
 if (WIN32)
     set_target_properties(K2_sandbox
-            PROPERTIES
-            WIN32_EXECUTABLE true)
+        PROPERTIES
+        WIN32_EXECUTABLE true
+    )
 endif()
 
 # /wd4103 due to a msvc compiler bug
@@ -28,5 +29,8 @@ target_compile_options(K2_sandbox PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
 )
 
-add_custom_command(TARGET K2_sandbox PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:K2_sandbox>/res/)
+add_custom_command(TARGET K2_sandbox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:K2_sandbox>/res/
+    COMMENT "cp ${CMAKE_CURRENT_SOURCE_DIR/res/} $<TARGET_FILE_DIR:K2_sandbox>/res/"
+)

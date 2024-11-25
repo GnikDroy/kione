@@ -1,6 +1,7 @@
 #pragma once
 
 #include "components.hpp"
+#include "core/scene.hpp"
 #include "kione2D.hpp"
 #include "rendering/model.hpp"
 #include "skybox.hpp"
@@ -8,12 +9,10 @@
 class SceneLayer : public k2::Layer {
     k2::Window& window;
 
-    entt::registry registry {};
+    k2::Scene scene;
 
     k2::Program light_program {};
     k2::Program skybox_program {};
-
-    FPCamera fp_camera {};
 
     SkyBox skybox {};
 
@@ -64,7 +63,7 @@ public:
     SceneLayer& operator=(const SceneLayer&) = delete;
 
     void setup_scene() {
-        fp_camera = {
+        scene.registry.ctx().emplace<FPCamera>(FPCamera {
             .camera { .position {},
                 .target { 0.f, 0.f, -1.f },
                 .up { 0.f, 1.f, 0.f },
@@ -78,18 +77,19 @@ public:
                     },
                 } },
             .direction { 0.f, 0.f, -1.f },
-        };
+        });
 
-        auto backpack = registry.create();
-        registry.emplace<Transform>(backpack);
-        registry.emplace<k2::Model>(backpack, "res/models/backpack.obj");
+        auto backpack = scene.registry.create();
+        scene.registry.emplace<Transform>(backpack);
+        // scene.registry.emplace<k2::Model>(backpack, "res/models/backpack.obj");
+        scene.registry.emplace<k2::Model>(backpack, "res/models/trees.obj");
 
-        auto light = registry.create();
-        registry.emplace<Transform>(light,
+        auto light = scene.registry.create();
+        scene.registry.emplace<Transform>(light,
             Transform {
                 .position { 0.0f, 1.0f, -2.0f },
             });
-        registry.emplace<PointLight>(light,
+        scene.registry.emplace<PointLight>(light,
             PointLight {
                 .ambient { 0.2f, 0.2f, 0.2f }, .diffuse { 0.5f, 0.5f, 0.5f }, .specular { 1.0f, 1.0f, 1.0f } });
 
@@ -102,6 +102,7 @@ public:
 
         using k2::KeyboardDevice;
 
+        auto& fp_camera = scene.registry.ctx().get<FPCamera>();
         if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_w) == KeyboardDevice::KeyState::press) {
             fp_camera.camera.position += camera_speed * dt * fp_camera.direction;
         } else if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_s) == KeyboardDevice::KeyState::press) {
@@ -116,6 +117,7 @@ public:
     }
 
     void render() override {
+        auto& fp_camera = scene.registry.ctx().get<FPCamera>();
         fp_camera.update();
         auto view_mat = fp_camera.camera.get_view();
         auto projection_mat = fp_camera.camera.get_projection();
@@ -125,14 +127,14 @@ public:
             .set_uniform("projection", projection_mat);
         skybox.draw(skybox_program);
 
-        registry.view<Transform, k2::Model>().each([&](auto, auto& transform, auto& model) {
+        scene.registry.view<Transform, k2::Model>().each([&](auto, auto& transform, auto& model) {
             auto model_mat = [&]() {
                 auto translate = glm::translate(glm::mat4(1.0f), transform.position);
                 auto rotate = glm::eulerAngleXYZ(transform.rotation.x, transform.rotation.y, transform.rotation.z);
                 return glm::scale(translate * rotate, transform.scale);
             }();
 
-            registry.view<Transform, PointLight>().each([&](auto, auto& light_transform, auto& light) {
+            scene.registry.view<Transform, PointLight>().each([&](auto, auto& light_transform, auto& light) {
                 light_program.use()
                     .set_uniform("model", model_mat)
                     .set_uniform("view", view_mat)
@@ -148,13 +150,14 @@ public:
         });
     }
 
-    bool handle_event(const k2::Event* event) override {
+    bool handle_event(const k2::Event* ev) override {
         using namespace k2::literals;
 
-        if (event->type == "CursorPositionEvent"_fnv1a) {
-            auto e = reinterpret_cast<const k2::CursorPositionEvent*>(event);
-            auto diffX = -float(mouse_controller.last_cursor_x - e->x);
-            auto diffY = float(mouse_controller.last_cursor_y - e->y);
+        auto& fp_camera = scene.registry.ctx().get<FPCamera>();
+
+        HANDLE_EVENT(k2::CursorPositionEvent, ev, event, {
+            auto diffX = -float(mouse_controller.last_cursor_x - event.x);
+            auto diffY = float(mouse_controller.last_cursor_y - event.y);
 
             mouse_controller.yaw += diffX * mouse_controller.sensitivity;
             mouse_controller.pitch += diffY * mouse_controller.sensitivity;
@@ -169,9 +172,9 @@ public:
             fp_camera.direction.z = sin(glm::radians(mouse_controller.yaw)) * cos(glm::radians(mouse_controller.pitch));
             fp_camera.direction = glm::normalize(fp_camera.direction);
 
-            mouse_controller.last_cursor_x = float(e->x);
-            mouse_controller.last_cursor_y = float(e->y);
-        }
+            mouse_controller.last_cursor_x = float(event.x);
+            mouse_controller.last_cursor_y = float(event.y);
+        })
 
         return false;
     }

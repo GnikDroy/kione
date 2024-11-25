@@ -1,33 +1,34 @@
 add_executable(
-  K2_tests
-  main.cpp
-  resource_container.cpp
-  vector.cpp
-  utils.cpp
-  assets.cpp
-  imgui_theme.cpp
+    K2_tests
+    main.cpp
+    resource_container.cpp
+    vector.cpp
+    utils.cpp
+    assets.cpp
+    imgui_theme.cpp
 )
 add_executable(kione2D::tests ALIAS K2_tests)
 
 target_include_directories(K2_tests PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_precompile_headers(K2_tests PRIVATE
-  <iostream>
-  <memory>
-  <vector>
-  <string>
-  <unordered_map>
-  <cstdint>
-  <cmath>
-  <algorithm>
-  <stdexcept>
-  <type_traits>
-  <concepts>
-  <format>
-
+    <iostream>
+    <memory>
+    <vector>
+    <string>
+    <unordered_map>
+    <cstdint>
+    <cmath>
+    <algorithm>
+    <stdexcept>
+    <type_traits>
+    <concepts>
+    <format>
 )
+
 target_link_libraries(K2_tests
     kione2D::kione2D
-    Catch2::Catch2)
+    Catch2::Catch2
+)
 
 set_target_properties(K2_tests
     PROPERTIES

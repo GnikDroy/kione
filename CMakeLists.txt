@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 project(
     kione2D
     VERSION 0.1
-    LANGUAGES CXX C)
+    LANGUAGES CXX C
+)
 
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
@@ -49,7 +50,8 @@ function(entt_build)
     FetchContent_Declare(
         EnTT
         GIT_REPOSITORY https://github.com/skypjack/entt
-        GIT_TAG        v3.14.0)
+        GIT_TAG        v3.14.0
+    )
 
     FetchContent_MakeAvailable(EnTT)
 endfunction()
@@ -84,12 +86,12 @@ yaml_build()
 
 # Setup Catch 2
 FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v2.13.1
-  GIT_SHALLOW 1
-  GIT_PROGRESS 1
-  )
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v2.13.1
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
+)
 
 FetchContent_MakeAvailable(Catch2)
 
@@ -97,12 +99,12 @@ FetchContent_MakeAvailable(Catch2)
 function(spdlog_build)
     set(SPDLOG_USE_STD_FORMAT ON CACHE INTERNAL "spdlog uses std::format" FORCE)
     FetchContent_Declare(
-      spdlog
-      GIT_REPOSITORY https://github.com/gabime/spdlog
-      GIT_TAG        v1.15.0
-      GIT_SHALLOW 1
-      GIT_PROGRESS 1
-      )
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog
+        GIT_TAG        v1.15.0
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
+    )
     FetchContent_MakeAvailable(spdlog)
 endfunction()
 spdlog_build()
@@ -110,11 +112,11 @@ spdlog_build()
 
 # Setup glm
 FetchContent_Declare(
-        glm
-        GIT_REPOSITORY https://github.com/g-truc/glm
-        GIT_TAG        0.9.9.8
-        GIT_SHALLOW 1
-        GIT_PROGRESS 1
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm
+    GIT_TAG        0.9.9.8
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
 )
 
 FetchContent_MakeAvailable(glm)
@@ -126,11 +128,11 @@ function(glfw_build)
     set(GLFW_BUILD_DOCS      OFF CACHE INTERNAL "Build the GLFW documentation")
     set(GLFW_INSTALL         OFF CACHE INTERNAL "Generate installation target")
     FetchContent_Declare(
-      glfw
-      GIT_REPOSITORY https://github.com/glfw/glfw
-      GIT_TAG        3.3.2
-      GIT_SHALLOW 1
-      GIT_PROGRESS 1
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw
+        GIT_TAG        3.3.2
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
 
     FetchContent_MakeAvailable(glfw)
@@ -139,11 +141,11 @@ glfw_build()
 
 # Setup nfd
 FetchContent_Declare(
-        nfd
-        GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended
-        GIT_TAG        v1.2.1
-        GIT_SHALLOW 1
-        GIT_PROGRESS 1
+    nfd
+    GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended
+    GIT_TAG        v1.2.1
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
 )
 FetchContent_MakeAvailable(nfd)
 
@@ -153,11 +155,11 @@ function(glad_build)
     set(GLAD_API        "gl="   CACHE INTERNAL "")
     set(GLAD_GENERATOR  "c"     CACHE INTERNAL "")
     FetchContent_Declare(
-      glad
-      GIT_REPOSITORY https://github.com/Dav1dde/glad
-      GIT_TAG        v0.1.34
-      GIT_SHALLOW 1
-      GIT_PROGRESS 1
+        glad
+        GIT_REPOSITORY https://github.com/Dav1dde/glad
+        GIT_TAG        v0.1.34
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
 
     FetchContent_MakeAvailable(glad)
@@ -167,11 +169,11 @@ glad_build()
 
 # Setup Icon Fonts (Font Awesome)
 FetchContent_Declare(
-        iconFontCppHeaders
-        GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders
-        GIT_TAG        main
-        GIT_SHALLOW 1
-        GIT_PROGRESS 1
+    iconFontCppHeaders
+    GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders
+    GIT_TAG        main
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
 )
 
 FetchContent_GetProperties(IconFontCppHeaders)
@@ -185,39 +187,39 @@ endif()
 
 # Setup imgui
 FetchContent_Declare(
-  imgui
-  GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG        origin/docking
-  GIT_SHALLOW 1
-  GIT_PROGRESS 1
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG        origin/docking
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
 )
 
 FetchContent_GetProperties(ImGui)
 if(NOT ImGui_POPULATED)
-  FetchContent_Populate(ImGui)
-  add_library(ImGui
-    ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-    ${imgui_SOURCE_DIR}/imgui_tables.cpp ${imgui_SOURCE_DIR}/imgui_demo.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
-  add_library(ImGui::ImGui ALIAS ImGui)
-  set_target_properties(ImGui
-          PROPERTIES
-          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-          LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-          CXX_STANDARD 17
-          )
-  target_include_directories(ImGui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
-  target_link_libraries(ImGui glfw glad)
+    FetchContent_Populate(ImGui)
+    add_library(ImGui
+        ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp ${imgui_SOURCE_DIR}/imgui_demo.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+    add_library(ImGui::ImGui ALIAS ImGui)
+    set_target_properties(ImGui
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        CXX_STANDARD 17
+    )
+    target_include_directories(ImGui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
+    target_link_libraries(ImGui glfw glad)
 endif()
 
 # Setup stb
 function(stb_build)
     FetchContent_Declare(
-            stb
-            GIT_REPOSITORY https://github.com/nothings/stb
-            GIT_TAG        master
-            GIT_SHALLOW 1
-            GIT_PROGRESS 1
+        stb
+        GIT_REPOSITORY https://github.com/nothings/stb
+        GIT_TAG        master
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
     FetchContent_GetProperties(stb)
     if(NOT stb_POPULATED)
@@ -232,11 +234,11 @@ stb_build()
 # Setup lua
 function(lua_build)
     FetchContent_Declare(
-            lua
-            GIT_REPOSITORY https://github.com/lua/lua
-            GIT_TAG        v5.4.3
-            GIT_SHALLOW 1
-            GIT_PROGRESS 1
+        lua
+        GIT_REPOSITORY https://github.com/lua/lua
+        GIT_TAG        v5.4.3
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
     FetchContent_GetProperties(lua)
     if(NOT lua_POPULATED)
@@ -283,11 +285,11 @@ lua_build()
 
 function(sol2_build)
     FetchContent_Declare(
-            sol2
-            GIT_REPOSITORY https://github.com/ThePhD/sol2
-            GIT_TAG        v3.2.2
-            GIT_SHALLOW 1
-            GIT_PROGRESS 1
+        sol2
+        GIT_REPOSITORY https://github.com/ThePhD/sol2
+        GIT_TAG        v3.2.2
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
     FetchContent_MakeAvailable(sol2)
 endfunction()
@@ -295,27 +297,27 @@ sol2_build()
 
 # Setup assimp
 function(assimp_build)
-#    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Generation of shared libs. Set this to OFF to get static lib" FORCE)
+    # set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Generation of shared libs. Set this to OFF to get static lib" FORCE)
     set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE INTERNAL "If supplementary tools for Assimp are built in addition to the library" FORCE)
     set(ASSIMP_BUILD_TESTS OFF CACHE INTERNAL "If the test suite for Assimp is built in addition to the library." FORCE)
     set(ASSIMP_INSTALL_PDB OFF CACHE INTERNAL "Install pdb" FORCE)
 
     set(ASSIMP_INSTALL ON CACHE INTERNAL "Don't install assimp" FORCE)
-    set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE INTERNAL "Enable obj importer" FORCE)
-    set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE INTERNAL "Enable fbx importer" FORCE)
-    set(ASSIMP_BUILD_BLEND_IMPORTER ON CACHE INTERNAL "Enable blend importer" FORCE)
-    set(ASSIMP_BUILD_COLLADA_IMPORTER ON CACHE INTERNAL "Enable collada importer" FORCE)
+    set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE INTERNAL "Enable all importers by default" FORCE)
+    set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE INTERNAL "Enable OBJ importer" FORCE)
+    set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE INTERNAL "Enable FBX importer" FORCE)
+    set(ASSIMP_BUILD_BLEND_IMPORTER ON CACHE INTERNAL "Enable BLEND importer" FORCE)
+    set(ASSIMP_BUILD_COLLADA_IMPORTER ON CACHE INTERNAL "Enable COLLADA importer" FORCE)
     set(ASSIMP_BUILD_ALL_IMPORTER OFF CACHE INTERNAL "Enable all importer" FORCE)
 
-    # NOTE: This might be useful later.
     set(ASSIMP_NO_EXPORT ON CACHE INTERNAL "Disable Assimp's export functionality" FORCE)
 
     FetchContent_Declare(
-            assimp
-            GIT_REPOSITORY https://github.com/assimp/assimp
-            GIT_TAG        v5.4.3
-            GIT_SHALLOW 1
-            GIT_PROGRESS 1
+        assimp
+        GIT_REPOSITORY https://github.com/assimp/assimp
+        GIT_TAG        v5.4.3
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
     FetchContent_GetProperties(assimp)
     if(NOT assimp_POPULATED)
@@ -337,9 +339,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src)
 
 # Testing only available if stated explicitly
+set(K2_BUILD_TESTS ON CACHE BOOL "Enable building k2 tests")
 if(K2_BUILD_TESTS)
-  message(STATUS "Building k2 tests.")
-  add_subdirectory(tests)
+    message(STATUS "Building k2 tests.")
+    add_subdirectory(tests)
 endif()
 
 # Setup sandbox build

@@ -35,7 +35,13 @@ public:
             k2::Log::core().warn(importer.GetErrorString());
             return;
         }
+
+        k2::Log::core().trace(std::format("Loaded model: {}", path.string()));
         process_node(scene->mRootNode, scene);
+        auto num_meshes = meshes.size();
+        auto num_vertices = std::accumulate(
+            meshes.begin(), meshes.end(), size_t(0), [](auto n, const Mesh& mesh) { return n + mesh.vertices.size(); });
+        k2::Log::core().trace(std::format("Model contains: {} meshes and {} vertices", num_meshes, num_vertices));
     }
 
     void draw(const Program& program) {

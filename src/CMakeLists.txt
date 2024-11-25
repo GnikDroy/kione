@@ -1,45 +1,45 @@
 find_package(OpenGL REQUIRED)
 
 add_library(
-  kione2D
-  core/app.cpp
-  core/logger.cpp
-  core/layer.cpp
-  core/imgui_layer.cpp
-  events/event.cpp
-  platform/desktop/window.cpp
-  platform/desktop/window_impl.cpp
-  platform/desktop/keyboard.cpp
-  platform/desktop/mouse.cpp
-  platform/desktop/clipboard.cpp
-  stb_image.cpp
+    kione2D
+    core/app.cpp
+    core/logger.cpp
+    core/layer.cpp
+    core/imgui_layer.cpp
+    events/event.cpp
+    platform/desktop/window.cpp
+    platform/desktop/window_impl.cpp
+    platform/desktop/keyboard.cpp
+    platform/desktop/mouse.cpp
+    platform/desktop/clipboard.cpp
+    stb_image.cpp
 )
 add_library(kione2D::kione2D ALIAS kione2D)
 
 target_include_directories(kione2D PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_precompile_headers(kione2D PRIVATE
-  <iostream>
-  <memory>
-  <vector>
-  <string>
-  <unordered_map>
-  <map>
-  <set>
-  <unordered_set>
-  <cstdint>
-  <cmath>
-  <numeric>
-  <algorithm>
-  <cassert>
-  <stdexcept>
-  <type_traits>
-  <concepts>
+    <iostream>
+    <memory>
+    <vector>
+    <string>
+    <unordered_map>
+    <map>
+    <set>
+    <unordered_set>
+    <cstdint>
+    <cmath>
+    <numeric>
+    <algorithm>
+    <cassert>
+    <stdexcept>
+    <type_traits>
+    <concepts>
 
-  [["entt/entt.hpp"]]
+    [["entt/entt.hpp"]]
 
-  [["spdlog/spdlog.h"]]
-  [["spdlog/sinks/stdout_color_sinks.h"]]
-  [["spdlog/sinks/basic_file_sink.h"]]
+    [["spdlog/spdlog.h"]]
+    [["spdlog/sinks/stdout_color_sinks.h"]]
+    [["spdlog/sinks/basic_file_sink.h"]]
 )
 
 target_link_libraries(kione2D
@@ -59,7 +59,8 @@ target_link_libraries(kione2D
     cereal::cereal
     yaml-cpp
 
-    spdlog::spdlog )
+    spdlog::spdlog
+)
 
 set_target_properties(kione2D
     PROPERTIES

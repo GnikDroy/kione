@@ -1,8 +1,8 @@
 #pragma once
 
+#include <format>
 #include <glm/glm.hpp>
 #include <vector>
-#include <format>
 
 #include "buffer.hpp"
 #include "core/resources.hpp"
