@@ -265,8 +265,8 @@ inline void OrientationInputWidget(const std::string& label, glm::quat& quaterni
 
 inline void ResourceInputWidget(const std::string& label, ResourceID& id, const AssetRegistry& asset_registry) {
     std::array<char, 50> input {};
-    if (asset_registry.assets.count(id)) {
-        auto& name = asset_registry.assets.at(id).first;
+    if (asset_registry.count(id)) {
+        auto& name = asset_registry.at(id).first;
         std::memcpy(input.data(), name.c_str(), input.size());
         input[std::clamp(name.size(), 0ull, input.size() - 1)] = 0;
         ImGui::InputText(label.c_str(), input.data(), input.size());

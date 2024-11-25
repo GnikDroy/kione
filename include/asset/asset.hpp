@@ -5,6 +5,7 @@
 #include <optional>
 #include <regex>
 #include <unordered_map>
+#include <string_view>
 #include <yaml-cpp/yaml.h>
 
 #include "core/fnv.hpp"
@@ -14,7 +15,7 @@ namespace k2 {
 
 struct Asset {
     using ID = decltype(fnv1a(""));
-    enum class Scheme { file, https };
+    enum class Scheme { file };
     enum class Type { AssetBundle, Image, Shader, Font, Model, Audio, Data };
 
     struct URL {
@@ -82,7 +83,6 @@ struct Asset {
         auto scheme_strv = get_url_divisions().scheme;
 
         switch (fnv1a(scheme_strv.data(), scheme_strv.size())) {
-        case "https"_fnv1a: return Scheme::https;
         case "file"_fnv1a: return Scheme::file;
         default: throw std::invalid_argument("Scheme not implemented");
         }
@@ -108,7 +108,6 @@ struct Asset {
 };
 
 struct AssetBundle {
-    std::string version = "0.0.1";
     std::unordered_map<std::string, Asset> assets;
 };
 

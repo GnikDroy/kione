@@ -21,7 +21,7 @@ public:
     k2::editor::Viewport2DWindow viewport2D { ICON_FA_BINOCULARS "  Viewport 2D" };
 
     Scene scene;
-    AssetRegistry assets { { .url = "file:///res/editor.yaml" } };
+    AssetRegistry assets = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml" });
 
     explicit EditorLayer(k2::Window& window);
     void update(float) override;

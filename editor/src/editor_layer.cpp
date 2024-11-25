@@ -9,12 +9,12 @@ EditorLayer::EditorLayer(k2::Window& window)
     using namespace k2::literals;
     k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
 
-    for (auto& [id, pair] : assets.assets) {
+    for (auto& [id, pair] : assets) {
         auto&& [name, asset] = pair;
-        k2::Log::core().trace(std::format("Name: '{}', URL: '{}', Type: '{}'", name, asset.url, asset.get_type_strv()));
+        k2::Log::core().trace(std::format("Loaded {} asset: '{}'", asset.get_type_strv(), name));
     }
 
-    for (auto& [id, pair] : assets.assets) {
+    for (auto& [id, pair] : assets) {
         auto&& [name, asset] = pair;
         if (asset.type == Asset::Type::Image) {
             auto image = AssetLoader::get<k2::Image>(asset);

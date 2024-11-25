@@ -1,123 +1,158 @@
 #pragma once
+#include "asset.hpp"
 #include "asset/loader.hpp"
 
-namespace k2 {
-struct AssetRegistry {
-    std::unordered_map<ResourceID, std::pair<std::string, Asset>> assets;
+#include <filesystem>
+#include <ranges>
 
-    AssetRegistry() = default;
-    explicit AssetRegistry(const Asset& base_asset, bool recursively = true) {
-        k2::Log::core().info(std::format("Loading asset: {}", base_asset.url));
-        load(base_asset, recursively);
-        k2::Log::core().info(std::format("Loaded asset: {}", base_asset.url));
+namespace k2 {
+using AssetRegistry = std::unordered_map<ResourceID, std::pair<std::string, Asset>>;
+
+class AssetRegistryLoader {
+    Asset root;
+    AssetRegistry& registry;
+    bool recurse {};
+
+    std::stack<Asset> stack {};
+    std::unordered_set<Asset::ID> visited {};
+
+    std::unordered_map<Asset::ID, Asset::ID> node_to_parent {};
+    std::unordered_map<Asset::ID, std::string> asset_id_to_name {};
+    std::unordered_map<Asset::ID, std::string> asset_id_to_path {};
+
+public:
+    static AssetRegistry load(Asset root, bool recurse = true) {
+        AssetRegistry registry;
+        AssetRegistryLoader loader { root, recurse, registry };
+        return registry;
     }
 
-    // TODO: refactor
-    AssetRegistry& load(const Asset& base_asset, bool recursively = true) {
-        std::stack<Asset> stack;
-        std::unordered_set<Asset::ID> visited;
+private:
+    AssetRegistryLoader(Asset root, bool recurse, AssetRegistry& registry)
+        : recurse { recurse }
+        , root { root }
+        , registry { registry } {
+        if (root.type != k2::Asset::Type::AssetBundle) {
+            throw std::runtime_error(std::format("Root asset: {} must be an asset bundle", root.url));
+        }
 
-        std::unordered_map<Asset::ID, Asset::ID> parent_map;
-        std::unordered_map<Asset::ID, std::string> name_map;
-        std::unordered_map<Asset::ID, std::string> path_map;
+        load();
 
-        stack.push(base_asset);
+        k2::Log::core().info(std::format("Loaded asset: {}", root.url));
+    }
 
+    void load() {
+        stack.push(root);
         while (!stack.empty()) {
             auto asset = stack.top();
             stack.pop();
 
-            if (asset.get_scheme() == Asset::Scheme::file) {
-                path_map[asset.get_id()] = asset.get_url_divisions().path;
-            }
-
-            if (!visited.count(fnv1a(asset.url))) {
+            if (!visited.contains(fnv1a(asset.url))) {
                 visited.insert(fnv1a(asset.url));
-                auto&& scope = get_scope(asset.get_id(), name_map, parent_map);
-                auto&& base = get_path(asset.get_id(), path_map, parent_map);
-                if (asset.get_scheme() == Asset::Scheme::file
-                    && std::filesystem::path(asset.get_url_divisions().path).is_relative()) {
-                    patch_url(asset, "", base);
-                    path_map[asset.get_id()] = asset.get_url_divisions().path;
-                }
-                auto bundle = AssetLoader::get<AssetBundle>(asset);
-                merge(bundle, scope, base);
-                if (recursively) {
-                    for (auto& [name, sub_asset] : bundle.assets) {
-                        if (sub_asset.type == Asset::Type::AssetBundle && !visited.count(fnv1a(sub_asset.url))
-                            && !name.empty()) {
-                            stack.push(sub_asset);
-                            auto&& id = sub_asset.get_id();
-                            parent_map[id] = asset.get_id();
-                            name_map[id] = name;
-                        }
-                    }
-                }
+                process_asset_bundle(asset);
             }
         }
-        return *this;
     }
 
-    // TODO: refactor
-    AssetRegistry& merge(
-        const AssetBundle& bundle, const std::string& scope = "", const std::filesystem::path& base = "") {
+    void process_asset_bundle(Asset asset) {
         namespace fs = std::filesystem;
-        for (auto& [name, asset] : bundle.assets) {
-            auto scoped_name = scope.empty() || name.empty() ? (scope + name) : (scope + "." + name);
 
-            assets[fnv1a(scoped_name)] = { scoped_name, asset };
+        // Strip filename from asset bundle url when storing path
+        auto parts = asset.get_url_divisions();
+        auto path = fs::path(parts.path).parent_path().string();
+        asset_id_to_path[asset.get_id()] = path;
 
-            // File paths can be relative, so we patch that while including to registry.
-            if (asset.get_scheme() == Asset::Scheme::file && fs::path(asset.get_url_divisions().path).is_relative()) {
-                auto asset_ = asset;
-                patch_url(asset_, name, base);
-                assets[fnv1a(scoped_name)] = { scoped_name, asset_ };
+        auto bundle = merge(asset);
+
+        if (recurse) {
+            auto recursable_assets = bundle.assets | std::views::filter([&](const auto& pair) {
+                auto& [name, asset] = pair;
+                bool is_asset_bundle = asset.type == Asset::Type::AssetBundle;
+                bool is_not_visited = !visited.contains(fnv1a(asset.url));
+                bool is_not_self = !name.empty();
+                return is_asset_bundle && is_not_visited && is_not_self;
+            });
+
+            for (const auto& [name, child_asset] : recursable_assets) {
+                stack.push(child_asset);
+                auto id = child_asset.get_id();
+                node_to_parent[id] = asset.get_id();
+                asset_id_to_name[id] = name;
             }
         }
-        return *this;
     }
 
-private:
-    // TODO: rename
-    static void patch_url(Asset& asset, const std::string& name, const std::filesystem::path& base) {
+    AssetBundle merge(Asset base_asset) {
         namespace fs = std::filesystem;
-        auto new_path = base;
-        auto&& parts = asset.get_url_divisions();
+
+        auto bundle = AssetLoader::get<AssetBundle>(base_asset);
+        auto base_name = get_fully_qualified_name(base_asset);
+
+        for (auto [child_name, child_asset] : bundle.assets) {
+            auto full_name = join_name(base_name, child_name);
+
+            // File paths can be relative, therefore,
+            // we make sure base path is taken into consideration
+            if (fs::path(child_asset.get_url_divisions().path).is_relative()) {
+                auto base_path = asset_id_to_path[base_asset.get_id()];
+                child_asset.url = compute_new_path(child_asset, child_name, base_path);
+            }
+
+            registry[fnv1a(full_name)] = { full_name, child_asset };
+        }
+        return bundle;
+    }
+
+    static std::string join_name(const std::string& head, const std::string& tail) {
+        if (head.empty() || tail.empty()) {
+            return head + tail;
+        }
+        return head + "." + tail;
+    }
+
+    static std::string compute_new_path(const Asset& asset, const std::string& name, const std::string& base) {
+        namespace fs = std::filesystem;
+        auto parts = asset.get_url_divisions();
+
+        fs::path new_path = base;
+
         if (!name.empty()) {
             new_path /= fs::path(parts.path);
         } else {
             new_path /= fs::path(parts.path).filename();
         }
-        auto new_url = std::string(parts.scheme) + ":" + // clang-format: no-join
-            "//" + std::string(parts.authority) + //
-            (parts.path.empty() ? "" : "/") + new_path.lexically_normal().string() + //
-            (parts.query.empty() ? "" : "?") + std::string(parts.query) + //
-            (parts.fragment.empty() ? "" : "#") + std::string(parts.fragment); //
-        asset.url = std::move(new_url);
+
+        return build_url(parts.scheme, parts.authority, new_path, parts.query, parts.fragment);
     }
 
-    // TODO: rename
-    static std::string get_scope(Asset::ID id, const std::unordered_map<Asset::ID, std::string>& name_map,
-        const std::unordered_map<Asset::ID, Asset::ID>& parent_map) {
-        std::string scope;
-        for (; parent_map.count(id); id = parent_map.at(id)) {
-            scope = name_map.at(id) + (scope.empty() ? "" : ("." + scope));
-        }
-        return scope;
+    static std::string build_url(std::string_view scheme, std::string_view authority, const std::filesystem::path& path,
+        std::string_view query, std::string_view fragment) {
+        auto new_path = path.empty() ? "" : "/" + path.lexically_normal().string();
+        auto new_query = query.empty() ? "" : "?" + std::string(query);
+        auto new_fragment = fragment.empty() ? "" : "#" + std::string(fragment);
+
+        return std::format("{}://{}{}{}{}", scheme, authority, new_path, new_query, new_fragment);
     }
 
-    // TODO: rename
-    static std::filesystem::path get_path(Asset::ID id, const std::unordered_map<Asset::ID, std::string>& path_map,
-        const std::unordered_map<Asset::ID, Asset::ID>& parent_map) {
-        std::filesystem::path path;
-        for (; path_map.count(id); id = parent_map.at(id)) {
-            auto parent_path = std::filesystem::path(path_map.at(id)).parent_path();
-            path = parent_path / path;
-            if (!parent_path.is_relative() || !parent_map.count(id)) {
-                break;
-            }
+    std::string get_fully_qualified_name(const Asset& asset) {
+        auto id = asset.get_id();
+        std::string full_name = asset_id_to_name[id];
+
+        for (; node_to_parent.contains(id); id = node_to_parent.at(id)) {
+            full_name = join_name(asset_id_to_name[id], full_name);
         }
-        return path;
+        return full_name;
+    }
+
+    std::filesystem::path get_base_path(const Asset& asset) {
+        auto id = asset.get_id();
+        std::filesystem::path base_path = asset.get_url_divisions().path;
+
+        for (; node_to_parent.contains(id) && base_path.is_relative(); id = node_to_parent.at(id)) {
+            base_path = std::filesystem::path(asset_id_to_path.at(id)).parent_path() / base_path;
+        }
+        return base_path;
     }
 };
+
 }
