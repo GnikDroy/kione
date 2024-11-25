@@ -37,8 +37,8 @@ struct ImGuiThemeDark : ImGuiTheme {
         using namespace k2::literals;
         colors["primary"_fnv1a] = HexColorToImVec4("#3F51B5ff");
         colors["primary_alt"_fnv1a] = HexColorToImVec4("#303F9Fff");
-        colors["secondary"_fnv1a] = HexColorToImVec4("#792021ff");
-        colors["secondary_alt"_fnv1a] = HexColorToImVec4("#7d1021ff");
+        colors["secondary"_fnv1a] = HexColorToImVec4("#ddddddff");
+        colors["secondary_alt"_fnv1a] = HexColorToImVec4("#ccccccff");
         colors["background"_fnv1a] = HexColorToImVec4("#181818ff");
         colors["background_alt"_fnv1a] = HexColorToImVec4("#141414ff");
 
