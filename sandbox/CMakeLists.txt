@@ -32,5 +32,5 @@ target_compile_options(K2_sandbox PRIVATE
 add_custom_command(TARGET K2_sandbox POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:K2_sandbox>/res/
-    COMMENT "cp ${CMAKE_CURRENT_SOURCE_DIR/res/} $<TARGET_FILE_DIR:K2_sandbox>/res/"
+    COMMENT "COPY res directory to build"
 )

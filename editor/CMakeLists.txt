@@ -80,5 +80,5 @@ target_compile_options(editor PRIVATE
 add_custom_command(TARGET editor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:editor>/res/
-    COMMENT "cp ${CMAKE_CURRENT_SOURCE_DIR/res/} $<TARGET_FILE_DIR:editor>/res/"
+    COMMENT "COPY res directory to build"
 )
