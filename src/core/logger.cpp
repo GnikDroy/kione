@@ -38,7 +38,7 @@ namespace sinks {
             for (size_t i = (items_available - n_items); i < items_available; i++) {
                 spdlog::memory_buf_t formatted;
                 spdlog::sinks::base_sink<Mutex>::formatter_->format(q_.at(i), formatted);
-                ret.emplace_back(convert_log_level(q_.at(i).level), formatted); // TODO
+                ret.emplace_back(convert_log_level(q_.at(i).level), formatted);
             }
             return ret;
         }
@@ -134,9 +134,13 @@ template <auto V> struct LoggerInnerType;
 
 template <auto V> using LoggerInnerTypeV = typename LoggerInnerType<V>::type;
 
-template <> struct LoggerInnerType<LoggerSinkType::SingleThreaded> { using type = spdlog::details::null_mutex; };
+template <> struct LoggerInnerType<LoggerSinkType::SingleThreaded> {
+    using type = spdlog::details::null_mutex;
+};
 
-template <> struct LoggerInnerType<LoggerSinkType::MultiThreaded> { using type = std::mutex; };
+template <> struct LoggerInnerType<LoggerSinkType::MultiThreaded> {
+    using type = std::mutex;
+};
 
 template <LoggerSinkType V> using RingBufferSinkT = sinks::ringbuffer_sink<LoggerInnerTypeV<V>>;
 

@@ -8,7 +8,6 @@ namespace k2 {
 class Window;
 
 class ImguiLayer : public Layer {
-    // TODO: Convert to Meyer's static singleton
     static inline std::unordered_set<k2::Window*> initialized_windows {};
 
 protected:
