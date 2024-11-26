@@ -14,6 +14,12 @@ protected:
 public:
     explicit Viewport2DWindow(const std::string& title)
         : IImGuiWindow(title) { }
+
+    virtual void render(k2::EditorLayer& editor_layer) override {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        IImGuiWindow::render(editor_layer);
+        ImGui::PopStyleVar();
+    }
 };
 
 }

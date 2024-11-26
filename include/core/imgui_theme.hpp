@@ -106,7 +106,7 @@ struct ImGuiThemeDark : ImGuiTheme {
         im_colors[ImGuiCol_NavWindowingDimBg] = HexColorToImVec4("#33333333");
         im_colors[ImGuiCol_ModalWindowDimBg] = HexColorToImVec4("#33333359");
 
-        style.WindowPadding = ImVec2(4.f, 6.f);
+        style.WindowPadding = ImVec2(10.f, 10.f);
         style.FramePadding = ImVec2(8.f, 6.f);
         style.ItemSpacing = ImVec2(8.f, 6.f);
         style.ItemInnerSpacing = ImVec2(8.f, 6.f);
