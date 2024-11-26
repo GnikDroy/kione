@@ -3,18 +3,19 @@
 #include "editor_layer.hpp"
 
 namespace k2::editor {
-// TODO: Optimize
-// Store dirent and current_path instead of querying every frame. Add reload button.
+
+void FileExplorerWidget::cache_entries() {
+    namespace fs = std::filesystem;
+    if (cached_entries.first != current_directory) {
+        cached_entries.first = current_directory;
+        cached_entries.second.clear();
+        for (const auto& entry : fs::directory_iterator(current_directory)) {
+            cached_entries.second.push_back(entry);
+        }
+    }
+}
 
 void FileExplorerWidget::render(EditorLayer&) {
-    namespace fs = std::filesystem;
-    static auto icon_size = 75.f;
-    constexpr auto icon_padding = 20.f;
-
-    auto avail_width = ImGui::GetContentRegionAvail().x;
-    auto num_columns = std::max(1, static_cast<int>(avail_width / (icon_size + icon_padding)));
-
-    static ImGuiTextFilter filter;
     if (ImGui::BeginTable("##FileExplorerHeader", 2, ImGuiTableFlags_SizingStretchProp)) {
         ImGui::TableNextColumn();
         if (ImGui::Button(ICON_FA_BACKWARD)) {
@@ -36,29 +37,47 @@ void FileExplorerWidget::render(EditorLayer&) {
 
         ImGui::TableNextColumn();
         filter.Draw(ICON_FA_SEARCH, 200.0f);
+
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_SYNC)) {
+            cached_entries.first.clear();
+        }
+
         ImGui::EndTable();
     }
+    render_directory_table();
+}
+
+void FileExplorerWidget::render_directory_table() {
+    namespace fs = std::filesystem;
+    auto avail_width = ImGui::GetContentRegionAvail().x;
+    auto num_columns = std::max(1, static_cast<int>(avail_width / (icon_size + icon_padding)));
 
     if (ImGui::BeginTable("Directory View", num_columns)) {
-        for (const auto& entry : fs::directory_iterator(current_directory)) {
-            std::string path = entry.path().filename().string();
-            if (filter.PassFilter(path.c_str(), path.c_str() + path.size())) {
-                ImGui::TableNextColumn();
-
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-                auto texture_id = predict_icon_texture(entry);
-                ImGui::ImageButton((const char*)entry.path().string().c_str(), (std::uint64_t)texture_id,
-                    { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
-                ImGui::PopStyleColor();
-
-                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                    if (entry.is_directory())
-                        current_directory /= entry.path().filename();
-                }
-                ImGui::TextWrapped("%s", entry.path().filename().string().c_str());
-            }
+        cache_entries();
+        for (const auto& entry : cached_entries.second) {
+            render_directory(entry);
         }
         ImGui::EndTable();
+    }
+}
+
+void FileExplorerWidget::render_directory(const std::filesystem::directory_entry& entry) {
+    std::string path = entry.path().filename().string();
+    if (filter.PassFilter(path.c_str(), path.c_str() + path.size())) {
+        ImGui::TableNextColumn();
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+        auto texture_id = predict_icon_texture(entry);
+        ImGui::ImageButton((const char*)entry.path().string().c_str(), (std::uint64_t)texture_id,
+            { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
+        ImGui::PopStyleColor();
+
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            if (entry.is_directory())
+                current_directory /= entry.path().filename();
+        }
+        ImGui::TextWrapped("%s", path.c_str());
     }
 }
 
