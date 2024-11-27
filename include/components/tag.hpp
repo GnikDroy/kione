@@ -4,7 +4,8 @@
 
 namespace k2 {
 struct TagComponent {
-    std::array<char, 50> tag {};
+    constexpr static auto MAX_SIZE = 64;
+    std::array<char, MAX_SIZE> tag {};
     [[nodiscard]] std::string_view str() const { return { tag.data() }; }
 };
 }

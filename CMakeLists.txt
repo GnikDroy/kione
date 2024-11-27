@@ -57,21 +57,6 @@ function(entt_build)
 endfunction()
 entt_build()
 
-# Setup cereal
-# Using a fork because the main repository doesn't have controls to disable sandbox generation
-function(cereal_build)
-    set(SKIP_PERFORMANCE_COMPARISON "Skip building performance comparison (requires boost)" ON)
-    FetchContent_Declare(
-            Cereal
-            GIT_REPOSITORY https://github.com/IohannRabeson/cereal
-            GIT_TAG        disable_sandbox
-            GIT_SHALLOW 1
-            GIT_PROGRESS 1
-    )
-    FetchContent_MakeAvailable(Cereal)
-endfunction()
-cereal_build()
-
 # Setup yaml
 function(yaml_build)
     set(YAML_CPP_BUILD_TESTS OFF)

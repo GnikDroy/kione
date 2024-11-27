@@ -56,7 +56,6 @@ target_link_libraries(kione2D
     sol2::sol2
 
     EnTT::EnTT
-    cereal::cereal
     yaml-cpp
 
     spdlog::spdlog

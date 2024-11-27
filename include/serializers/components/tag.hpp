@@ -1,16 +1,16 @@
 #pragma once
 #include "components/tag.hpp"
-#include <cereal/cereal.hpp>
+#include <yaml-cpp/yaml.h>
 
-namespace cereal {
-template <class Archive> void save(Archive& ar, const k2::TagComponent& tag_component) {
-    ar(make_nvp("ID", std::string(tag_component.str())));
-}
+namespace YAML {
+template <> struct convert<k2::TagComponent> {
+    static Node encode(const k2::TagComponent& tag_component) { return YAML::Node(std::string(tag_component.str())); }
 
-template <class Archive> void load(Archive& ar, k2::TagComponent& tag_component) {
-    std::string tag;
-    ar(make_nvp("ID", tag));
-    std::memcpy(tag_component.tag.data(), tag.c_str(), std::min(tag.size(), tag_component.tag.size()));
-    tag_component.tag[std::min(tag_component.tag.size(), tag.size())] = 0;
-}
+    static bool decode(const Node& node, k2::TagComponent& tag_component) {
+        std::string tag = node.as<std::string>();
+        std::memcpy(tag_component.tag.data(), tag.c_str(), std::min(tag.size(), tag_component.tag.size()));
+        tag_component.tag[std::min(tag_component.tag.size(), tag.size())] = 0;
+        return true;
+    }
+};
 }

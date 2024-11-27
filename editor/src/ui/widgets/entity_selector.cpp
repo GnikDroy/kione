@@ -60,6 +60,7 @@ static void entity_drag_drop_target(entt::basic_registry<EntityType>& registry, 
         ImGui::EndDragDropTarget();
     }
 }
+
 template <class EntityType>
 static void entity_context_menu(
     entt::basic_registry<EntityType>& registry, EntityType entity, std::vector<EntityType>& to_delete) {

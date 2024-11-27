@@ -1,6 +1,8 @@
 #pragma once
 #include <algorithm>
 
+#include "asset/asset_registry.hpp"
+#include "core/resource_container.hpp"
 #include "core/utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -264,7 +266,10 @@ inline void OrientationInputWidget(const std::string& label, glm::quat& quaterni
 }
 
 inline void ResourceInputWidget(const std::string& label, ResourceID& id, const AssetRegistry& asset_registry) {
-    std::array<char, 50> input {};
+    // 64 is arbitrary here.
+    // Since AssetRegistry stores strings, this can be arbitrarily long
+    std::array<char, 64> input {};
+
     if (asset_registry.count(id)) {
         auto& name = asset_registry.at(id).first;
         std::memcpy(input.data(), name.c_str(), input.size());
