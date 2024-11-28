@@ -17,6 +17,9 @@ template <> struct convert<k2::Camera::OrthographicTraits> {
     }
 
     static bool decode(const Node& node, k2::Camera::OrthographicTraits& orthographic_traits) {
+        if (!node.IsMap()) {
+            return false;
+        }
         orthographic_traits.left = node["Left"].as<float>();
         orthographic_traits.right = node["Right"].as<float>();
         orthographic_traits.top = node["Top"].as<float>();
@@ -38,6 +41,9 @@ template <> struct convert<k2::Camera::PerspectiveTraits> {
     }
 
     static bool decode(const Node& node, k2::Camera::PerspectiveTraits& perspective_traits) {
+        if (!node.IsMap()) {
+            return false;
+        }
         perspective_traits.fov = node["FOV"].as<float>();
         perspective_traits.aspect_ratio = node["AspectRatio"].as<float>();
         perspective_traits.far_clip = node["FarClip"].as<float>();
@@ -67,6 +73,9 @@ template <> struct convert<k2::Camera> {
     }
 
     static bool decode(const Node& node, k2::Camera& camera) {
+        if (!node.IsMap()) {
+            return false;
+        }
         camera.position = node["Position"].as<glm::vec3>();
         camera.target = node["Target"].as<glm::vec3>();
         camera.up = node["Up"].as<glm::vec3>();

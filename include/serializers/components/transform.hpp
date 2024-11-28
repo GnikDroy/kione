@@ -14,6 +14,9 @@ template <> struct convert<k2::TransformComponent> {
     }
 
     static bool decode(const Node& node, k2::TransformComponent& transform) {
+        if (!node.IsMap()) {
+            return false;
+        }
         transform.translation = node["Translation"].as<glm::vec3>();
         transform.orientation = node["Orientation"].as<glm::quat>();
         transform.scale = node["Scale"].as<glm::vec3>();

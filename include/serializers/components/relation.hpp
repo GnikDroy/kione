@@ -16,6 +16,9 @@ template <> struct convert<k2::RelationComponent> {
     }
 
     static bool decode(const Node& node, k2::RelationComponent& relation) {
+        if (!node.IsMap()) {
+            return false;
+        }
         relation.parent = node["Parent"].as<entt::entity>();
         relation.first = node["First"].as<entt::entity>();
         relation.next = node["Next"].as<entt::entity>();

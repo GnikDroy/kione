@@ -14,6 +14,9 @@ template <> struct convert<k2::SpriteComponent> {
     }
 
     static bool decode(const Node& node, k2::SpriteComponent& sprite) {
+        if (!node.IsMap()) {
+            return false;
+        }
         sprite.texture = node["Texture"].as<k2::ResourceID>();
         sprite.color = node["Color"].as<glm::vec4>();
         sprite.uv_rect = node["UvRect"].as<k2::Rect<float>>();

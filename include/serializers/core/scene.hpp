@@ -43,7 +43,15 @@ template <> struct convert<k2::Scene> {
             }
         };
 
+        if (!node.IsSequence()) {
+            return false;
+        }
+
         for (auto entity_node : node) {
+            if (!entity_node.IsMap()) {
+                return false;
+            }
+
             auto entity = entity_node["Entity"].as<entt::entity>();
             entity = registry.create(entity);
 
