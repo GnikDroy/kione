@@ -1,11 +1,14 @@
 add_executable(
     K2_tests
     main.cpp
-    resource_container.cpp
-    vector.cpp
-    utils.cpp
-    assets.cpp
-    imgui_theme.cpp
+
+    core/resource_container.cpp
+    core/vector.cpp
+    core/utils.cpp
+    core/imgui_theme.cpp
+    core/fnv.cpp
+    
+    asset/assets.cpp
 )
 add_executable(kione2D::tests ALIAS K2_tests)
 
