@@ -185,6 +185,7 @@ if(NOT ImGui_POPULATED)
     add_library(ImGui
         ${imgui_SOURCE_DIR}/imgui.cpp ${imgui_SOURCE_DIR}/imgui_draw.cpp ${imgui_SOURCE_DIR}/imgui_widgets.cpp
         ${imgui_SOURCE_DIR}/imgui_tables.cpp ${imgui_SOURCE_DIR}/imgui_demo.cpp
+        ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
     add_library(ImGui::ImGui ALIAS ImGui)
     set_target_properties(ImGui
@@ -193,7 +194,7 @@ if(NOT ImGui_POPULATED)
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         CXX_STANDARD 17
     )
-    target_include_directories(ImGui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/)
+    target_include_directories(ImGui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends/ ${imgui_SOURCE_DIR}/misc/cpp/)
     target_link_libraries(ImGui glfw glad)
 endif()
 
@@ -280,42 +281,15 @@ function(sol2_build)
 endfunction()
 sol2_build()
 
-# Setup assimp
-function(assimp_build)
-    # set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Generation of shared libs. Set this to OFF to get static lib" FORCE)
-    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE INTERNAL "If supplementary tools for Assimp are built in addition to the library" FORCE)
-    set(ASSIMP_BUILD_TESTS OFF CACHE INTERNAL "If the test suite for Assimp is built in addition to the library." FORCE)
-    set(ASSIMP_INSTALL_PDB OFF CACHE INTERNAL "Install pdb" FORCE)
-
-    set(ASSIMP_INSTALL ON CACHE INTERNAL "Don't install assimp" FORCE)
-    set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE INTERNAL "Enable all importers by default" FORCE)
-    set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE INTERNAL "Enable OBJ importer" FORCE)
-    set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE INTERNAL "Enable FBX importer" FORCE)
-    set(ASSIMP_BUILD_BLEND_IMPORTER ON CACHE INTERNAL "Enable BLEND importer" FORCE)
-    set(ASSIMP_BUILD_COLLADA_IMPORTER ON CACHE INTERNAL "Enable COLLADA importer" FORCE)
-    set(ASSIMP_BUILD_ALL_IMPORTER OFF CACHE INTERNAL "Enable all importer" FORCE)
-
-    set(ASSIMP_NO_EXPORT ON CACHE INTERNAL "Disable Assimp's export functionality" FORCE)
-
-    FetchContent_Declare(
-        assimp
-        GIT_REPOSITORY https://github.com/assimp/assimp
-        GIT_TAG        v5.4.3
-        GIT_SHALLOW 1
-        GIT_PROGRESS 1
-    )
-    FetchContent_GetProperties(assimp)
-    if(NOT assimp_POPULATED)
-        FetchContent_Populate(assimp)
-    endif()
-
-    if(MSVC)
-        # Assimp suppress array equality operator deprecation and other warnings.
-        set(CMAKE_CXX_FLAGS "/wd4530 /wd5056")
-    endif()
-    add_subdirectory(${assimp_SOURCE_DIR} ${assimp_BINARY_DIR})
-endfunction()
-assimp_build()
+# Setup tinyobjloader
+FetchContent_Declare(
+    tinyobjloader
+    GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader
+    GIT_TAG        release
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
+)
+FetchContent_MakeAvailable(tinyobjloader)
 
 # Export compile commands for all of our source files
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

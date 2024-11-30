@@ -48,4 +48,5 @@ public:
 
 using VertexBuffer = BasicBuffer<GL_ARRAY_BUFFER>;
 using IndexBuffer = BasicBuffer<GL_ELEMENT_ARRAY_BUFFER>;
+using UniformBuffer = BasicBuffer<GL_UNIFORM_BUFFER>;
 }

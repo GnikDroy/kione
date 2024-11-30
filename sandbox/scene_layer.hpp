@@ -1,17 +1,21 @@
 #pragma once
 
+#include "kione2D.hpp"
+
 #include "components.hpp"
 #include "core/scene.hpp"
-#include "kione2D.hpp"
 #include "rendering/model.hpp"
+
 #include "skybox.hpp"
+#include <imgui.h>
+#include <imgui_stdlib.h>
 
 class SceneLayer : public k2::Layer {
     k2::Window& window;
 
     k2::Scene scene;
 
-    k2::Program light_program {};
+    k2::Program pbr_program {};
     k2::Program skybox_program {};
 
     SkyBox skybox {};
@@ -26,6 +30,7 @@ class SceneLayer : public k2::Layer {
     };
 
     MouseController mouse_controller {};
+    std::string model_path{"res/models/backpack.obj"};
 
 public:
     explicit SceneLayer(k2::Window& window)
@@ -52,7 +57,7 @@ public:
             }
             return ret;
         };
-        light_program = program_loader("res/shaders/phong_vs.glsl", "res/shaders/phong_fs.glsl");
+        pbr_program = program_loader("res/shaders/pbr_vs.glsl", "res/shaders/pbr_fs.glsl");
         skybox_program = program_loader("res/shaders/skybox_vs.glsl", "res/shaders/skybox_fs.glsl");
 
         setup_scene();
@@ -62,43 +67,8 @@ public:
 
     SceneLayer& operator=(const SceneLayer&) = delete;
 
-    void setup_scene() {
-        scene.registry.ctx().emplace<FPCamera>(FPCamera {
-            .camera { .position {},
-                .target { 0.f, 0.f, -1.f },
-                .up { 0.f, 1.f, 0.f },
-
-                .projection_traits {
-                    k2::Camera::PerspectiveTraits {
-                        .fov = glm::radians(45.0f),
-                        .aspect_ratio = float(window.get_width()) / float(window.get_height()),
-                        .far_clip = 1000.f,
-                        .near_clip = 0.01f,
-                    },
-                } },
-            .direction { 0.f, 0.f, -1.f },
-        });
-
-        auto backpack = scene.registry.create();
-        scene.registry.emplace<Transform>(backpack);
-        // scene.registry.emplace<k2::Model>(backpack, "res/models/backpack.obj");
-        scene.registry.emplace<k2::Model>(backpack, "res/models/trees.obj");
-
-        auto light = scene.registry.create();
-        scene.registry.emplace<Transform>(light,
-            Transform {
-                .position { 0.0f, 1.0f, -2.0f },
-            });
-        scene.registry.emplace<PointLight>(light,
-            PointLight {
-                .ambient { 0.2f, 0.2f, 0.2f }, .diffuse { 0.5f, 0.5f, 0.5f }, .specular { 1.0f, 1.0f, 1.0f } });
-
-        skybox.load({ "res/textures/skybox/right.jpg", "res/textures/skybox/left.jpg", "res/textures/skybox/bottom.jpg",
-            "res/textures/skybox/top.jpg", "res/textures/skybox/front.jpg", "res/textures/skybox/back.jpg" });
-    }
-
     void update(float dt) override {
-        float camera_speed = 1.5f;
+        float camera_speed = 3.0f;
 
         using k2::KeyboardDevice;
 
@@ -115,8 +85,10 @@ public:
                 += glm::normalize(glm::cross(fp_camera.direction, fp_camera.camera.up)) * dt * camera_speed;
         }
     }
-
+    
     void render() override {
+        render_game_controls();
+
         auto& fp_camera = scene.registry.ctx().get<FPCamera>();
         fp_camera.update();
         auto view_mat = fp_camera.camera.get_view();
@@ -127,27 +99,16 @@ public:
             .set_uniform("projection", projection_mat);
         skybox.draw(skybox_program);
 
-        scene.registry.view<Transform, k2::Model>().each([&](auto, auto& transform, auto& model) {
-            auto model_mat = [&]() {
-                auto translate = glm::translate(glm::mat4(1.0f), transform.position);
-                auto rotate = glm::eulerAngleXYZ(transform.rotation.x, transform.rotation.y, transform.rotation.z);
-                return glm::scale(translate * rotate, transform.scale);
-            }();
+        scene.registry.view<k2::TransformComponent, k2::Model>().each([&](auto, auto& transform, auto& model) {
+            auto model_mat = transform.get_matrix();
 
-            scene.registry.view<Transform, PointLight>().each([&](auto, auto& light_transform, auto& light) {
-                light_program.use()
-                    .set_uniform("model", model_mat)
-                    .set_uniform("view", view_mat)
-                    .set_uniform("projection", projection_mat)
-                    .set_uniform("light.position", light_transform.position)
-                    .set_uniform("light.ambient", light.ambient)
-                    .set_uniform("light.diffuse", light.diffuse)
-                    .set_uniform("light.specular", light.specular)
-                    .set_uniform("viewer_position", fp_camera.camera.position)
-                    .set_uniform("material.shininess", 32.0f);
-                model.draw(light_program);
-            });
+            pbr_program.use()
+                .set_uniform("model", model_mat)
+                .set_uniform("view", view_mat)
+                .set_uniform("projection", projection_mat);
+            model.draw(pbr_program);
         });
+        
     }
 
     bool handle_event(const k2::Event* ev) override {
@@ -178,4 +139,48 @@ public:
 
         return false;
     }
+
+private:
+    void setup_scene() {
+        scene.registry.ctx().emplace<FPCamera>(FPCamera {
+            .camera { .position { 0.f, 0.f, 6.f },
+                .target { 0.f, 0.f, -1.f },
+                .up { 0.f, 1.f, 0.f },
+
+                .projection_traits {
+                    k2::Camera::PerspectiveTraits {
+                        .fov = glm::radians(45.0f),
+                        .aspect_ratio = float(window.get_width()) / float(window.get_height()),
+                        .far_clip = 1000.f,
+                        .near_clip = 0.01f,
+                    },
+                } },
+            .direction { 0.f, 0.f, -1.f },
+        });
+
+        skybox.load({ "res/textures/skybox/right.png", "res/textures/skybox/left.png", "res/textures/skybox/bottom.png",
+            "res/textures/skybox/top.png", "res/textures/skybox/front.png", "res/textures/skybox/back.png" });
+        setup_scene_model();
+    }
+
+    void setup_scene_model() {
+        for (auto entity: scene.registry.view<k2::Model>()) {
+            scene.registry.destroy(entity);
+        }
+        
+        auto backpack = scene.registry.create();
+        scene.registry.emplace<k2::Model>(backpack, model_path);
+        auto& transform = scene.registry.emplace<k2::TransformComponent>(backpack);
+        transform.orientation = glm::rotate(transform.orientation, 3.1415f, glm::vec3(0.f, 1.f, 0.f));
+    }
+
+    void render_game_controls() {
+        ImGui::Begin("Game Controls");
+        ImGui::InputText("Model Path", &model_path);
+        if (ImGui::Button("Load Model")) {
+            setup_scene_model();
+        }
+        ImGui::End();
+    }
+
 };

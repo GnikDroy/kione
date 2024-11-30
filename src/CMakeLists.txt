@@ -51,7 +51,7 @@ target_link_libraries(kione2D
     nfd
 
     stb::stb
-    assimp::assimp
+    tinyobjloader
     lua::lua
     sol2::sol2
 

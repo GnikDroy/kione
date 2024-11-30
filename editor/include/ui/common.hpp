@@ -266,6 +266,7 @@ inline void OrientationInputWidget(const std::string& label, glm::quat& quaterni
 }
 
 inline void ResourceInputWidget(const std::string& label, ResourceID& id, const AssetRegistry& asset_registry) {
+    // TODO: Switch to the cpp imgui implementation of InputText
     // 64 is arbitrary here.
     // Since AssetRegistry stores strings, this can be arbitrarily long
     std::array<char, 64> input {};

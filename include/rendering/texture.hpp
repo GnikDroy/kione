@@ -34,15 +34,7 @@ private:
     }
 
 public:
-    enum class Type {
-        Diffuse,
-        Specular,
-        Normal,
-        Unknown,
-    };
-
     GLuint id {};
-    Type type = Type::Unknown;
 
     Texture2D() = default;
 
@@ -53,7 +45,6 @@ public:
 
     Texture2D& operator=(Texture2D&& other) noexcept {
         std::swap(other.id, id);
-        type = other.type;
         return *this;
     }
 

@@ -9,12 +9,6 @@
 
 #include "components/camera.hpp"
 
-struct Transform {
-    glm::vec3 position;
-    glm::vec3 scale { 1.0f };
-    glm::vec3 rotation;
-};
-
 struct FPCamera {
     k2::Camera camera;
     glm::vec3 direction;
