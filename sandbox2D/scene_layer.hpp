@@ -19,7 +19,7 @@ class SceneLayer : public k2::Layer {
 public:
     explicit SceneLayer(k2::Window& window)
         : window { window } {
-        k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
+        k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture<uint8_t>();
         k2::Resources::get<k2::Texture2D>()["tex"_fnv1a] = k2::Texture2D { k2::Image("res/textures/texture.jpg") };
 
         scene.registry.ctx().emplace<k2::Camera>(k2::Camera {

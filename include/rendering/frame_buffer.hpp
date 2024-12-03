@@ -104,7 +104,7 @@ private:
             if (attachment.id == 0) {
                 auto format = [&]() {
                     switch (attachment.type) {
-                    case Attachment::Type::Color: return GL_RGBA8;
+                    case Attachment::Type::Color: return GL_RGBA32F;
                     case Attachment::Type::Depth: return GL_DEPTH_COMPONENT32;
                     case Attachment::Type::Stencil: return GL_STENCIL_INDEX8;
                     case Attachment::Type::DepthStencil: return GL_DEPTH24_STENCIL8;
@@ -115,7 +115,7 @@ private:
                     }
                 }();
                 if (attachment.buffer_type == Attachment::BufferType::Texture) {
-                    textures.emplace_back(traits.width, traits.height, std::span<std::uint8_t> {}, format, false);
+                    textures.emplace_back(traits.width, traits.height, std::span<const float> {}, format, false);
                     attachment.id = textures.back().id;
                 } else if (attachment.buffer_type == Attachment::BufferType::RenderBuffer) {
                     render_buffers.emplace_back(traits.width, traits.height, format);

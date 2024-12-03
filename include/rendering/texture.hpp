@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <format>
 #include <glad/glad.h>
 #include <span>
@@ -8,24 +9,50 @@
 #include "image.hpp"
 
 namespace k2 {
+template <typename T>
+concept FloatOrUInt8 = std::same_as<T, float> || std::same_as<T, uint8_t>;
+
+template <FloatOrUInt8 T> struct OpenGLType;
+
+template <> struct OpenGLType<float> {
+    static constexpr GLenum type = GL_FLOAT;
+};
+
+template <> struct OpenGLType<uint8_t> {
+    static constexpr GLenum type = GL_UNSIGNED_BYTE;
+};
+
 struct Texture2D {
-private:
-    static auto predict_sized_format(std::size_t channels) {
-        switch (channels) {
-        case 1: return GL_R8;
-        case 3: return GL_RGB8;
-        case 4: return GL_RGBA8;
-        default: {
-            k2::Log::core().warn(std::format("Incorrect number of channels ({}) for image, assuming RGBA8.", channels));
-            return GL_RGBA8;
+    template <FloatOrUInt8 T> static auto predict_sized_format(std::size_t channels) {
+        if constexpr (std::same_as<T, uint8_t>) {
+            switch (channels) {
+            case 1: return GL_R8;
+            case 3: return GL_RGB8;
+            case 4: return GL_RGBA8;
+            }
+        } else if constexpr (std::same_as<T, float>) {
+            switch (channels) {
+            case 1: return GL_R32F;
+            case 3: return GL_RGB32F;
+            case 4: return GL_RGBA32F;
+            }
         }
-        }
+
+        k2::Log::core().warn(std::format("Incorrect number of channels ({}) for image, assuming RGBA8.", channels));
+        return GL_RGBA8;
     }
+
     static auto predict_format_from_sized(std::size_t sized) {
         switch (sized) {
-        case GL_R8: return GL_RED;
-        case GL_RGB8: return GL_RGB;
-        case GL_RGBA8: return GL_RGBA;
+        case GL_R8:
+        case GL_R32F: return GL_RED;
+
+        case GL_RGB8:
+        case GL_RGB32F: return GL_RGB;
+
+        case GL_RGBA8:
+        case GL_RGBA32F: return GL_RGBA;
+
         case GL_DEPTH24_STENCIL8: return GL_DEPTH_STENCIL;
         case GL_DEPTH_COMPONENT: return GL_DEPTH_COMPONENT;
         case GL_STENCIL_INDEX8: return GL_STENCIL_INDEX;
@@ -33,7 +60,6 @@ private:
         }
     }
 
-public:
     GLuint id {};
 
     Texture2D() = default;
@@ -52,8 +78,9 @@ public:
 
     explicit Texture2D(const Image& image, bool generate_mipmaps = true) { load(image, generate_mipmaps); }
 
-    Texture2D(std::size_t width, std::size_t height, std::span<const std::uint8_t> data = {},
-        GLuint sized_format = GL_RGBA8, bool generate_mipmaps = true) {
+    template <FloatOrUInt8 T>
+    Texture2D(std::size_t width, std::size_t height, std::span<const T> data = {}, GLuint sized_format = GL_RGBA8,
+        bool generate_mipmaps = true) {
         glGenTextures(1, &id);
         auto levels = (GLsizei)(std::floor(std::log2(std::max(width, height))) + 1);
         if (!generate_mipmaps) {
@@ -68,7 +95,7 @@ public:
                 throw std::invalid_argument("Insufficient data provided.");
             }
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (GLsizei)width, (GLsizei)height,
-                predict_format_from_sized(sized_format), GL_UNSIGNED_BYTE, data.data());
+                predict_format_from_sized(sized_format), OpenGLType<T>::type, data.data());
             if (generate_mipmaps) {
                 glGenerateMipmap(GL_TEXTURE_2D);
             }
@@ -84,13 +111,20 @@ public:
         }
     }
 
-    static Texture2D create_white_texture() {
+    template <FloatOrUInt8 T> static Texture2D create_white_texture() {
         Texture2D texture;
         glGenTextures(1, &texture.id);
         glBindTexture(GL_TEXTURE_2D, texture.id);
-        std::array<std::uint8_t, 4> data = { 0xFF, 0xFF, 0xFF, 0xFF };
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 1, 1);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+
+        if constexpr (std::same_as<T, uint8_t>) {
+            std::array<T, 4> data = { 255, 255, 255, 255 };
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA8, GL_UNSIGNED_BYTE, data.data());
+        } else if constexpr (std::same_as<T, float>) {
+            std::array<T, 4> data = { 1.0f, 1.0f, 1.0f, 1.0f };
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA32F, GL_FLOAT, data.data());
+        }
         return texture;
     }
 
@@ -99,14 +133,35 @@ public:
             if (image) {
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
-                auto sized_format = predict_sized_format(image.channels);
+
                 auto levels = (GLsizei)(std::floor(std::log2(std::max(image.width, image.height))) + 1);
                 if (!generate_mipmaps) {
                     levels = 1;
                 }
-                glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, image.width, image.height);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height,
-                    predict_format_from_sized(sized_format), GL_UNSIGNED_BYTE, image.data);
+
+                std::visit(
+                    [&](auto& image_data) {
+                        auto ptr = image_data.get();
+                        if constexpr (std::is_same_v<decltype(ptr), std::uint8_t*>) {
+                            auto sized_format = predict_sized_format<std::uint8_t>(image.channels);
+                            auto format = predict_format_from_sized(sized_format);
+
+                            glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, image.width, image.height);
+                            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, format,
+                                OpenGLType<uint8_t>::type, ptr);
+                        } else if constexpr (std::is_same_v<decltype(ptr), float*>) {
+                            auto sized_format = predict_sized_format<float>(image.channels);
+                            auto format = predict_format_from_sized(sized_format);
+
+                            glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, image.width, image.height);
+                            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, format,
+                                OpenGLType<float>::type, ptr);
+                        } else {
+                            static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");
+                        }
+                    },
+                    image.data);
+
                 if (generate_mipmaps) {
                     glGenerateMipmap(GL_TEXTURE_2D);
                 }
@@ -156,20 +211,25 @@ struct TextureCube {
                 Image image { texture_path };
 
                 if (image) {
-                    GLint format = [&]() {
-                        if (image.channels == 1)
-                            return GL_RED;
-                        if (image.channels == 3)
-                            return GL_RGB;
-                        if (image.channels == 4)
-                            return GL_RGBA;
-                        k2::Log::core().warn(std::format(
-                            "Incorrect number of channels ({}) for image: {}", image.channels, texture_path.string()));
-                        return GL_RGBA;
-                    }();
 
-                    glTexImage2D((GLenum)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i), 0, format, image.width, image.height, 0,
-                        format, GL_UNSIGNED_BYTE, image.data);
+                    std::visit(
+                        [&](auto& image_data) {
+                            auto ptr = image_data.get();
+                            if constexpr (std::is_same_v<decltype(ptr), std::uint8_t*>) {
+                                auto sized_format = Texture2D::predict_sized_format<uint8_t>(image.channels);
+                                auto format = Texture2D::predict_format_from_sized(sized_format);
+                                glTexImage2D((GLenum)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i), 0, format, image.width,
+                                    image.height, 0, format, GL_UNSIGNED_BYTE, ptr);
+                            } else if constexpr (std::is_same_v<decltype(ptr), float*>) {
+                                auto sized_format = Texture2D::predict_sized_format<float>(image.channels);
+                                auto format = Texture2D::predict_format_from_sized(sized_format);
+                                glTexImage2D((GLenum)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i), 0, format, image.width,
+                                    image.height, 0, format, GL_FLOAT, ptr);
+                            } else {
+                                static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");
+                            }
+                        },
+                        image.data);
 
                     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
