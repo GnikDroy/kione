@@ -6,6 +6,7 @@
 #include <span>
 
 #include "core/logger.hpp"
+#include "core/utils.hpp"
 #include "image.hpp"
 
 namespace k2 {
@@ -226,7 +227,7 @@ struct TextureCube {
                                 glTexImage2D((GLenum)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i), 0, format, image.width,
                                     image.height, 0, format, GL_FLOAT, ptr);
                             } else {
-                                static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");
+                                static_assert(k2::always_false<decltype(ptr)>, "non-exhaustive visitor!");
                             }
                         },
                         image.data);

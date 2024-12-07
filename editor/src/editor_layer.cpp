@@ -7,7 +7,7 @@ EditorLayer::EditorLayer(k2::Window& window)
     : k2::ImguiLayer(window) {
     scene.registry.ctx().emplace<EditorLayer&>(*this);
     using namespace k2::literals;
-    k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture();
+    k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture<uint8_t>();
 
     for (auto& [id, pair] : assets) {
         auto&& [name, asset] = pair;
