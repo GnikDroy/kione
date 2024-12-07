@@ -33,6 +33,12 @@ target_link_libraries(K2_tests
     Catch2::Catch2
 )
 
+# Configure CMake to register this as a test
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
+include(CTest)
+include(Catch)
+catch_discover_tests(K2_tests)
+
 set_target_properties(K2_tests
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
