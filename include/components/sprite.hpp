@@ -1,5 +1,7 @@
 #pragma once
-#include "core/resources.hpp"
+#include <glm/glm.hpp>
+
+#include "core/resource_container.hpp"
 #include "core/utils.hpp"
 
 namespace k2 {

@@ -1,1 +1,1 @@
-#include "ui/widgets/asset.hpp"
+#include "ui/widgets/asset.hpp" // IWYU pragma: keep

@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 
 #include "core/input_device.hpp"
 
@@ -42,7 +41,7 @@ public:
     MouseDevice::ButtonState get_state(ButtonCode button);
     void set_cursor_mode(CursorMode mode);
 
-    ~MouseDevice();
+    ~MouseDevice() = default;
 
 private:
     explicit MouseDevice(Window*);

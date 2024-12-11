@@ -1,9 +1,4 @@
 #pragma once
-#include <any>
-#include <cstdint>
-#include <functional>
-#include <memory>
-
 #include "core/input_device.hpp"
 
 namespace k2 {

@@ -2,8 +2,10 @@
 
 #include <concepts>
 #include <format>
-#include <glad/glad.h>
+#include <array>
 #include <span>
+
+#include <glad/glad.h>
 
 #include "core/logger.hpp"
 #include "core/utils.hpp"

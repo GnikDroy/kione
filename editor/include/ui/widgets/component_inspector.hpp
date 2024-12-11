@@ -6,8 +6,6 @@
 #include <entt/entt.hpp>
 #include <functional>
 #include <map>
-#include <set>
-#include <string>
 
 namespace k2::editor {
 

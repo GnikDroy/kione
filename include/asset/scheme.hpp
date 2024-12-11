@@ -1,7 +1,6 @@
 #pragma once
 
 #include "asset/asset.hpp"
-#include <filesystem>
 #include <format>
 #include <fstream>
 #include <memory>

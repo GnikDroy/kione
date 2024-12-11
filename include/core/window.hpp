@@ -1,12 +1,9 @@
 #pragma once
-#include <any>
 #include <cstdint>
-#include <functional>
 #include <memory>
 #include <queue>
 #include <string>
 
-#include "core/ecs.hpp"
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
 

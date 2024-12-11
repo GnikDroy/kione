@@ -1,6 +1,5 @@
 #pragma once
 #include "components/sprite.hpp"
-#include "serializers/utils.hpp"
 #include <yaml-cpp/yaml.h>
 
 namespace YAML {

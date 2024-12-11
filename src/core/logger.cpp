@@ -1,6 +1,9 @@
 #include "core/logger.hpp"
 
 #include <spdlog/sinks/ringbuffer_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
 
 #include <any>
 
@@ -78,7 +81,7 @@ struct Logger::Impl {
 };
 
 Logger::Logger(const std::string& name)
-    : impl(std::move(std::make_unique<Logger::Impl>(name))) { }
+    : impl(std::make_unique<Logger::Impl>(name)) { }
 
 Logger& Logger::add_sink(std::any& sink_handle) {
     impl->register_logger(sink_handle);

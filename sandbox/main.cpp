@@ -1,4 +1,3 @@
-#include <map>
 #include <ranges>
 
 #include "kione2D.hpp"

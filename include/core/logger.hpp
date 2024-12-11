@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace k2 {
-namespace Log {
+namespace k2::Log {
     enum class LogLevel {
         Trace,
         Debug,
@@ -53,4 +52,3 @@ namespace Log {
     Logger& app();
     Logger& core();
 }
-} // namespace k2

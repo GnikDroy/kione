@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <numeric>
 
 namespace k2 {
 class Model {
@@ -81,6 +82,7 @@ private:
                     material_indices[material_id] = material_groups.size();
                     material_groups.push_back(Mesh::MaterialGroup {
                         .material = materials[material_id],
+                        .indices = {}
                     });
                 }
                 
@@ -121,7 +123,7 @@ private:
                 index_offset += 3;
             }
 
-            meshes.push_back({ std::move(vertices), std::move(materials), std::move(material_groups) });
+            meshes.emplace_back(std::move(vertices), std::move(materials), std::move(material_groups));
         }
         return true;
     }

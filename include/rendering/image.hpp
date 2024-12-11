@@ -58,7 +58,7 @@ struct Image {
         std::swap(data, image.data);
     }
 
-    Image& operator=(Image&& image) {
+    Image& operator=(Image&& image) noexcept {
         std::swap(data, image.data);
         std::swap(width, image.width);
         std::swap(height, image.height);

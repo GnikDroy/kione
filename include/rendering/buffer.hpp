@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <glad/glad.h>
+#include <memory>
 
 namespace k2 {
 template <auto Type> class BasicBuffer {

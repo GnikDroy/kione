@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/imgui_theme.hpp"
 #include "core/logger.hpp"
 #include "ui/widgets/widget.hpp"
 

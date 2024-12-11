@@ -246,7 +246,7 @@ struct Program {
         return ret != GL_FALSE;
     }
 
-    std::optional<std::string> error_msg() const {
+    [[nodiscard]] std::optional<std::string> error_msg() const {
         if ((handle != 0u) && !*this) {
             GLint length {};
             glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &length);

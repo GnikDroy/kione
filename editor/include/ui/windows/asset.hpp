@@ -1,3 +1,3 @@
 #pragma once
 
-#include "asset/asset_registry.hpp"
+#include "asset/asset_registry.hpp" // IWYU pragma: keep

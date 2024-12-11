@@ -1,5 +1,6 @@
 #pragma once
-#include "core/fnv.hpp"
+#include <cstdint>
+#include "core/fnv.hpp" // IWYU pragma: keep
 
 #define HANDLE_EVENT(event_type, dynamic_event, static_event, action)                                                  \
     if (dynamic_event->type == event_type::hash) {                                                                     \

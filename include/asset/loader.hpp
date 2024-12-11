@@ -1,12 +1,10 @@
 #pragma once
 
-#include <stack>
-#include <unordered_set>
 #include <yaml-cpp/yaml.h>
 
 #include "asset/scheme.hpp"
 #include "rendering/model.hpp"
-#include "serializers/asset/asset.hpp"
+#include "serializers/asset/asset.hpp" // IWYU pragma: keep
 
 namespace k2 {
 

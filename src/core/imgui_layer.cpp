@@ -11,7 +11,6 @@
 #include <imgui_impl_opengl3.h>
 
 #include <array>
-#include <sstream>
 
 namespace k2 {
 ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme)

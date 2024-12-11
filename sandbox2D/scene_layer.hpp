@@ -3,10 +3,8 @@
 #include "core/scene.hpp"
 #include "kione2D.hpp"
 #include "rendering/renderer2D.hpp"
-#include "serializers/core/scene.hpp"
 
 #include <glm/glm.hpp>
-#include <numeric>
 
 using namespace k2::literals;
 
@@ -54,6 +52,8 @@ public:
 
         auto& transform = scene.registry.emplace<k2::TransformComponent>(entity);
         transform = k2::TransformComponent {
+            .translation {},
+            .orientation {},
             .scale { 300.0f, 300.0f, 1.0f },
         };
     }

@@ -1,6 +1,5 @@
 #pragma once
 #include "core/utils.hpp"
-#include <array>
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

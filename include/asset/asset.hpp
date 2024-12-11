@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <optional>
 #include <regex>
 #include <unordered_map>
 #include <string_view>

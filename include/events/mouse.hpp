@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+#include "core/keyboard.hpp"
 #include "core/mouse.hpp"
 #include "events/event.hpp"
 

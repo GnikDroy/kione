@@ -2,6 +2,8 @@
 
 #include "platform/desktop/window_impl.hpp"
 #include "events/window.hpp"
+#include "core/logger.hpp"
+
 #include <glad/glad.h>
 
 namespace k2 {

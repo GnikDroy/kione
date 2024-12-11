@@ -1,31 +1,31 @@
 #pragma once
 
-#include "core/app.hpp"
-#include "core/clipboard.hpp"
-#include "core/ecs.hpp"
-#include "core/keyboard.hpp"
-#include "core/logger.hpp"
-#include "core/mouse.hpp"
-#include "core/vector.hpp"
-#include "core/window.hpp"
+#include "core/app.hpp" // IWYU pragma: export
+#include "core/clipboard.hpp" // IWYU pragma: export
+#include "core/ecs.hpp" // IWYU pragma: export
+#include "core/keyboard.hpp" // IWYU pragma: export
+#include "core/logger.hpp" // IWYU pragma: export
+#include "core/mouse.hpp" // IWYU pragma: export
+#include "core/vector.hpp" // IWYU pragma: export
+#include "core/window.hpp" // IWYU pragma: export
 
-#include "rendering/buffer.hpp"
-#include "rendering/image.hpp"
-#include "rendering/shader.hpp"
-#include "rendering/texture.hpp"
-#include "rendering/vertex_array.hpp"
+#include "rendering/buffer.hpp" // IWYU pragma: export
+#include "rendering/image.hpp" // IWYU pragma: export
+#include "rendering/shader.hpp" // IWYU pragma: export
+#include "rendering/texture.hpp" // IWYU pragma: export
+#include "rendering/vertex_array.hpp" // IWYU pragma: export
 
-#include "asset/asset.hpp"
-#include "asset/loader.hpp"
-#include "core/layer.hpp"
-#include "core/resource_container.hpp"
-#include "core/resources.hpp"
+#include "asset/asset.hpp" // IWYU pragma: export
+#include "asset/loader.hpp" // IWYU pragma: export
+#include "core/layer.hpp" // IWYU pragma: export
+#include "core/resource_container.hpp" // IWYU pragma: export
+#include "core/resources.hpp" // IWYU pragma: export
 
-#include "events/event.hpp"
-#include "events/keyboard.hpp"
-#include "events/mouse.hpp"
-#include "events/window.hpp"
+#include "events/event.hpp" // IWYU pragma: export
+#include "events/keyboard.hpp" // IWYU pragma: export
+#include "events/mouse.hpp" // IWYU pragma: export
+#include "events/window.hpp" // IWYU pragma: export
 
-#include "components/camera.hpp"
-#include "components/sprite.hpp"
-#include "components/transform.hpp"
+#include "components/camera.hpp" // IWYU pragma: export
+#include "components/sprite.hpp" // IWYU pragma: export
+#include "components/transform.hpp" // IWYU pragma: export

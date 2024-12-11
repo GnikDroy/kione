@@ -1,12 +1,18 @@
 #pragma once
-#include "serializers/components/camera.hpp"
-#include "serializers/components/relation.hpp"
-#include "serializers/components/sprite.hpp"
-#include "serializers/components/tag.hpp"
-#include "serializers/components/transform.hpp"
-#include "serializers/core/scene.hpp"
-#include "serializers/utils.hpp"
+
 #include <yaml-cpp/yaml.h>
+
+// Note that these headers need to be included
+// So that yaml-cpp recognizes how to deserialize these components
+#include "serializers/components/camera.hpp" // IWYU pragma: keep
+#include "serializers/components/relation.hpp" // IWYU pragma: keep
+#include "serializers/components/sprite.hpp" // IWYU pragma: keep
+#include "serializers/components/tag.hpp" // IWYU pragma: keep
+#include "serializers/components/transform.hpp" // IWYU pragma: keep
+#include "serializers/core/scene.hpp" // IWYU pragma: keep
+#include "serializers/utils.hpp" // IWYU pragma: keep
+
+#include "core/scene.hpp"
 
 namespace YAML {
 template <> struct convert<k2::Scene> {
@@ -38,7 +44,7 @@ template <> struct convert<k2::Scene> {
 
         auto deserialize = [&]<class Component>(auto& node, const auto& label, const auto& entity) {
             if (node[label].IsDefined()) {
-                auto component = node[label].as<Component>();
+                auto component = node[label].template as<Component>();
                 registry.emplace<Component>(entity, component);
             }
         };

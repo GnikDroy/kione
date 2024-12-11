@@ -11,13 +11,13 @@
 #include <GLFW/glfw3native.h>
 
 #include "core/window.hpp"
-#include "events/event.hpp"
+#include "events/event.hpp" // IWYU pragma: export
 #include "platform/desktop/window_impl.hpp"
 
 namespace k2 {
 
 Window::Window(const WindowConfig& config)
-    : impl(std::move(std::make_unique<Window::Impl>(this, config)))
+    : impl(std::make_unique<Window::Impl>(this, config))
     , keyboard(this)
     , mouse(this) { }
 

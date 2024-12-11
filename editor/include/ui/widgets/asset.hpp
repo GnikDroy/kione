@@ -1,4 +1,4 @@
 #pragma once
 
-#include "asset/asset_registry.hpp"
-#include "ui/widgets/widget.hpp"
+#include "asset/asset_registry.hpp" // IWYU pragma: keep
+#include "ui/widgets/widget.hpp" // IWYU pragma: keep

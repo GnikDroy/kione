@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <tuple>
 
 #include "core/resource_container.hpp"

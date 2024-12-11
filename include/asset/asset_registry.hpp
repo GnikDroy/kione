@@ -4,6 +4,9 @@
 
 #include <filesystem>
 #include <ranges>
+#include <stack>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace k2 {
 using AssetRegistry = std::unordered_map<ResourceID, std::pair<std::string, Asset>>;
@@ -29,9 +32,9 @@ public:
 
 private:
     AssetRegistryLoader(Asset root, bool recurse, AssetRegistry& registry)
-        : recurse { recurse }
-        , root { root }
-        , registry { registry } {
+        : root { root }
+        , registry { registry }
+        , recurse { recurse } {
         if (root.type != k2::Asset::Type::AssetBundle) {
             throw std::runtime_error(std::format("Root asset: {} must be an asset bundle", root.url));
         }
@@ -54,7 +57,7 @@ private:
         }
     }
 
-    void process_asset_bundle(Asset asset) {
+    void process_asset_bundle(const Asset& asset) {
         namespace fs = std::filesystem;
 
         // Strip filename from asset bundle url when storing path
@@ -82,7 +85,7 @@ private:
         }
     }
 
-    AssetBundle merge(Asset base_asset) {
+    AssetBundle merge(const Asset& base_asset) {
         namespace fs = std::filesystem;
 
         auto bundle = AssetLoader::get<AssetBundle>(base_asset);
