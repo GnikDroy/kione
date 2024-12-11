@@ -73,7 +73,7 @@ yaml_build()
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v2.13.1
+    GIT_TAG        v3.7.1
     GIT_SHALLOW 1
     GIT_PROGRESS 1
 )

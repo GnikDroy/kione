@@ -1,6 +1,5 @@
 add_executable(
     K2_tests
-    main.cpp
 
     core/resource_container.cpp
     core/vector.cpp
@@ -30,7 +29,7 @@ target_precompile_headers(K2_tests PRIVATE
 
 target_link_libraries(K2_tests
     kione2D::kione2D
-    Catch2::Catch2
+    Catch2::Catch2WithMain
 )
 
 # Configure CMake to register this as a test
