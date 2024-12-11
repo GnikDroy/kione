@@ -117,6 +117,6 @@ TEST_CASE("Asset query pair extraction.") {
     };
 
     for (auto& [url, map] : cases) {
-        REQUIRE(k2::Asset { .url = url }.get_traits() == map);
+        REQUIRE(k2::Asset { .url { url }, .type { k2::Asset::Type::AssetBundle } }.get_traits() == map);
     }
 }
