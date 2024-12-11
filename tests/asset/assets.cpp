@@ -63,7 +63,7 @@ TEST_CASE("Asset URL split") {
         },
     };
     for (auto& [url, splits] : url_splits) {
-        REQUIRE(k2::Asset { .url { url } }.get_url_divisions() == splits);
+        REQUIRE(k2::Asset { .url { url }, .type { k2::Asset::Type::AssetBundle } }.get_url_divisions() == splits);
     }
 }
 
