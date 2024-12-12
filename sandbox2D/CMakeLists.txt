@@ -23,7 +23,7 @@ endif()
 
 target_compile_options(K2_sandbox2D PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest /wd4201>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>
 )
 
 add_custom_command(TARGET K2_sandbox2D POST_BUILD

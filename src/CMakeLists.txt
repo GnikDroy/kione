@@ -71,5 +71,5 @@ set_target_properties(kione2D
 
 target_compile_options(kione2D PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest /wd4201>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>
 )
