@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ui/widgets/debug.hpp"
 #include "editor_layer.hpp"
 #include <nfd.hpp>

@@ -274,12 +274,12 @@ inline void ResourceInputWidget(const std::string& label, ResourceID& id, const 
     if (asset_registry.count(id)) {
         auto& name = asset_registry.at(id).first;
         std::memcpy(input.data(), name.c_str(), input.size());
-        input[std::clamp(name.size(), 0ull, input.size() - 1)] = 0;
+        input[std::clamp(name.size(), size_t(0), input.size() - 1)] = 0;
         ImGui::InputText(label.c_str(), input.data(), input.size());
     } else {
         std::string_view invalid_txt { "Invalid ID!" };
         std::memcpy(input.data(), invalid_txt.data(), input.size());
-        input[std::clamp(invalid_txt.size(), 0ull, input.size() - 1)] = 0;
+        input[std::clamp(invalid_txt.size(), size_t(0), input.size() - 1)] = 0;
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
         ImGui::InputText(label.c_str(), input.data(), input.size());
         ImGui::PopStyleColor();

@@ -60,8 +60,8 @@ private:
     template <bool AttachAtFirst, class EntityType>
     static RelationComponent& attach_child(
         entt::basic_registry<EntityType>& registry, EntityType child, EntityType parent) {
-        auto& parent_relation = registry.get_or_emplace<RelationComponent>(parent);
-        auto& child_relation = registry.get_or_emplace<RelationComponent>(child);
+        auto& parent_relation = registry.template get_or_emplace<RelationComponent>(parent);
+        auto& child_relation = registry.template get_or_emplace<RelationComponent>(child);
         if (parent_relation.children == 0) {
             parent_relation.children++;
             parent_relation.first = child;
@@ -72,7 +72,7 @@ private:
             if constexpr (AttachAtFirst) {
                 attach_before(registry, child, parent_relation.first);
             } else {
-                auto last = registry.get<RelationComponent>(parent_relation.first).prev;
+                auto last = registry.template get<RelationComponent>(parent_relation.first).prev;
                 attach_after(registry, child, last);
             }
         }
@@ -98,23 +98,23 @@ private:
     static RelationComponent& attach_sibling(
         entt::basic_registry<EntityType>& registry, EntityType node, EntityType sibling) {
         if (sibling == entt::null) {
-            auto& relation = registry.get_or_emplace<RelationComponent>(node);
+            auto& relation = registry.template get_or_emplace<RelationComponent>(node);
             relation.prev = relation.next = entt::null;
             return relation;
         }
 
-        auto& sibling_relation = registry.get_or_emplace<RelationComponent>(sibling);
+        auto& sibling_relation = registry.template get_or_emplace<RelationComponent>(sibling);
 
         if (sibling_relation.prev == entt::null) {
             sibling_relation.prev = sibling;
             sibling_relation.next = sibling;
         }
 
-        auto& node_relation = registry.get_or_emplace<RelationComponent>(node);
+        auto& node_relation = registry.template get_or_emplace<RelationComponent>(node);
         node_relation.parent = sibling_relation.parent;
 
         if (sibling_relation.parent != entt::null) {
-            auto& parent_relation = registry.get<RelationComponent>(sibling_relation.parent);
+            auto& parent_relation = registry.template get<RelationComponent>(sibling_relation.parent);
             if constexpr (AttachBefore) {
                 if (parent_relation.first == sibling) {
                     parent_relation.first = node;
@@ -125,14 +125,14 @@ private:
 
         if constexpr (AttachBefore) {
             auto prev = sibling_relation.prev;
-            auto& prev_relation = registry.get<RelationComponent>(prev);
+            auto& prev_relation = registry.template get<RelationComponent>(prev);
             prev_relation.next = node;
             sibling_relation.prev = node;
             node_relation.prev = prev;
             node_relation.next = sibling;
         } else {
             auto next = sibling_relation.next;
-            auto& next_relation = registry.get<RelationComponent>(next);
+            auto& next_relation = registry.template get<RelationComponent>(next);
             next_relation.prev = node;
             sibling_relation.next = node;
             node_relation.prev = sibling;
@@ -233,9 +233,9 @@ public:
      *
      */
     template <class EntityType> static void detach(entt::basic_registry<EntityType>& registry, EntityType node) {
-        auto* relation = registry.try_get<RelationComponent>(node);
+        auto* relation = registry.template try_get<RelationComponent>(node);
         if (relation && relation->parent != entt::null) {
-            auto& parent_relation = registry.get<RelationComponent>(relation->parent);
+            auto& parent_relation = registry.template get<RelationComponent>(relation->parent);
             parent_relation.children--;
             if (parent_relation.children == 0) {
                 parent_relation.first = entt::null;
@@ -243,8 +243,8 @@ public:
                 parent_relation.first = relation->next;
             }
 
-            auto& next_relation = registry.get<RelationComponent>(relation->next);
-            auto& prev_relation = registry.get<RelationComponent>(relation->prev);
+            auto& next_relation = registry.template get<RelationComponent>(relation->next);
+            auto& prev_relation = registry.template get<RelationComponent>(relation->prev);
             next_relation.prev = relation->prev;
             prev_relation.next = relation->next;
 
@@ -269,7 +269,7 @@ public:
         entt::basic_registry<EntityType>& registry, EntityType parent, bool recursively = false) {
         std::vector<std::pair<EntityType, RelationComponent*>> children;
         if (parent == entt::null) {
-            registry.view<RelationComponent>().each([&](auto entity, auto& relation_component) {
+            registry.template view<RelationComponent>().each([&](auto entity, auto& relation_component) {
                 if (relation_component.parent == entt::null || recursively) {
                     children.emplace_back(entity, &relation_component);
                 }
@@ -280,14 +280,14 @@ public:
             while (!queue.empty()) {
                 auto node = queue.front();
                 queue.pop();
-                auto parent_relation_ptr = registry.try_get<RelationComponent>(node);
+                auto parent_relation_ptr = registry.template try_get<RelationComponent>(node);
                 if (parent_relation_ptr) {
                     auto& parent_relation = *parent_relation_ptr;
                     children.reserve(parent_relation.children);
 
                     auto curr = parent_relation.first;
                     for (std::size_t i {}; i < parent_relation.children; i++) {
-                        auto& curr_relation = registry.get<RelationComponent>(curr);
+                        auto& curr_relation = registry.template get<RelationComponent>(curr);
                         children.emplace_back(curr, &curr_relation);
                         if (recursively) {
                             queue.push(curr);

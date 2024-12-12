@@ -88,7 +88,7 @@ static void recursive_draw(EntityType& entity_clicked, const EntityType& active_
     entt::basic_registry<EntityType>& registry, bool first_node, std::vector<EntityType>& to_delete) {
     ImGui::PushID((void*)(std::uintptr_t)entt::to_integral(entity));
 
-    auto* relation = registry.try_get<RelationComponent>(entity);
+    auto* relation = registry.template try_get<RelationComponent>(entity);
     ImGuiTreeNodeFlags flags
         = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (entity == active_entity) {
@@ -103,7 +103,7 @@ static void recursive_draw(EntityType& entity_clicked, const EntityType& active_
     }
 
     bool node_open {};
-    auto* tag = registry.try_get<TagComponent>(entity);
+    auto* tag = registry.template try_get<TagComponent>(entity);
     if (tag && tag->tag[0] != '\0') {
         node_open = ImGui::TreeNodeEx(reinterpret_cast<const void*>((uintptr_t)entt::to_integral(entity)), flags,
             ICON_FA_CUBE "  %s", tag->tag.data());
@@ -125,7 +125,7 @@ static void recursive_draw(EntityType& entity_clicked, const EntityType& active_
         if (relation && relation->children > 0) {
             auto curr = relation->first;
             for (std::size_t i {}; i < relation->children; i++) {
-                auto& curr_relation = registry.get<RelationComponent>(curr);
+                auto& curr_relation = registry.template get<RelationComponent>(curr);
                 recursive_draw(entity_clicked, active_entity, curr, registry, curr == relation->first, to_delete);
                 curr = curr_relation.next;
             }

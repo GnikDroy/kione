@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ui/widgets/component_inspector.hpp"
 #include "editor_layer.hpp"
 #include "ui/components.hpp"
