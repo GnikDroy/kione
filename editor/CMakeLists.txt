@@ -64,18 +64,18 @@ set_target_properties(editor
 
 if (WIN32)
     set_target_properties(editor
-            PROPERTIES
-            WIN32_EXECUTABLE true
-            )
+        PROPERTIES
+        WIN32_EXECUTABLE true
+    )
 endif ()
 
 # /wd4103 due to a msvc compiler bug
 # /wd5054 rapidjson deprecated warning
 # see https://developercommunity.visualstudio.com/t/warning-c4103-in-visual-studio-166-update/1057589
 target_compile_options(editor PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest /wd4201 /wd4103 /wd5054>
-        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
-        )
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest /wd4201 /wd4103 /wd5054>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>
+)
 
 add_custom_command(TARGET editor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

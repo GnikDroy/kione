@@ -46,9 +46,9 @@ struct FrameBuffer {
         std::swap(other.render_buffers, render_buffers);
         return *this;
     }
-    bool is_swap_chain_target() const { return id == 0; }
-    const std::uint32_t get_id() const { return id; }
-    const Traits& get_traits() const { return traits; }
+    [[nodiscard]] bool is_swap_chain_target() const { return id == 0; }
+    [[nodiscard]] std::uint32_t get_id() const { return id; }
+    [[nodiscard]] const Traits& get_traits() const { return traits; }
     ~FrameBuffer() { glDeleteFramebuffers(1, &id); }
 
     FrameBuffer(Traits traits)

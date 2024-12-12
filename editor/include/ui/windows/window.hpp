@@ -16,8 +16,8 @@ public:
     std::string title;
 
     explicit IImGuiWindow(std::string title, bool show = true)
-        : title(std::move(title))
-        , show(show) { }
+        : show(show)
+        , title(std::move(title)) { }
 
     virtual void render(k2::EditorLayer& editor_layer) {
         if (show) {
