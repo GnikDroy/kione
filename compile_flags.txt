@@ -9,7 +9,10 @@
 
 --include-directory=build/_deps/entt-src/src
 --include-directory=build/_deps/entt-src/src
+
 --include-directory=build/_deps/catch2-src/src
+--include-directory=build/_deps/catch2-build/generated-includes
+
 --include-directory=build/_deps/cereal-src/include
 --include-directory=build/_deps/fastgltf-src/include
 --include-directory=build/_deps/glad-build/include
