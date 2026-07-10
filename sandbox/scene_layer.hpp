@@ -75,12 +75,15 @@ public:
         auto& fp_camera = scene.registry.ctx().get<FPCamera>();
         if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_w) == KeyboardDevice::KeyState::press) {
             fp_camera.camera.position += camera_speed * dt * fp_camera.direction;
-        } else if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_s) == KeyboardDevice::KeyState::press) {
+        }
+        if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_s) == KeyboardDevice::KeyState::press) {
             fp_camera.camera.position -= camera_speed * dt * fp_camera.direction;
-        } else if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_a) == KeyboardDevice::KeyState::press) {
+        }
+        if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_a) == KeyboardDevice::KeyState::press) {
             fp_camera.camera.position
                 -= glm::normalize(glm::cross(fp_camera.direction, fp_camera.camera.up)) * camera_speed * dt;
-        } else if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_d) == KeyboardDevice::KeyState::press) {
+        }
+        if (window.keyboard.get_state(KeyboardDevice::KeyCode::key_d) == KeyboardDevice::KeyState::press) {
             fp_camera.camera.position
                 += glm::normalize(glm::cross(fp_camera.direction, fp_camera.camera.up)) * dt * camera_speed;
         }
