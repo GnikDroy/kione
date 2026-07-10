@@ -17,6 +17,8 @@ int __stdcall WinMain(void*, void*, char*, int) {
     create_app()->run();
     return 0;
 }
+#elif __APPLE__
+int main(int, char**) { create_app()->run(); }
 #else
 #error "Your platform is not supported."
 #endif

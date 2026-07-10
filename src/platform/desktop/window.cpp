@@ -50,6 +50,9 @@ void* Window::get_native_handle() const {
     return reinterpret_cast<void*>(glfwGetX11Window(impl->window.get()));
 #elif _WIN32
     return reinterpret_cast<void*>(glfwGetWin32Window(impl->window.get()));
+#elif __APPLE__
+    // glfw3native.h typedefs `id` to void* in non-Objective-C translation units
+    return glfwGetCocoaWindow(impl->window.get());
 #else
 #error "Native window not implemented."
 #endif
@@ -59,6 +62,8 @@ void* Window::get_native_display() const {
 #ifdef __linux__
     return reinterpret_cast<void*>(glfwGetX11Display());
 #elif _WIN32
+    return nullptr;
+#elif __APPLE__
     return nullptr;
 #else
 #error "Native display not implemented."
