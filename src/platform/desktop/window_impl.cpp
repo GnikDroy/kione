@@ -32,11 +32,10 @@ Window::Impl::Impl(Window* win, const WindowConfig& config) {
 
     if (!window) {
         k2::Log::core().critical("Failed to create GLFW window");
-        glfwTerminate();
-    } else {
-        k2::Log::core().info("Created GLFW window");
-        glfw_window_count++;
+        throw std::runtime_error("Failed to create GLFW window.");
     }
+    k2::Log::core().info("Created GLFW window");
+    glfw_window_count++;
 
     glfwSetErrorCallback([](auto error_code, auto msg) { 
         k2::Log::core().error(std::format("GLFW Error {} : {}",
@@ -51,12 +50,17 @@ Window::Impl::Impl(Window* win, const WindowConfig& config) {
     glfwSwapInterval(glfw_data.vsync);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         k2::Log::core().critical("Failed to initialize GLAD.");
-    } else {
-        k2::Log::core().info("GLAD initialization successful.");
+        throw std::runtime_error("Failed to initialize GLAD.");
     }
+    k2::Log::core().info("GLAD initialization successful.");
 
-    k2::Log::core().info(std::format("OpenGL version is {}", (const char*) glGetString(GL_VERSION)));
-    glViewport(0, 0, static_cast<int32_t>(config.width), static_cast<int32_t>(config.height));
+    auto* gl_version = (const char*)glGetString(GL_VERSION);
+    k2::Log::core().info(std::format("OpenGL version is {}", gl_version ? gl_version : "(unknown)"));
+
+    // The framebuffer can be larger than the window size on HiDPI displays.
+    int fb_width, fb_height;
+    glfwGetFramebufferSize(window.get(), &fb_width, &fb_height);
+    glViewport(0, 0, fb_width, fb_height);
     glEnable(GL_MULTISAMPLE);
 
     glfwSetWindowCloseCallback(window.get(), [](auto glfw_window) {

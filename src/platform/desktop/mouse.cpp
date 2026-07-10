@@ -54,7 +54,7 @@ MouseDevice::MouseDevice(Window* w)
 
 MouseDevice::ButtonState MouseDevice::get_state(ButtonCode button) {
     return static_cast<MouseDevice::ButtonState>(
-        glfwGetKey(window_instance->impl->window.get(), static_cast<int>(button)));
+        glfwGetMouseButton(window_instance->impl->window.get(), static_cast<int>(button)));
 }
 
 void MouseDevice::set_cursor_mode(CursorMode mode) {

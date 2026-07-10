@@ -154,11 +154,11 @@ RingBufferSink<V>::RingBufferSink(size_t num_items)
 template <LoggerSinkType T> std::any& RingBufferSink<T>::get_sink() { return impl; }
 
 template <LoggerSinkType V> std::vector<std::pair<LogLevel, std::string>> RingBufferSink<V>::get(size_t num_items) {
-    return std::reinterpret_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))->get(num_items);
+    return std::static_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))->get(num_items);
 }
 
 template <LoggerSinkType V> void RingBufferSink<V>::set_pattern(const std::string& pattern) {
-    return std::reinterpret_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))
+    return std::static_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))
         ->set_pattern(pattern);
 }
 

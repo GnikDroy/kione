@@ -4,7 +4,7 @@
 
 #define HANDLE_EVENT(event_type, dynamic_event, static_event, action)                                                  \
     if (dynamic_event->type == event_type::hash) {                                                                     \
-        const auto& static_event = *reinterpret_cast<const event_type*>(dynamic_event);                                \
+        const auto& static_event = *static_cast<const event_type*>(dynamic_event);                                     \
         (void)static_event;                                                                                            \
         action                                                                                                         \
     }

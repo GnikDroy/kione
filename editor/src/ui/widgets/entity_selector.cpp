@@ -152,7 +152,7 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
         if (!relation || relation->parent == entt::null) {
             recursive_draw(entity_clicked, active_entity, entity, registry, false, to_delete);
         }
-    };
+    }
 
     registry.destroy(to_delete.begin(), to_delete.end());
     active_entity = entity_clicked;

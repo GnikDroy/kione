@@ -27,7 +27,6 @@ public:
     MouseDevice mouse;
 
     friend class ImguiLayer;
-    class ImguiLayer;
 
     explicit Window(const WindowConfig& = {});
     ~Window();
