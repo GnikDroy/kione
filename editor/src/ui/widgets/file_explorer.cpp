@@ -1,15 +1,27 @@
 #include "ui/widgets/file_explorer.hpp"
+#include "core/logger.hpp"
 #include "editor_layer.hpp"
+
+#include <format>
+#include <system_error>
 
 namespace k2::editor {
 
 void FileExplorerWidget::cache_entries() {
     namespace fs = std::filesystem;
     if (cached_entries.first != current_directory) {
+        std::error_code ec;
+        auto it = fs::directory_iterator { current_directory, ec };
+        if (ec) {
+            Log::core().warn(
+                std::format("Cannot list directory '{}': {}", current_directory.string(), ec.message()));
+            current_directory = cached_entries.first;
+            return;
+        }
         cached_entries.first = current_directory;
         cached_entries.second.clear();
-        for (const auto& entry : fs::directory_iterator(current_directory)) {
-            cached_entries.second.push_back(entry);
+        for (; !ec && it != fs::directory_iterator {}; it.increment(ec)) {
+            cached_entries.second.push_back(*it);
         }
     }
 }
@@ -73,7 +85,8 @@ void FileExplorerWidget::render_directory(const std::filesystem::directory_entry
         ImGui::PopStyleColor();
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-            if (entry.is_directory())
+            std::error_code ec;
+            if (entry.is_directory(ec))
                 current_directory /= entry.path().filename();
         }
         ImGui::TextWrapped("%s", path.c_str());
@@ -82,7 +95,8 @@ void FileExplorerWidget::render_directory(const std::filesystem::directory_entry
 
 std::uint64_t FileExplorerWidget::predict_icon_type(const std::filesystem::directory_entry& dirent) {
     using namespace k2::literals;
-    if (dirent.is_directory()) {
+    std::error_code ec;
+    if (dirent.is_directory(ec)) {
         return "icon_folder"_fnv1a;
     }
     auto&& ext = dirent.path().extension();

@@ -1,8 +1,10 @@
 #include "core/imgui_layer.hpp"
 
+#include "core/logger.hpp"
 #include "events/event.hpp"
 #include "events/keyboard.hpp"
 #include "events/mouse.hpp"
+#include "events/window.hpp"
 #include "platform/desktop/window_impl.hpp"
 
 #include <IconsFontAwesome5.h>
@@ -33,12 +35,15 @@ ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme
 
     ImGui::StyleColorsDark();
     this->theme->apply();
-    io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 20);
-
-    ImFontConfig config;
-    config.MergeMode = true;
-    static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
-    io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 20.0f, &config, icon_ranges.data());
+    if (io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 20) != nullptr) {
+        ImFontConfig config;
+        config.MergeMode = true;
+        static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
+        io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 20.0f, &config, icon_ranges.data());
+    } else {
+        Log::core().warn("Failed to load res/fonts/NotoSans-Regular.ttf, falling back to the default font.");
+        io.Fonts->AddFontDefault();
+    }
 
     ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
     ImGui_ImplOpenGL3_Init();
@@ -71,6 +76,18 @@ bool ImguiLayer::handle_event(const Event* event) {
         auto scroll_event = static_cast<const ScrollEvent*>(event);
         ImGui_ImplGlfw_ScrollCallback(window->impl->window.get(), scroll_event->x, scroll_event->y);
         return ImGui::GetIO().WantCaptureMouse;
+    } else if (event->type == "CursorPositionEvent"_fnv1a) {
+        auto cursor_event = static_cast<const CursorPositionEvent*>(event);
+        ImGui_ImplGlfw_CursorPosCallback(window->impl->window.get(), cursor_event->x, cursor_event->y);
+        return ImGui::GetIO().WantCaptureMouse;
+    } else if (event->type == "CursorEnterExitEvent"_fnv1a) {
+        auto enter_event = static_cast<const CursorEnterExitEvent*>(event);
+        ImGui_ImplGlfw_CursorEnterCallback(window->impl->window.get(), enter_event->state);
+        return false;
+    } else if (event->type == "WindowFocusChangeEvent"_fnv1a) {
+        auto focus_event = static_cast<const WindowFocusChangeEvent*>(event);
+        ImGui_ImplGlfw_WindowFocusCallback(window->impl->window.get(), focus_event->focused);
+        return false;
     }
     return false;
 }
