@@ -1,4 +1,3 @@
-#pragma once
 
 #include "ui/widgets/log_viewer.hpp"
 #include "editor_layer.hpp"

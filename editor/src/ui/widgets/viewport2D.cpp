@@ -1,4 +1,3 @@
-#pragma once
 #include "ui/widgets/viewport2D.hpp"
 #include "editor_layer.hpp"
 #include <algorithm>

@@ -1,7 +1,6 @@
 #include <catch2/catch_all.hpp>
 
 #include "asset/asset.hpp"
-#include <format>
 #include <string>
 #include <vector>
 

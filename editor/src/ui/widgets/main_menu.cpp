@@ -1,4 +1,3 @@
-#pragma once
 
 #include "ui/widgets/main_menu.hpp"
 #include "editor_layer.hpp"

@@ -1,4 +1,3 @@
-#pragma once
 #include "ui/widgets/file_explorer.hpp"
 #include "editor_layer.hpp"
 
