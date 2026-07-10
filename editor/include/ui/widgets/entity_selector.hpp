@@ -15,5 +15,8 @@ public:
     void render(EditorLayer&) override;
 
     EntityType get_active() const { return active_entity; }
+
+    // Must be called when the scene (registry) is replaced
+    void reset_selection() { active_entity = entt::null; }
 };
 }
