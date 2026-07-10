@@ -125,8 +125,8 @@ void Vec2InputWidget(const std::string& label, glm::vec<2, T, glm::defaultp>& ve
 }
 
 template <class T>
-void Vec4InputWidget(const std::string& label, glm::vec<3, T, glm::defaultp>& vec,
-    const glm::vec<3, T, glm::defaultp>& reset = { .0f }) {
+void Vec4InputWidget(const std::string& label, glm::vec<4, T, glm::defaultp>& vec,
+    const glm::vec<4, T, glm::defaultp>& reset = { .0f }) {
     constexpr auto num_columns = 2;
     if (ImGui::BeginTable(label.c_str(), num_columns)) {
         ImGui::TableSetupColumn("###Items", ImGuiTableColumnFlags_WidthStretch, 3);
@@ -210,7 +210,7 @@ void RectInputWidget(const std::string& label, k2::Rect<T>& rect, const k2::Rect
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();
-        ImGui::DragFloat("##X", &rect.x, 0.1f);
+        ImGuiDrag<T>("##X", &rect.x, 0.1f);
         ImGui::SameLine();
         ImGui::PopItemWidth();
 
@@ -223,7 +223,7 @@ void RectInputWidget(const std::string& label, k2::Rect<T>& rect, const k2::Rect
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();
-        ImGui::DragFloat("##Y", &rect.y, 0.1f);
+        ImGuiDrag<T>("##Y", &rect.y, 0.1f);
         ImGui::SameLine();
         ImGui::PopItemWidth();
 
@@ -235,7 +235,7 @@ void RectInputWidget(const std::string& label, k2::Rect<T>& rect, const k2::Rect
         }
         ImGui::PopStyleColor(3);
         ImGui::SameLine();
-        ImGui::DragFloat("##W", &rect.w, 0.1f);
+        ImGuiDrag<T>("##W", &rect.w, 0.1f);
         ImGui::SameLine();
         ImGui::PopItemWidth();
 
@@ -247,7 +247,7 @@ void RectInputWidget(const std::string& label, k2::Rect<T>& rect, const k2::Rect
         }
         ImGui::PopStyleColor(3);
         ImGui::SameLine();
-        ImGui::DragFloat("##H", &rect.h, 0.1f);
+        ImGuiDrag<T>("##H", &rect.h, 0.1f);
         ImGui::SameLine();
         ImGui::PopItemWidth();
         ImGui::PopStyleVar();
@@ -271,19 +271,26 @@ inline void ResourceInputWidget(const std::string& label, ResourceID& id, const 
     // Since AssetRegistry stores strings, this can be arbitrarily long
     std::array<char, 64> input {};
 
+    // Only recompute the ID when the user actually edits the text; otherwise the
+    // placeholder or a truncated name would silently overwrite a valid ID.
+    bool edited = false;
     if (asset_registry.count(id)) {
         auto& name = asset_registry.at(id).first;
-        std::memcpy(input.data(), name.c_str(), input.size());
-        input[std::clamp(name.size(), size_t(0), input.size() - 1)] = 0;
-        ImGui::InputText(label.c_str(), input.data(), input.size());
+        auto length = std::min(name.size(), input.size() - 1);
+        std::memcpy(input.data(), name.c_str(), length);
+        input[length] = 0;
+        edited = ImGui::InputText(label.c_str(), input.data(), input.size());
     } else {
         std::string_view invalid_txt { "Invalid ID!" };
-        std::memcpy(input.data(), invalid_txt.data(), input.size());
-        input[std::clamp(invalid_txt.size(), size_t(0), input.size() - 1)] = 0;
+        auto length = std::min(invalid_txt.size(), input.size() - 1);
+        std::memcpy(input.data(), invalid_txt.data(), length);
+        input[length] = 0;
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-        ImGui::InputText(label.c_str(), input.data(), input.size());
+        edited = ImGui::InputText(label.c_str(), input.data(), input.size());
         ImGui::PopStyleColor();
     }
-    id = fnv1a(input.data());
+    if (edited) {
+        id = fnv1a(input.data());
+    }
 }
 }
