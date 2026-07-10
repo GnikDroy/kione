@@ -57,12 +57,12 @@ TEST_CASE("StringView to Integer") {
 
     {
         std::string_view sv { "" };
-        REQUIRE_THROWS_AS(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()) == 0, std::invalid_argument);
+        REQUIRE_THROWS_AS(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()), std::invalid_argument);
     }
 
     {
         std::string_view sv { "abc" };
-        REQUIRE_THROWS_AS(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()) == 0, std::invalid_argument);
+        REQUIRE_THROWS_AS(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()), std::invalid_argument);
     }
 
     {

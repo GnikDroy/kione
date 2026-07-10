@@ -3,7 +3,10 @@
 #include <GLFW/glfw3.h>
 namespace k2 {
 
-std::string Clipboard::get() { return { glfwGetClipboardString(nullptr) }; }
+std::string Clipboard::get() {
+    const char* str = glfwGetClipboardString(nullptr);
+    return str ? std::string { str } : std::string {};
+}
 void Clipboard::set(const std::string& str) { glfwSetClipboardString(nullptr, str.c_str()); }
 
 } // namespace k2

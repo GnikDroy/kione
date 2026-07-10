@@ -21,4 +21,11 @@ TEST_CASE("FNV hash works") {
         using namespace k2::literals;
         REQUIRE("kione"_fnv1a == 0x86a6488dbe53d0f3);
     }
+
+    // Bytes >= 0x80 must hash as octets, not sign-extended chars
+    {
+        using namespace k2::literals;
+        REQUIRE("\xff"_fnv1a == 0xaf64724c8602eb6e);
+        REQUIRE("n\xc3\xa9"_fnv1a == 0x2352a319273b5ced); // "né" in UTF-8
+    }
 }

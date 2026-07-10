@@ -59,13 +59,13 @@ template <arithmetic T, std::size_t N> struct Vector {
     }
 
     template <arithmetic Num> constexpr auto operator*(const Num& c) const noexcept {
-        Vector<decltype(data[0] * c), N> new_vector { *this };
+        Vector<decltype(data[0] * c), N> new_vector;
         std::transform(data.begin(), data.end(), new_vector.data.begin(), [&c](auto i) { return i * c; });
         return new_vector;
     }
 
     template <arithmetic Num> constexpr auto operator*=(const Num& c) noexcept {
-        std::transform(data.begin(), data.end(), [&c](auto i) { return i * c; });
+        std::transform(data.begin(), data.end(), data.begin(), [&c](auto i) { return i * c; });
         return *this;
     }
 
@@ -81,13 +81,13 @@ template <arithmetic T, std::size_t N> struct Vector {
     }
 
     template <arithmetic Num> constexpr auto operator/(const Num& c) const noexcept {
-        Vector<decltype(data[0] / c), N> new_vector { *this };
+        Vector<decltype(data[0] / c), N> new_vector;
         std::transform(data.begin(), data.end(), new_vector.data.begin(), [&c](auto i) { return i / c; });
         return new_vector;
     }
 
     template <arithmetic Num> constexpr auto operator/=(const Num& c) noexcept {
-        std::transform(data.begin(), data.end(), [&c](auto i) { return i / c; });
+        std::transform(data.begin(), data.end(), data.begin(), [&c](auto i) { return i / c; });
         return *this;
     }
 
@@ -96,7 +96,7 @@ template <arithmetic T, std::size_t N> struct Vector {
     constexpr auto operator!=(const Vector& other) const noexcept { return data != other.data; }
 
     template <arithmetic Num> constexpr auto dot(const Vector<Num, N>& other) const noexcept {
-        return std::inner_product(data.begin(), data.end(), other.begin(), 0);
+        return std::inner_product(data.begin(), data.end(), other.data.begin(), decltype(data[0] * other.data[0]) {});
     }
 };
 
@@ -240,7 +240,7 @@ template <arithmetic T> struct Vector<T, 3> {
         return Vector<decltype(x * other.x), 3> { x * other.x, y * other.y, z * other.z };
     }
 
-    template <arithmetic Num> constexpr auto operator*=(const Vector<Num, 2>& other) noexcept {
+    template <arithmetic Num> constexpr auto operator*=(const Vector<Num, 3>& other) noexcept {
         x *= other.x;
         y *= other.y;
         z *= other.z;
@@ -251,7 +251,7 @@ template <arithmetic T> struct Vector<T, 3> {
         return Vector<decltype(x * c), 3> { x * c, y * c, z * c };
     }
 
-    template <arithmetic Num> constexpr auto operator+=(const Num& c) noexcept {
+    template <arithmetic Num> constexpr auto operator*=(const Num& c) noexcept {
         x *= c;
         y *= c;
         z *= c;
@@ -276,7 +276,7 @@ template <arithmetic T> struct Vector<T, 3> {
         return !(*this == other);
     }
 
-    template <arithmetic Num> constexpr T operator[](std::size_t i) noexcept {
+    constexpr T operator[](std::size_t i) noexcept {
         assert(i < 3);
         return i == 0 ? x : (i == 1 ? y : z);
     }
@@ -284,9 +284,9 @@ template <arithmetic T> struct Vector<T, 3> {
     constexpr std::size_t size() noexcept { return 3; }
 
     constexpr std::tuple<double, double, double> angle() const noexcept {
-        auto ax = std::atan2(std::sqrt(y ^ 2 + z ^ 2), x);
-        auto ay = std::atan2(std::sqrt(z ^ 2 + x ^ 2), y);
-        auto az = std::atan2(std::sqrt(x ^ 2 + y ^ 2), z);
+        auto ax = std::atan2(std::sqrt(double(y * y + z * z)), double(x));
+        auto ay = std::atan2(std::sqrt(double(z * z + x * x)), double(y));
+        auto az = std::atan2(std::sqrt(double(x * x + y * y)), double(z));
         return { ax, ay, az };
     }
 };
