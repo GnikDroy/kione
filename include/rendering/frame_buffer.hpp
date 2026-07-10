@@ -93,7 +93,7 @@ struct FrameBuffer {
     }
 
 private:
-    std::uint32_t id;
+    std::uint32_t id {};
     Traits traits;
 
     std::vector<Texture2D> textures;

@@ -48,16 +48,16 @@ public:
 
         layers.push_back(std::make_unique<SceneLayer>(window));
         layers.push_back(std::make_unique<k2::ImguiLayer>(window));
-        auto* imgui_layer = reinterpret_cast<k2::ImguiLayer*>(layers[1].get());
+        auto* imgui_layer = static_cast<k2::ImguiLayer*>(layers[1].get());
 
-        glEnable(GL_DEPTH_TEST | GL_STENCIL_TEST);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
 
-        auto current_frame = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        auto last_frame = current_frame;
+        auto last_frame = steady_clock::now();
 
         while (running) {
-            current_frame = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-            auto dt = float(current_frame - last_frame) / 1000.0f;
+            auto current_frame = steady_clock::now();
+            auto dt = duration<float>(current_frame - last_frame).count();
             last_frame = current_frame;
 
             // Update and handle events
