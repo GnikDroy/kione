@@ -60,7 +60,8 @@ private:
     std::unordered_map<ResourceID, std::uint32_t> texture_unit_map {};
 
     std::size_t max_vertices = 100'000;
-    std::uint32_t max_textures = 32;
+    // GL 4.1 guarantees only 16 fragment texture units;
+    std::uint32_t max_textures = 16;
     VertexArray vao;
     VertexBuffer vbo;
     IndexBuffer ebo;

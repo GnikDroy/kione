@@ -79,7 +79,7 @@ struct FrameBuffer {
             if (attachment.buffer_type == Attachment::BufferType::Texture) {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, type + attachment.index, GL_TEXTURE_2D, attachment.id, 0);
             } else if (attachment.buffer_type == Attachment::BufferType::RenderBuffer) {
-                glNamedFramebufferRenderbuffer(id, type + attachment.index, GL_RENDERBUFFER, attachment.id);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, type + attachment.index, GL_RENDERBUFFER, attachment.id);
             } else {
                 Log::core().warn("Invalid buffer type for render buffer attachment. Skipping attachment.");
             }

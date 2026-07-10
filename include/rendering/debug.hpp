@@ -68,7 +68,8 @@ inline bool enable_debug() {
         return flags & GL_CONTEXT_FLAG_DEBUG_BIT;
     }();
 
-    if (debug_set) {
+    // glDebugMessageCallback requires GL 4.3 :(
+    if (debug_set && glDebugMessageCallback != nullptr) {
         k2::Log::core().info("GL Debug handler injected.");
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

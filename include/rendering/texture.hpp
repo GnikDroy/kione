@@ -57,8 +57,27 @@ struct Texture2D {
         case GL_RGBA32F: return GL_RGBA;
 
         case GL_DEPTH24_STENCIL8: return GL_DEPTH_STENCIL;
-        case GL_DEPTH_COMPONENT: return GL_DEPTH_COMPONENT;
+        case GL_DEPTH_COMPONENT:
+        case GL_DEPTH_COMPONENT32: return GL_DEPTH_COMPONENT;
         case GL_STENCIL_INDEX8: return GL_STENCIL_INDEX;
+        default: throw std::invalid_argument("Unsupported sized format received.");
+        }
+    }
+
+    static auto predict_type_from_sized(std::size_t sized) {
+        switch (sized) {
+        case GL_R8:
+        case GL_RGB8:
+        case GL_RGBA8:
+        case GL_STENCIL_INDEX8: return GL_UNSIGNED_BYTE;
+
+        case GL_R32F:
+        case GL_RGB32F:
+        case GL_RGBA32F: return GL_FLOAT;
+
+        case GL_DEPTH24_STENCIL8: return GL_UNSIGNED_INT_24_8;
+        case GL_DEPTH_COMPONENT:
+        case GL_DEPTH_COMPONENT32: return GL_UNSIGNED_INT;
         default: throw std::invalid_argument("Unsupported sized format received.");
         }
     }
@@ -85,12 +104,12 @@ struct Texture2D {
     Texture2D(std::size_t width, std::size_t height, std::span<const T> data = {}, GLuint sized_format = GL_RGBA8,
         bool generate_mipmaps = true) {
         glGenTextures(1, &id);
-        auto levels = (GLsizei)(std::floor(std::log2(std::max(width, height))) + 1);
-        if (!generate_mipmaps) {
-            levels = 1;
-        }
         glBindTexture(GL_TEXTURE_2D, id);
-        glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, (GLsizei)width, (GLsizei)height);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)sized_format, (GLsizei)width, (GLsizei)height, 0,
+            predict_format_from_sized(sized_format), predict_type_from_sized(sized_format), nullptr);
+        if (!generate_mipmaps) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         if (!data.empty()) {
@@ -121,13 +140,12 @@ struct Texture2D {
 
         if constexpr (std::same_as<T, uint8_t>) {
             std::array<T, 4> data = { 255, 255, 255, 255 };
-            glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA8, GL_UNSIGNED_BYTE, data.data());
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
         } else if constexpr (std::same_as<T, float>) {
             std::array<T, 4> data = { 1.0f, 1.0f, 1.0f, 1.0f };
-            glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA32F, GL_FLOAT, data.data());
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1, 1, 0, GL_RGBA, GL_FLOAT, data.data());
         }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
         return texture;
     }
 
@@ -137,9 +155,8 @@ struct Texture2D {
                 glGenTextures(1, &id);
                 glBindTexture(GL_TEXTURE_2D, id);
 
-                auto levels = (GLsizei)(std::floor(std::log2(std::max(image.width, image.height))) + 1);
                 if (!generate_mipmaps) {
-                    levels = 1;
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
                 }
 
                 std::visit(
@@ -149,15 +166,13 @@ struct Texture2D {
                             auto sized_format = predict_sized_format<std::uint8_t>(image.channels);
                             auto format = predict_format_from_sized(sized_format);
 
-                            glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, image.width, image.height);
-                            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, format,
+                            glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
                                 OpenGLType<uint8_t>::type, ptr);
                         } else if constexpr (std::is_same_v<decltype(ptr), float*>) {
                             auto sized_format = predict_sized_format<float>(image.channels);
                             auto format = predict_format_from_sized(sized_format);
 
-                            glTexStorage2D(GL_TEXTURE_2D, levels, sized_format, image.width, image.height);
-                            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, format,
+                            glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
                                 OpenGLType<float>::type, ptr);
                         } else {
                             static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");

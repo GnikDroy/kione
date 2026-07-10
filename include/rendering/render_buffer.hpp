@@ -22,7 +22,8 @@ public:
 
     RenderBuffer(std::size_t width, std::size_t height, GLuint format = GL_RGBA8) {
         glGenRenderbuffers(1, &id);
-        glNamedRenderbufferStorage(id, format, (GLsizei)width, (GLsizei)height);
+        glBindRenderbuffer(GL_RENDERBUFFER, id);
+        glRenderbufferStorage(GL_RENDERBUFFER, format, (GLsizei)width, (GLsizei)height);
     }
 };
 
