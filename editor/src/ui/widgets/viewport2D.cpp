@@ -55,6 +55,11 @@ glm::vec2 Viewport2DWidget::screen_to_world(ImVec2 screen, ImVec2 rect_min) cons
 }
 
 void Viewport2DWidget::draw_gizmo(EditorLayer& editor_layer, ImVec2 rect_min) {
+    // Space is the pan modifier; the gizmo must not grab the drag.
+    if (ImGui::IsKeyDown(ImGuiKey_Space)) {
+        return;
+    }
+
     auto& registry = editor_layer.scene.registry;
     auto active = editor_layer.entity_selector.get_widget().get_active();
     if (!registry.valid(active)) {
@@ -99,7 +104,10 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
     auto& io = ImGui::GetIO();
     bool hovered = ImGui::IsItemHovered();
 
-    if (hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Middle)) {
+    bool panning = hovered
+        && (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
+            || (ImGui::IsKeyDown(ImGuiKey_Space) && ImGui::IsMouseDragging(ImGuiMouseButton_Left)));
+    if (panning) {
         camera_position.x -= io.MouseDelta.x * 2.0f * zoom;
         camera_position.y += io.MouseDelta.y * 2.0f * zoom;
     }
@@ -111,7 +119,8 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
         camera_position += world_before - world_after;
     }
 
-    if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing()) {
+    if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsKeyDown(ImGuiKey_Space)
+        && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing()) {
         auto world = screen_to_world(io.MousePos, rect_min);
         auto picked = entt::entity { entt::null };
         auto picked_z = -std::numeric_limits<float>::infinity();
