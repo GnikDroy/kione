@@ -39,7 +39,9 @@ ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme
         ImFontConfig config;
         config.MergeMode = true;
         static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 20.0f, &config, icon_ranges.data());
+        if (io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 20.0f, &config, icon_ranges.data()) == nullptr) {
+            Log::core().warn("Failed to load res/fonts/fontawesome-webfont.ttf, icons might look corrupt.");
+        }
     } else {
         Log::core().warn("Failed to load res/fonts/NotoSans-Regular.ttf, falling back to the default font.");
         io.Fonts->AddFontDefault();

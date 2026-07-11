@@ -11,6 +11,7 @@
 #include "components/transform.hpp"
 #include "core/scene.hpp"
 
+#include <array>
 #include <numeric>
 #include <span>
 #include <unordered_map>
@@ -209,6 +210,13 @@ public:
     }
 
     void render() {
+        std::array<GLint, 4> saved_viewport {};
+        if (!frame_buffer.is_swap_chain_target()) {
+            glGetIntegerv(GL_VIEWPORT, saved_viewport.data());
+            auto& traits = frame_buffer.get_traits();
+            glViewport(0, 0, (GLsizei)traits.width, (GLsizei)traits.height);
+        }
+
         for (const auto& [draw_mode, vertices] : vertices_buffer) {
             auto& indices = indices_buffer[draw_mode];
 
@@ -237,6 +245,10 @@ public:
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
             vao.unbind();
+        }
+
+        if (!frame_buffer.is_swap_chain_target()) {
+            glViewport(saved_viewport[0], saved_viewport[1], saved_viewport[2], saved_viewport[3]);
         }
 
         texture_unit_map.clear();

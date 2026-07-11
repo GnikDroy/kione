@@ -57,6 +57,15 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
             attachment.id = 0;
         }
         renderer2D.set_frame_buffer({ new_traits });
+
+        renderer2D.camera.projection_traits = k2::Camera::OrthographicTraits {
+            .left = -width,
+            .right = width,
+            .top = height,
+            .bottom = -height,
+            .far_clip = -1000.f,
+            .near_clip = 1000.f,
+        };
     }
 
     glEnable(GL_BLEND);
