@@ -96,7 +96,7 @@ bool ImguiLayer::handle_event(const Event* event) {
 
 void ImguiLayer::update(float) { }
 
-void ImguiLayer::start() {
+void ImguiLayer::begin_frame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();

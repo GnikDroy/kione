@@ -31,7 +31,8 @@ public:
     explicit Window(const WindowConfig& = {});
     ~Window();
 
-    void update();
+    void poll();
+    void swap();
 
     [[nodiscard]] ::uint32_t get_width() const;
     [[nodiscard]] ::uint32_t get_height() const;

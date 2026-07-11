@@ -8,6 +8,10 @@
 
 namespace k2 {
 Window::Impl::Impl(Window* win, const WindowConfig& config) {
+    if (!glfw_initialized) {
+        throw std::runtime_error("GLFW initialization failed.");
+    }
+
     glfw_data = {
         .title = config.title,
         .vsync = true,
@@ -36,13 +40,6 @@ Window::Impl::Impl(Window* win, const WindowConfig& config) {
     }
     k2::Log::core().info("Created GLFW window");
     glfw_window_count++;
-
-    glfwSetErrorCallback([](auto error_code, auto msg) { 
-        k2::Log::core().error(std::format("GLFW Error {} : {}",
-            (uint32_t) error_code,
-            (const char*) msg)
-        );
-    });
 
     glfwSetWindowUserPointer(window.get(), win);
 

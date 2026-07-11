@@ -23,9 +23,9 @@ public:
     ImguiLayer& operator=(const ImguiLayer&) = delete;
 
     ~ImguiLayer() override;
+    void begin_frame() override;
     void update(float) override;
     bool handle_event(const Event*) override;
-    void start();
     void render() override;
 };
 }

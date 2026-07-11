@@ -23,10 +23,9 @@ Window::Window(const WindowConfig& config)
 
 Window::~Window() = default;
 
-void Window::update() {
-    glfwSwapBuffers(impl->window.get());
-    glfwPollEvents();
-}
+void Window::poll() { glfwPollEvents(); }
+
+void Window::swap() { glfwSwapBuffers(impl->window.get()); }
 
 std::uint32_t Window::get_width() const {
     int width, height;
