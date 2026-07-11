@@ -265,20 +265,42 @@ inline void OrientationInputWidget(const std::string& label, glm::quat& quaterni
     quaternion = glm::quat(euler_angles);
 }
 
-inline void ResourceInputWidget(const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry) {
-    std::string input = handle.name;
-
-    bool known = asset_registry.count(handle.id) > 0;
-    if (!known) {
+inline void ResourceInputWidget(
+    const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry, Asset::Type type) {
+    // Red border: a non-empty reference that no registered asset resolves.
+    bool dangling = !handle.name.empty() && asset_registry.count(handle.id) == 0;
+    if (dangling) {
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
-    bool edited = ImGui::InputText(label.c_str(), &input);
-    if (!known) {
-        ImGui::PopStyleColor();
+
+    const char* preview = handle.name.empty() ? "<none>" : handle.name.c_str();
+    if (ImGui::BeginCombo(label.c_str(), preview)) {
+        if (ImGui::Selectable("<none>", handle.name.empty())) {
+            handle.set("");
+        }
+
+        std::vector<const std::string*> names;
+        for (auto& [id, pair] : asset_registry) {
+            if (pair.second.type == type) {
+                names.push_back(&pair.first);
+            }
+        }
+        std::ranges::sort(names, {}, [](const std::string* name) -> const std::string& { return *name; });
+
+        for (auto* name : names) {
+            bool selected = handle.name == *name;
+            if (ImGui::Selectable(name->c_str(), selected)) {
+                handle.set(*name);
+            }
+            if (selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
     }
 
-    if (edited) {
-        handle.set(std::move(input));
+    if (dangling) {
+        ImGui::PopStyleColor();
     }
 }
 }

@@ -56,6 +56,7 @@ private:
     VertexBuffer vbo;
     IndexBuffer ebo;
     FrameBuffer frame_buffer;
+    Texture2D fallback_texture = Texture2D::create_white_texture<uint8_t>();
     // Picked up from the scene's registry context in draw(Scene), or set explicitly
     // via set_resources() when drawing without a scene.
     ResourceManager* resources {};

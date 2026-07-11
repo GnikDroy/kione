@@ -210,13 +210,11 @@ void Renderer2D::flush() {
         std::vector<std::int32_t> tex_unit_vec(texture_unit_map.size());
         std::iota(tex_unit_vec.begin(), tex_unit_vec.end(), 0);
 
-        if (resources != nullptr) {
-            for (auto& [texture_id, texture_unit_index] : texture_unit_map) {
-                auto* texture = resources->try_get<Texture2D>(texture_id);
-                if (texture) {
-                    texture->bind(texture_unit_index);
-                }
-            }
+        // Units always get a binding: skipping missing textures would leave stale
+        // bindings from earlier flushes visible.
+        for (auto& [texture_id, texture_unit_index] : texture_unit_map) {
+            auto* texture = resources != nullptr ? resources->try_get<Texture2D>(texture_id) : nullptr;
+            (texture != nullptr ? *texture : fallback_texture).bind(texture_unit_index);
         }
 
         default_shader.use()
