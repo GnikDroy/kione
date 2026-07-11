@@ -49,7 +49,7 @@ public:
         auto& sprite = scene.registry.emplace<k2::SpriteComponent>(entity);
         sprite = k2::SpriteComponent {
             .color = { 1.0f, 0.0f, 0.0f, 1.0f },
-            .texture = "tex"_fnv1a,
+            .texture = k2::AssetHandle { "tex" },
         };
 
         auto& transform = scene.registry.emplace<k2::TransformComponent>(entity);
@@ -63,8 +63,7 @@ public:
     void update(float) override { }
 
     void render() override {
-        // draw(Scene) leaves the camera untouched when the scene has no Camera
-        // component, and picks the ResourceManager out of the registry context.
+        // draw(Scene) overwrites the camera if the scene has a Camera component.
         renderer2D.camera = scene.registry.ctx().get<k2::Camera>();
         renderer2D.draw(scene);
         renderer2D.render();

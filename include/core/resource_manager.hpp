@@ -38,10 +38,8 @@ public:
     template <class T> T& set(std::string name, T value) {
         auto id = resolve(name);
         names.insert_or_assign(id, std::move(name));
-        return all<T>()[id] = std::move(value);
+        return all<T>().insert_or_assign(id, std::move(value));
     }
-
-    template <class T> T& set(ResourceID id, T value) { return all<T>()[id] = std::move(value); }
 
     template <class T> T& get(ResourceID id) { return all<T>()[id]; }
     template <class T> T& get(std::string_view name) { return get<T>(resolve(name)); }

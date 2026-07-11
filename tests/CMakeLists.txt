@@ -9,6 +9,7 @@ add_executable(
     core/fnv.cpp
     
     asset/assets.cpp
+    asset/asset_handle.cpp
 )
 add_executable(kione2D::tests ALIAS K2_tests)
 

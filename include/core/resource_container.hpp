@@ -24,9 +24,13 @@ public:
 
     [[nodiscard]] bool contains(ResourceID resource_id) const { return resources.count(resource_id); }
 
-    ResourceType& operator[](ResourceID id) { return resources[id]; }
+    ResourceType& operator[](ResourceID id) { return resources.at(id); }
 
     const ResourceType& operator[](ResourceID id) const { return resources.at(id); }
+
+    ResourceType& insert_or_assign(ResourceID id, ResourceType value) {
+        return resources.insert_or_assign(id, std::move(value)).first->second;
+    }
 
     void erase(ResourceID id) { resources.erase(id); }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 
+#include "asset/asset_handle.hpp"
 #include "asset/asset_registry.hpp"
 #include "core/resource_container.hpp"
 #include "core/utils.hpp"
@@ -265,32 +266,25 @@ inline void OrientationInputWidget(const std::string& label, glm::quat& quaterni
     quaternion = glm::quat(euler_angles);
 }
 
-inline void ResourceInputWidget(const std::string& label, ResourceID& id, const AssetRegistry& asset_registry) {
+inline void ResourceInputWidget(const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry) {
     // TODO: Switch to the cpp imgui implementation of InputText
-    // 64 is arbitrary here.
-    // Since AssetRegistry stores strings, this can be arbitrarily long
     std::array<char, 64> input {};
+    auto length = std::min(handle.name.size(), input.size() - 1);
+    std::memcpy(input.data(), handle.name.c_str(), length);
+    input[length] = 0;
 
-    // Only recompute the ID when the user actually edits the text; otherwise the
-    // placeholder or a truncated name would silently overwrite a valid ID.
-    bool edited = false;
-    if (asset_registry.count(id)) {
-        auto& name = asset_registry.at(id).first;
-        auto length = std::min(name.size(), input.size() - 1);
-        std::memcpy(input.data(), name.c_str(), length);
-        input[length] = 0;
-        edited = ImGui::InputText(label.c_str(), input.data(), input.size());
-    } else {
-        std::string_view invalid_txt { "Invalid ID!" };
-        auto length = std::min(invalid_txt.size(), input.size() - 1);
-        std::memcpy(input.data(), invalid_txt.data(), length);
-        input[length] = 0;
+    bool known = asset_registry.count(handle.id) > 0;
+    if (!known) {
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-        edited = ImGui::InputText(label.c_str(), input.data(), input.size());
+    }
+    bool edited = ImGui::InputText(label.c_str(), input.data(), input.size());
+    if (!known) {
         ImGui::PopStyleColor();
     }
+
+    // Write back only on edit: the truncated display must never overwrite the handle.
     if (edited) {
-        id = fnv1a(input.data());
+        handle.set(input.data());
     }
 }
 }

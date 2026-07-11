@@ -31,10 +31,8 @@ TEST_CASE("ResourceManager functionality") {
     REQUIRE(manager.get<std::string>("answer") == "forty-two");
     REQUIRE(manager.get<int>("answer") == 42);
 
-    // Raw-id registration carries no name
-    manager.set(k2::ResourceID { 7 }, 21);
-    REQUIRE(manager.get<int>(k2::ResourceID { 7 }) == 21);
     REQUIRE(manager.name_of(k2::ResourceID { 7 }) == nullptr);
+    REQUIRE(!manager.contains<int>(k2::ResourceID { 7 }));
 
     manager.clear();
     REQUIRE(manager.all<int>().size() == 0);

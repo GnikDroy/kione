@@ -1,3 +1,4 @@
+#include "asset/asset_registry.hpp"
 #include "core/imgui_layer.hpp"
 #include "core/resources.hpp"
 

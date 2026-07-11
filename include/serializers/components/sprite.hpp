@@ -1,5 +1,6 @@
 #pragma once
 #include "components/sprite.hpp"
+#include "serializers/asset/asset_handle.hpp"
 #include <yaml-cpp/yaml.h>
 
 namespace YAML {
@@ -16,7 +17,7 @@ template <> struct convert<k2::SpriteComponent> {
         if (!node.IsMap()) {
             return false;
         }
-        sprite.texture = node["Texture"].as<k2::ResourceID>();
+        sprite.texture = node["Texture"].as<k2::AssetHandle>();
         sprite.color = node["Color"].as<glm::vec4>();
         sprite.uv_rect = node["UvRect"].as<k2::Rect<float>>();
         return true;

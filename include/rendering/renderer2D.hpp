@@ -67,8 +67,6 @@ private:
     VertexBuffer vbo;
     IndexBuffer ebo;
     FrameBuffer frame_buffer;
-    // Picked up from the scene's registry context in draw(Scene), or set explicitly
-    // via set_resources() when drawing without a scene.
     ResourceManager* resources {};
 
 public:
@@ -180,25 +178,25 @@ public:
                 .position = { 1.0f, -1.0f, 0.0f },
                 .color = sprite.color,
                 .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y },
-                .texture = sprite.texture,
+                .texture = sprite.texture.id,
             },
             k2::Renderer2D::Vertex {
                 .position = { -1.0f, 1.0f, 0.0f },
                 .color = sprite.color,
                 .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y + sprite.uv_rect.h },
-                .texture = sprite.texture,
+                .texture = sprite.texture.id,
             },
             k2::Renderer2D::Vertex {
                 .position = { -1.0f, -1.0f, 0.0f },
                 .color = sprite.color,
                 .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y },
-                .texture = sprite.texture,
+                .texture = sprite.texture.id,
             },
             k2::Renderer2D::Vertex {
                 .position = { 1.0f, 1.0f, 0.0f },
                 .color = sprite.color,
                 .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y + sprite.uv_rect.h },
-                .texture = sprite.texture,
+                .texture = sprite.texture.id,
             },
         };
         const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
