@@ -2,6 +2,7 @@
 #include "core/imgui_layer.hpp"
 #include "core/project.hpp"
 #include "core/resources.hpp"
+#include "core/scene.hpp"
 
 #include <filesystem>
 #include <optional>

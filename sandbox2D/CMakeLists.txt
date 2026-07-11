@@ -4,7 +4,6 @@ add_executable(
 )
 add_executable(kione2D::sandbox2D ALIAS K2_sandbox2D)
 
-target_include_directories(K2_sandbox2D PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(K2_sandbox2D kione2D::kione2D)
 
 set_target_properties(K2_sandbox2D

@@ -13,7 +13,7 @@ add_executable(
 )
 add_executable(kione2D::editor ALIAS editor)
 
-target_include_directories(editor PRIVATE ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_precompile_headers(editor PRIVATE
     <algorithm>

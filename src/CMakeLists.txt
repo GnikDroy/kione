@@ -2,21 +2,39 @@ find_package(OpenGL REQUIRED)
 
 add_library(
     kione2D
+    asset/asset.cpp
+    asset/asset_registry.cpp
+    asset/loader.cpp
+    asset/scheme.cpp
     core/app.cpp
-    core/logger.cpp
-    core/layer.cpp
     core/imgui_layer.cpp
+    core/imgui_theme.cpp
+    core/layer.cpp
+    core/logger.cpp
+    core/project.cpp
+    core/scene_loader.cpp
     events/event.cpp
     platform/desktop/window.cpp
     platform/desktop/window_impl.cpp
     platform/desktop/keyboard.cpp
     platform/desktop/mouse.cpp
     platform/desktop/clipboard.cpp
+    rendering/debug.cpp
+    rendering/frame_buffer.cpp
+    rendering/image.cpp
+    rendering/mesh.cpp
+    rendering/model.cpp
+    rendering/renderer2D.cpp
+    rendering/shader.cpp
+    rendering/texture.cpp
     stb_image.cpp
 )
 add_library(kione2D::kione2D ALIAS kione2D)
 
-target_include_directories(kione2D PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(kione2D
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PRIVATE ${PROJECT_SOURCE_DIR}/src
+)
 target_precompile_headers(kione2D PRIVATE
     <iostream>
     <memory>

@@ -2,6 +2,9 @@
 
 #include "core/scene_loader.hpp"
 
+#include "components/relation.hpp"
+#include "serializers/core/scene.hpp"
+
 using namespace k2::literals;
 
 namespace {

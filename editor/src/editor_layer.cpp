@@ -1,4 +1,5 @@
 #include "editor_layer.hpp"
+#include "asset/loader.hpp"
 #include "core/scene_loader.hpp"
 #include <ImGuizmo.h>
 #include <format>

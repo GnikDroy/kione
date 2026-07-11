@@ -15,7 +15,6 @@ add_executable(
 )
 add_executable(kione2D::tests ALIAS K2_tests)
 
-target_include_directories(K2_tests PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_precompile_headers(K2_tests PRIVATE
     <iostream>
     <memory>
