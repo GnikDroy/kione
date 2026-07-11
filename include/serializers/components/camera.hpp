@@ -51,6 +51,12 @@ template <> struct convert<k2::Camera::PerspectiveTraits> {
     }
 };
 
+template <> struct convert<k2::MainCamera> {
+    static Node encode(const k2::MainCamera&) { return Node(true); }
+
+    static bool decode(const Node&, k2::MainCamera&) { return true; }
+};
+
 template <> struct convert<k2::Camera> {
     static Node encode(const k2::Camera& camera) {
         YAML::Node node;

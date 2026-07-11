@@ -11,11 +11,13 @@
 #include "components/transform.hpp"
 #include "core/scene.hpp"
 
+#include <algorithm>
 #include <array>
 #include <numeric>
 #include <span>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace k2 {
 class Renderer2D {
@@ -56,6 +58,13 @@ private:
         return ret;
     }("res/shaders/2D_vs.glsl", "res/shaders/2D_fs.glsl");
 
+    struct SpriteQuad {
+        float z;
+        glm::mat4 transform;
+        std::array<Vertex, 4> vertices;
+    };
+
+    std::vector<SpriteQuad> sprite_quads {};
     std::unordered_map<std::uint32_t, std::vector<Renderer2D::VertexShaderInput>> vertices_buffer {};
     std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> indices_buffer {};
     std::unordered_map<ResourceID, std::uint32_t> texture_unit_map {};
@@ -149,7 +158,7 @@ public:
 
         if (total_textures > max_textures || vertices_vec.size() + vertices.size() > max_vertices
             || indices_vec.size() + indices.size() > max_vertices) {
-            render();
+            flush();
         }
 
         // Assign the new textures, texture unit coordinates
@@ -173,7 +182,15 @@ public:
     }
 
     void draw(const TransformComponent& transform, const SpriteComponent& sprite) {
-        std::array<k2::Renderer2D::Vertex, 4> vertices {
+        sprite_quads.push_back({
+            .z = transform.translation.z,
+            .transform = transform.get_matrix(),
+            .vertices = build_sprite_quad(sprite),
+        });
+    }
+
+    static std::array<Vertex, 4> build_sprite_quad(const SpriteComponent& sprite) {
+        return {
             k2::Renderer2D::Vertex {
                 .position = { 1.0f, -1.0f, 0.0f },
                 .color = sprite.color,
@@ -199,8 +216,6 @@ public:
                 .texture = sprite.texture.id,
             },
         };
-        const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
-        draw(vertices, indices, transform.get_matrix());
     }
 
     void draw(Scene& scene) {
@@ -208,21 +223,44 @@ public:
             resources = &scene.registry.ctx().get<ResourceManager&>();
         }
 
-        // TODO: how to select main camera here?
-        // TODO: do i even select the main camera here?
-        scene.registry.view<k2::Camera>().each([&](auto, const auto& cam) { camera = cam; });
+        for (auto entity : scene.registry.view<k2::Camera, k2::MainCamera>()) {
+            camera = scene.registry.get<k2::Camera>(entity);
+            break;
+        }
 
         scene.registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
             [&](auto, const auto& transform, const auto& sprite) { draw(transform, sprite); });
     }
 
     void render() {
+        // Blending is order-dependent: sprites are drawn back to front.
+        std::ranges::stable_sort(sprite_quads, {}, &SpriteQuad::z);
+        const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
+        for (const auto& quad : sprite_quads) {
+            draw(quad.vertices, indices, quad.transform);
+        }
+        sprite_quads.clear();
+
+        flush();
+    }
+
+private:
+    void flush() {
         std::array<GLint, 4> saved_viewport {};
         if (!frame_buffer.is_swap_chain_target()) {
             glGetIntegerv(GL_VIEWPORT, saved_viewport.data());
             auto& traits = frame_buffer.get_traits();
             glViewport(0, 0, (GLsizei)traits.width, (GLsizei)traits.height);
         }
+
+        // Depth testing breaks blended sprites: transparent fragments still write
+        // depth, so anything behind them would be rejected. Ordering is the CPU
+        // sort's job.
+        auto depth_was_enabled = glIsEnabled(GL_DEPTH_TEST);
+        auto blend_was_enabled = glIsEnabled(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         for (const auto& [draw_mode, vertices] : vertices_buffer) {
             auto& indices = indices_buffer[draw_mode];
@@ -254,6 +292,13 @@ public:
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
             vao.unbind();
+        }
+
+        if (depth_was_enabled) {
+            glEnable(GL_DEPTH_TEST);
+        }
+        if (!blend_was_enabled) {
+            glDisable(GL_BLEND);
         }
 
         if (!frame_buffer.is_swap_chain_target()) {

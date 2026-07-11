@@ -68,8 +68,6 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
         };
     }
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     renderer2D.set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
     renderer2D.clear();
     renderer2D.draw(scene);

@@ -88,6 +88,8 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
     k2::editor::RectInputWidget("UV Rect", sprite.uv_rect);
 }
 
+template <> void ComponentWidget<k2::MainCamera>(entt::registry&, entt::registry::entity_type) { }
+
 template <> void ComponentWidget<k2::TagComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& tag = reg.get<k2::TagComponent>(e).tag;
     ImGui::InputText("Tag", &tag);

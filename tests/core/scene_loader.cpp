@@ -32,6 +32,7 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
 
     registry.emplace<k2::TagComponent>(parent, "parent");
     registry.emplace<k2::TransformComponent>(parent).scale = { 2.0f, 2.0f, 1.0f };
+    registry.emplace<k2::MainCamera>(parent);
 
     auto child_a = registry.create();
     registry.emplace<k2::TagComponent>(child_a, "child_a");
@@ -77,6 +78,7 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
     REQUIRE(sprite.texture.id == "cobble"_fnv1a);
 
     REQUIRE(loaded_registry.get<k2::TransformComponent>(new_parent).scale.x == 2.0f);
+    REQUIRE(loaded_registry.all_of<k2::MainCamera>(new_parent));
 }
 
 TEST_CASE("SceneLoader rejects malformed scenes") {

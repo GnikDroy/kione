@@ -62,6 +62,7 @@ template <class EntityType> void ComponentInspectorWidget<EntityType>::render(Ed
 template <class EntityType> ComponentInspectorWidget<EntityType>::ComponentInspectorWidget() {
     register_component<k2::TransformComponent>(ICON_FA_ARROWS_ALT "  Transform");
     register_component<k2::Camera>(ICON_FA_CAMERA "  Camera");
+    register_component<k2::MainCamera>(ICON_FA_VIDEO "  Main Camera");
     register_component<k2::SpriteComponent>(ICON_FA_IMAGE "  Sprite");
     register_component<k2::TagComponent>(ICON_FA_TAGS "  Tag");
 }

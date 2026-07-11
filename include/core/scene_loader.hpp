@@ -54,10 +54,15 @@ struct SceneLoader {
 
         auto deserialize = [&]<class Component>(const auto& entity_node, const auto& label,
                                entt::entity entity) -> Component* {
-            if (entity_node[label].IsDefined()) {
+            if (!entity_node[label].IsDefined()) {
+                return nullptr;
+            }
+            if constexpr (std::is_empty_v<Component>) {
+                registry.emplace<Component>(entity);
+                return nullptr;
+            } else {
                 return &registry.emplace<Component>(entity, entity_node[label].template as<Component>());
             }
-            return nullptr;
         };
 
         for (auto entity_node : node) {
@@ -73,6 +78,7 @@ struct SceneLoader {
                 relation->prev = remapped(relation->prev);
             }
             deserialize.template operator()<Camera>(entity_node, "Camera", entity);
+            deserialize.template operator()<MainCamera>(entity_node, "MainCamera", entity);
             deserialize.template operator()<SpriteComponent>(entity_node, "SpriteComponent", entity);
         }
 

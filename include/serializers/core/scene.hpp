@@ -21,8 +21,14 @@ template <> struct convert<k2::Scene> {
         auto& registry = scene.registry;
 
         auto serialize = [&]<class Component>(auto& node, const auto& label, const auto& entity) {
-            if (const auto* component = registry.try_get<Component>(entity)) {
-                node[label] = *component;
+            if constexpr (std::is_empty_v<Component>) {
+                if (registry.all_of<Component>(entity)) {
+                    node[label] = Component {};
+                }
+            } else {
+                if (const auto* component = registry.try_get<Component>(entity)) {
+                    node[label] = *component;
+                }
             }
         };
 
@@ -33,6 +39,7 @@ template <> struct convert<k2::Scene> {
             serialize.template operator()<k2::TransformComponent>(entity_node, "TransformComponent", entity);
             serialize.template operator()<k2::RelationComponent>(entity_node, "RelationComponent", entity);
             serialize.template operator()<k2::Camera>(entity_node, "Camera", entity);
+            serialize.template operator()<k2::MainCamera>(entity_node, "MainCamera", entity);
             serialize.template operator()<k2::SpriteComponent>(entity_node, "SpriteComponent", entity);
             node.push_back(entity_node);
         }

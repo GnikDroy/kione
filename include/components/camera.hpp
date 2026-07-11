@@ -7,6 +7,9 @@
 #include "core/utils.hpp"
 
 namespace k2 {
+// Tag: marks the camera entity the renderer should use.
+struct MainCamera { };
+
 struct Camera {
     enum class Projection { Perspective, Orthographic };
 

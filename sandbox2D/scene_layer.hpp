@@ -42,7 +42,6 @@ public:
     void update(float) override { }
 
     void render() override {
-        // draw(Scene) overwrites the camera if the scene has a Camera component.
         renderer2D.camera = scene.registry.ctx().get<k2::Camera>();
         renderer2D.draw(scene);
         renderer2D.render();
