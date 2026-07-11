@@ -177,7 +177,7 @@ static void recursive_draw(EntityType& entity_clicked, const EntityType& active_
 }
 
 template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer& editor_layer) {
-    auto& registry = editor_layer.scene.registry;
+    auto& registry = editor_layer.active_scene().registry;
     if (!registry.valid(active_entity)) {
         active_entity = entt::null;
     }

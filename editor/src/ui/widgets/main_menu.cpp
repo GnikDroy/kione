@@ -79,6 +79,10 @@ static void render_view_menu(EditorLayer& editor_layer) {
         if (ImGui::MenuItem(editor_layer.viewport2D.title.c_str(), "", editor_layer.viewport2D.show)) {
             editor_layer.viewport2D.show = !editor_layer.viewport2D.show;
         }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Reset Layout")) {
+            editor_layer.reset_layout();
+        }
         ImGui::EndMenu();
     }
 }

@@ -5,7 +5,7 @@
 namespace k2::editor {
 
 template <class EntityType> void ComponentInspectorWidget<EntityType>::render(EditorLayer& layer) {
-    auto& registry = layer.scene.registry;
+    auto& registry = layer.active_scene().registry;
     auto entity = layer.entity_selector.get_widget().get_active();
 
     if (registry.valid(entity)) {

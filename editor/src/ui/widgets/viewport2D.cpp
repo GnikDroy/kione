@@ -2,6 +2,7 @@
 #include "components/transform.hpp"
 #include "editor_layer.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
@@ -60,7 +61,7 @@ void Viewport2DWidget::draw_gizmo(EditorLayer& editor_layer, ImVec2 rect_min) {
         return;
     }
 
-    auto& registry = editor_layer.scene.registry;
+    auto& registry = editor_layer.active_scene().registry;
     auto active = editor_layer.entity_selector.get_widget().get_active();
     if (!registry.valid(active)) {
         return;
@@ -126,7 +127,7 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
         auto picked_z = -std::numeric_limits<float>::infinity();
 
         // Sprite quads are +-1 in local space; rotation is ignored for picking.
-        editor_layer.scene.registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
+        editor_layer.active_scene().registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
             [&](auto entity, const auto& transform, const auto&) {
                 auto half = glm::abs(glm::vec2 { transform.scale });
                 if (std::abs(world.x - transform.translation.x) <= half.x
@@ -141,8 +142,32 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
     }
 }
 
+void Viewport2DWidget::draw_toolbar(EditorLayer& editor_layer, ImVec2 rect_min) {
+    ImGui::SetNextWindowPos({ rect_min.x + width * 0.5f, rect_min.y + 8.0f }, ImGuiCond_Always, { 0.5f, 0.0f });
+    ImGui::SetNextWindowBgAlpha(0.35f);
+    constexpr auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings
+        | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoFocusOnAppearing;
+
+    if (ImGui::Begin("##viewport_toolbar", nullptr, flags)) {
+        bool playing = editor_layer.is_playing();
+        auto base = playing ? ImVec4 { 0.75f, 0.15f, 0.15f, 1.0f } : ImVec4 { 0.15f, 0.60f, 0.20f, 1.0f };
+        auto hovered = playing ? ImVec4 { 0.85f, 0.25f, 0.25f, 1.0f } : ImVec4 { 0.20f, 0.70f, 0.25f, 1.0f };
+
+        ImGui::PushStyleColor(ImGuiCol_Button, base);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hovered);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, base);
+
+        if (ImGui::Button(playing ? ICON_FA_STOP : ICON_FA_PLAY, { 36.0f, 0 })) {
+            playing ? editor_layer.stop() : editor_layer.play();
+        }
+
+        ImGui::PopStyleColor(3);
+    }
+    ImGui::End();
+}
+
 void Viewport2DWidget::render(EditorLayer& editor_layer) {
-    auto& scene = editor_layer.scene;
+    auto& scene = editor_layer.active_scene();
 
     auto space = ImGui::GetContentRegionAvail();
     // Framebuffers cannot be 0x0
@@ -173,5 +198,6 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
     auto rect_min = ImGui::GetItemRectMin();
     draw_gizmo(editor_layer, rect_min);
     handle_interaction(editor_layer, rect_min);
+    draw_toolbar(editor_layer, rect_min);
 }
 }

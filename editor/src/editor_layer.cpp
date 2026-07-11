@@ -1,12 +1,15 @@
 #include "editor_layer.hpp"
 #include "asset/loader.hpp"
 #include "core/scene_loader.hpp"
+#include "serializers/core/scene.hpp" // IWYU pragma: keep
 #include <ImGuizmo.h>
 #include <format>
+#include <imgui_internal.h>
 
 namespace k2 {
 EditorLayer::EditorLayer(k2::Window& window)
-    : k2::ImguiLayer(window) {
+    : k2::ImguiLayer(window)
+    , scripts { window } {
     scene.registry.ctx().emplace<EditorLayer&>(*this);
     scene.registry.ctx().emplace<ResourceManager&>(resources);
     resources.set("white", k2::Texture2D::create_white_texture<uint8_t>());
@@ -43,13 +46,55 @@ void EditorLayer::open_project(const std::filesystem::path& path) {
     project = std::move(new_project);
 }
 
+void EditorLayer::play() {
+    try {
+        auto copy = SceneLoader::load(YAML::Node { scene }, resources, active_assets());
+        copy.registry.ctx().emplace<EditorLayer&>(*this);
+        runtime_scene = std::move(copy);
+        entity_selector.get_widget().reset_selection();
+    } catch (const std::exception& e) {
+        Log::core().error(std::format("Failed to start play mode: {}", e.what()));
+    }
+}
+
+void EditorLayer::stop() {
+    runtime_scene.reset();
+    entity_selector.get_widget().reset_selection();
+}
+
 void EditorLayer::begin_frame() {
     ImguiLayer::begin_frame();
     ImGuizmo::BeginFrame();
 }
 
-void EditorLayer::update(float) {
-    ImGui::DockSpaceOverViewport();
+void EditorLayer::build_default_layout(unsigned int dockspace_id) {
+    ImGui::DockBuilderRemoveNode(dockspace_id);
+    ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+    ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
+
+    ImGuiID center = dockspace_id;
+    ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.20f, nullptr, &center);
+    ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.25f, nullptr, &center);
+    ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.30f, nullptr, &center);
+
+    ImGui::DockBuilderDockWindow(entity_selector.title.c_str(), left);
+    ImGui::DockBuilderDockWindow(component_inspector.title.c_str(), right);
+    ImGui::DockBuilderDockWindow(log_viewer.title.c_str(), bottom);
+    ImGui::DockBuilderDockWindow(file_explorer.title.c_str(), bottom);
+    ImGui::DockBuilderDockWindow(debug_widget.title.c_str(), bottom);
+    ImGui::DockBuilderDockWindow(viewport2D.title.c_str(), center);
+    ImGui::DockBuilderFinish(dockspace_id);
+}
+
+void EditorLayer::update(float dt) {
+    if (runtime_scene) {
+        scripts.update(*runtime_scene, active_assets(), dt);
+    }
+    auto dockspace_id = ImGui::DockSpaceOverViewport();
+    if (layout_pending) {
+        layout_pending = false;
+        build_default_layout(dockspace_id);
+    }
     main_menu_widget.render(*this);
     component_inspector.render(*this);
     entity_selector.render(*this);

@@ -3,6 +3,7 @@
 #include "core/project.hpp"
 #include "core/resources.hpp"
 #include "core/scene.hpp"
+#include "core/script_system.hpp"
 
 #include <filesystem>
 #include <optional>
@@ -19,9 +20,11 @@ namespace k2 {
 class EditorLayer : public k2::ImguiLayer {
 public:
     Scene scene;
+    std::optional<Scene> runtime_scene;
     AssetRegistry assets = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml", .type = Asset::Type::AssetBundle });
     std::optional<Project> project;
     ResourceManager resources;
+    ScriptSystem scripts;
 
     k2::editor::MainMenuWidget main_menu_widget;
     k2::editor::ComponentInspectorWindow<entt::entity> component_inspector { ICON_FA_WRENCH "  Inspector" };
@@ -35,7 +38,21 @@ public:
     void begin_frame() override;
     void update(float) override;
 
+private:
+    void build_default_layout(unsigned int dockspace_id);
+
+    bool layout_pending = !std::filesystem::exists("imgui.ini");
+
+public:
+
     void open_project(const std::filesystem::path& path);
+
+    void reset_layout() { layout_pending = true; }
+
+    void play();
+    void stop();
+    [[nodiscard]] bool is_playing() const { return runtime_scene.has_value(); }
+    [[nodiscard]] Scene& active_scene() { return runtime_scene ? *runtime_scene : scene; }
 
     // The opened project's assets; the editor's own UI assets otherwise.
     [[nodiscard]] const AssetRegistry& active_assets() const { return project ? project->assets : assets; }

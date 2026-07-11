@@ -35,11 +35,11 @@ ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme
 
     ImGui::StyleColorsDark();
     this->theme->apply();
-    if (io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 20) != nullptr) {
+    if (io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 18) != nullptr) {
         ImFontConfig config;
         config.MergeMode = true;
         static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        if (io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 20.0f, &config, icon_ranges.data()) == nullptr) {
+        if (io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 18.0f, &config, icon_ranges.data()) == nullptr) {
             Log::core().warn("Failed to load res/fonts/fontawesome-webfont.ttf, icons might look corrupt.");
         }
     } else {
