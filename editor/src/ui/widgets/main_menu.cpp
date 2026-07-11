@@ -1,6 +1,5 @@
 
 #include "ui/widgets/main_menu.hpp"
-#include "core/scene_loader.hpp"
 #include "editor_layer.hpp"
 
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
@@ -10,21 +9,31 @@
 namespace k2::editor {
 static void render_file_menu(EditorLayer& editor_layer) {
     if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Open", "CTRL+O")) {
+        if (ImGui::MenuItem("Open Project", "CTRL+O")) {
             try {
-                std::array filters = { nfdfilteritem_t { "Scene files", "k2scene" } };
+                std::array filters = { nfdfilteritem_t { "Kione project", "k2project" } };
                 [[maybe_unused]] auto lock = NFD::Guard();
                 NFD::UniquePathU8 path;
                 if (NFD::OpenDialog(path, filters.data(), nfdfiltersize_t(filters.size())) == NFD_OKAY) {
-                    auto new_scene = SceneLoader::load(
-                        std::filesystem::path { path.get() }, editor_layer.resources, editor_layer.assets);
-                    new_scene.registry.ctx().emplace<EditorLayer&>(editor_layer);
-                    editor_layer.scene = std::move(new_scene);
-                    editor_layer.entity_selector.get_widget().reset_selection();
-                    Log::core().info(std::format("Opening file: {}", std::string_view { path.get() }));
+                    editor_layer.open_project(std::filesystem::path { path.get() });
+                    Log::core().info(std::format("Opened project: {}", std::string_view { path.get() }));
                 }
             } catch (const std::exception& e) {
-                Log::core().error(std::format("Failed to open scene: {}", e.what()));
+                Log::core().error(std::format("Failed to open project: {}", e.what()));
+            }
+        }
+        if (ImGui::MenuItem("Save", "CTRL+S", false, editor_layer.project.has_value())) {
+            try {
+                std::ofstream scene_file_stream { editor_layer.project->main_scene };
+                scene_file_stream << YAML::Node(editor_layer.scene);
+                if (scene_file_stream) {
+                    Log::core().info(std::format("Saved scene: {}", editor_layer.project->main_scene.string()));
+                } else {
+                    Log::core().error(
+                        std::format("Failed to save scene: {}", editor_layer.project->main_scene.string()));
+                }
+            } catch (const std::exception& e) {
+                Log::core().error(std::format("Failed to save scene: {}", e.what()));
             }
         }
         if (ImGui::MenuItem("Save As", "CTRL+SHIFT+S")) {

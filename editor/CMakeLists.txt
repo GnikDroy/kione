@@ -52,7 +52,7 @@ target_precompile_headers(editor PRIVATE
     [["entt/entt.hpp"]]
 )
 
-target_link_libraries(editor kione2D::kione2D)
+target_link_libraries(editor kione2D::kione2D ImGuizmo::ImGuizmo)
 
 set_target_properties(editor
     PROPERTIES

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/project.hpp"
 #include "core/scene.hpp"
 #include "core/scene_loader.hpp"
 #include "kione2D.hpp"
@@ -10,10 +11,9 @@
 class SceneLayer : public k2::Layer {
     k2::Window& window;
 
-    k2::AssetRegistry assets
-        = k2::AssetRegistryLoader::load({ .url = "file:///res/assets.yaml", .type = k2::Asset::Type::AssetBundle });
+    k2::Project project = k2::Project::load("res/project.k2project");
     k2::ResourceManager resources {};
-    k2::Scene scene = k2::SceneLoader::load("res/scene.k2scene", resources, assets);
+    k2::Scene scene = k2::SceneLoader::load(project.main_scene, resources, project.assets);
     k2::Renderer2D renderer2D {};
 
 public:

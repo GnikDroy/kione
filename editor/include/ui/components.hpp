@@ -83,7 +83,7 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
     ImGui::ColorEdit4("Color", glm::value_ptr(sprite.color));
 
     auto& editor_layer = reg.ctx().get<EditorLayer&>();
-    ResourceInputWidget("Texture", sprite.texture, editor_layer.assets);
+    ResourceInputWidget("Texture", sprite.texture, editor_layer.active_assets());
 
     k2::editor::RectInputWidget("UV Rect", sprite.uv_rect);
 }

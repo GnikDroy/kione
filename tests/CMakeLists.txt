@@ -1,6 +1,7 @@
 add_executable(
     K2_tests
 
+    core/project.cpp
     core/resource_container.cpp
     core/resource_manager.cpp
     core/scene_loader.cpp

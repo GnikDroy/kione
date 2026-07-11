@@ -1,6 +1,10 @@
 #include "asset/asset_registry.hpp"
 #include "core/imgui_layer.hpp"
+#include "core/project.hpp"
 #include "core/resources.hpp"
+
+#include <filesystem>
+#include <optional>
 
 #include "ui/widgets/main_menu.hpp"
 #include "ui/windows/component_inspector.hpp"
@@ -15,6 +19,7 @@ class EditorLayer : public k2::ImguiLayer {
 public:
     Scene scene;
     AssetRegistry assets = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml", .type = Asset::Type::AssetBundle });
+    std::optional<Project> project;
     ResourceManager resources;
 
     k2::editor::MainMenuWidget main_menu_widget;
@@ -26,7 +31,13 @@ public:
     k2::editor::Viewport2DWindow viewport2D { ICON_FA_BINOCULARS "  Viewport 2D" };
 
     explicit EditorLayer(k2::Window& window);
+    void begin_frame() override;
     void update(float) override;
+
+    void open_project(const std::filesystem::path& path);
+
+    // The opened project's assets; the editor's own UI assets otherwise.
+    [[nodiscard]] const AssetRegistry& active_assets() const { return project ? project->assets : assets; }
 };
 
 }

@@ -198,6 +198,30 @@ if(NOT ImGui_POPULATED)
     target_link_libraries(ImGui glfw glad)
 endif()
 
+# Setup ImGuizmo
+FetchContent_Declare(
+    imguizmo
+    GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo
+    GIT_TAG        master
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
+)
+
+FetchContent_GetProperties(imguizmo)
+if(NOT imguizmo_POPULATED)
+    FetchContent_Populate(imguizmo)
+    add_library(ImGuizmo ${imguizmo_SOURCE_DIR}/src/ImGuizmo.cpp)
+    add_library(ImGuizmo::ImGuizmo ALIAS ImGuizmo)
+    set_target_properties(ImGuizmo
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        CXX_STANDARD 17
+    )
+    target_include_directories(ImGuizmo PUBLIC ${imguizmo_SOURCE_DIR}/src)
+    target_link_libraries(ImGuizmo ImGui::ImGui)
+endif()
+
 # Setup stb
 function(stb_build)
     FetchContent_Declare(

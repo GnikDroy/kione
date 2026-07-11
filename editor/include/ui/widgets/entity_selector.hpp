@@ -16,6 +16,8 @@ public:
 
     EntityType get_active() const { return active_entity; }
 
+    void set_active(EntityType entity) { active_entity = entity; }
+
     // Must be called when the scene (registry) is replaced
     void reset_selection() { active_entity = entt::null; }
 };

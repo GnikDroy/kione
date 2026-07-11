@@ -1,4 +1,6 @@
 #include "editor_layer.hpp"
+#include "core/scene_loader.hpp"
+#include <ImGuizmo.h>
 #include <format>
 
 namespace k2 {
@@ -21,6 +23,28 @@ EditorLayer::EditorLayer(k2::Window& window)
             resources.set(name, std::move(image));
         }
     }
+}
+
+void EditorLayer::open_project(const std::filesystem::path& path) {
+    auto new_project = Project::load(path);
+
+    for (auto& [id, pair] : new_project.assets) {
+        auto& [name, asset] = pair;
+        if (asset.type == Asset::Type::Image && !resources.contains<Texture2D>(id)) {
+            resources.set(name, Texture2D { AssetLoader::get<Image>(asset) });
+        }
+    }
+
+    auto new_scene = SceneLoader::load(new_project.main_scene, resources, new_project.assets);
+    new_scene.registry.ctx().emplace<EditorLayer&>(*this);
+    scene = std::move(new_scene);
+    entity_selector.get_widget().reset_selection();
+    project = std::move(new_project);
+}
+
+void EditorLayer::begin_frame() {
+    ImguiLayer::begin_frame();
+    ImGuizmo::BeginFrame();
 }
 
 void EditorLayer::update(float) {
