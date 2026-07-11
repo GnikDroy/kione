@@ -79,13 +79,13 @@ public:
         return *this;
     }
 
-    void draw(const Program& program) const {
+    void draw(const Program& program, ResourceManager& resources) const {
         size_t basevertex = 0;
         for (auto& group : material_groups) {
             auto& material = group.material;
 
-            bind_textures(material);
-            setup_shader(program, material);
+            bind_textures(material, resources);
+            setup_shader(program, material, resources);
 
             va.bind();
             glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(group.indices.size()), GL_UNSIGNED_INT, 0,
@@ -97,8 +97,8 @@ public:
     }
 
 private:
-    void bind_textures(const Material& material) const {
-        auto& textures_map = Resources::get<Texture2D>();
+    static void bind_textures(const Material& material, ResourceManager& resources) {
+        auto& textures_map = resources.all<Texture2D>();
         if (textures_map.contains(material.albedo))
             textures_map[material.albedo].bind(0);
         if (textures_map.contains(material.metallic))
@@ -111,8 +111,8 @@ private:
             textures_map[material.ambient_occlusion].bind(4);
     }
 
-    void setup_shader(const Program& program, const Material& material) const {
-        auto& textures_map = Resources::get<Texture2D>();
+    static void setup_shader(const Program& program, const Material& material, ResourceManager& resources) {
+        auto& textures_map = resources.all<Texture2D>();
         program.set_uniform("material.albedo", 0);
         program.set_uniform("material.metallic", 1);
         program.set_uniform("material.roughness", 2);

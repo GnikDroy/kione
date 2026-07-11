@@ -1,13 +1,12 @@
 #include "editor_layer.hpp"
-#include "editor_resources.hpp"
 #include <format>
 
 namespace k2 {
 EditorLayer::EditorLayer(k2::Window& window)
     : k2::ImguiLayer(window) {
     scene.registry.ctx().emplace<EditorLayer&>(*this);
-    using namespace k2::literals;
-    k2::Resources::get<k2::Texture2D>()["white"_fnv1a] = k2::Texture2D::create_white_texture<uint8_t>();
+    scene.registry.ctx().emplace<ResourceManager&>(resources);
+    resources.set("white", k2::Texture2D::create_white_texture<uint8_t>());
 
     for (auto& [id, pair] : assets) {
         auto&& [name, asset] = pair;
@@ -18,10 +17,8 @@ EditorLayer::EditorLayer(k2::Window& window)
         auto&& [name, asset] = pair;
         if (asset.type == Asset::Type::Image) {
             auto image = AssetLoader::get<k2::Image>(asset);
-            editor::Resources::get<Texture2D>()[id] = Texture2D { image };
-            k2::Resources::get<Texture2D>()[id] = Texture2D { image };
-
-            editor::Resources::get<Image>()[id] = std::move(image);
+            resources.set(name, Texture2D { image });
+            resources.set(name, std::move(image));
         }
     }
 }

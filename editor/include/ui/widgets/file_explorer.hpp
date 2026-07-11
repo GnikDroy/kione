@@ -1,5 +1,5 @@
 #pragma once
-#include "editor_resources.hpp"
+#include "core/resources.hpp"
 #include "ui/widgets/widget.hpp"
 #include <IconsFontAwesome5.h>
 #include <filesystem>
@@ -51,15 +51,17 @@ private:
 
     /**
      * @brief Renders the directory table.
+     * @param resources The resource manager holding the icon textures.
      */
-    void render_directory_table();
+    void render_directory_table(k2::ResourceManager& resources);
 
     /**
      * @brief Renders the directory.
      *
+     * @param resources The resource manager holding the icon textures.
      * @param entry The directory entry.
      */
-    void render_directory(const std::filesystem::directory_entry&);
+    void render_directory(k2::ResourceManager& resources, const std::filesystem::directory_entry&);
 
     /**
      * @brief Predict the icon type based on the directory entry.
@@ -72,10 +74,11 @@ private:
     /**
      * @brief Predict the icon texture based on the directory entry.
      *
+     * @param resources The resource manager holding the icon textures.
      * @param entry The directory entry.
-     * @return The resource ID of the icon texture.
+     * @return The GL texture id of the icon texture.
      */
-    ResourceID predict_icon_texture(const std::filesystem::directory_entry&);
+    ResourceID predict_icon_texture(k2::ResourceManager& resources, const std::filesystem::directory_entry&);
 };
 
 }

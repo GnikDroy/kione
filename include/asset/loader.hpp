@@ -13,6 +13,8 @@ namespace k2 {
 struct AssetLoader {
     template <class T> static T get(const Asset& asset);
 
+    template <class T> static T get(const Asset& asset, ResourceManager& resources);
+
     template <> k2::Image get(const Asset& asset) {
         if (asset.type != Asset::Type::Image) {
             throw std::invalid_argument("Invalid Asset Type!");
@@ -43,11 +45,11 @@ struct AssetLoader {
         return { type, source };
     }
 
-    template <> k2::Model get(const Asset& asset) {
+    template <> k2::Model get(const Asset& asset, ResourceManager& resources) {
         if (asset.type != Asset::Type::Model) {
             throw std::invalid_argument("Invalid Asset Type!");
         }
-        return k2::Model { asset.get_url_divisions().path };
+        return k2::Model { asset.get_url_divisions().path, resources };
     }
 
     template <> k2::AssetBundle get(const Asset& asset) {

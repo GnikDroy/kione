@@ -67,6 +67,9 @@ private:
     VertexBuffer vbo;
     IndexBuffer ebo;
     FrameBuffer frame_buffer;
+    // Picked up from the scene's registry context in draw(Scene), or set explicitly
+    // via set_resources() when drawing without a scene.
+    ResourceManager* resources {};
 
 public:
     Renderer2D() {
@@ -114,6 +117,8 @@ public:
     FrameBuffer& set_frame_buffer(FrameBuffer&& fb) { return frame_buffer = std::move(fb); }
 
     FrameBuffer& get_frame_buffer() { return frame_buffer; }
+
+    void set_resources(ResourceManager& resource_manager) { resources = &resource_manager; }
 
     void clear(std::uint32_t mask = GL_COLOR_BUFFER_BIT) {
         glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer.get_id());
@@ -200,7 +205,11 @@ public:
         draw(vertices, indices, transform.get_matrix());
     }
 
-    void draw(const Scene& scene) {
+    void draw(Scene& scene) {
+        if (scene.registry.ctx().contains<ResourceManager&>()) {
+            resources = &scene.registry.ctx().get<ResourceManager&>();
+        }
+
         // TODO: how to select main camera here?
         // TODO: do i even select the main camera here?
         scene.registry.view<k2::Camera>().each([&](auto, const auto& cam) { camera = cam; });
@@ -223,10 +232,12 @@ public:
             std::vector<std::int32_t> tex_unit_vec(texture_unit_map.size());
             std::iota(tex_unit_vec.begin(), tex_unit_vec.end(), 0);
 
-            for (auto& [texture_id, texture_unit_index] : texture_unit_map) {
-                auto* texture = Resources::try_get<Texture2D>(texture_id);
-                if (texture) {
-                    texture->bind(texture_unit_index);
+            if (resources != nullptr) {
+                for (auto& [texture_id, texture_unit_index] : texture_unit_map) {
+                    auto* texture = resources->try_get<Texture2D>(texture_id);
+                    if (texture) {
+                        texture->bind(texture_unit_index);
+                    }
                 }
             }
 

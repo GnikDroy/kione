@@ -24,9 +24,9 @@ public:
     Model(const Model&) = delete;
     Model& operator=(const Model&) = delete;
 
-    explicit Model(const std::filesystem::path& path)
+    Model(const std::filesystem::path& path, ResourceManager& resources)
         : path { path } {
-        auto success = load_model();
+        auto success = load_model(resources);
 
         // Logging information of the model.
         k2::Log::core().trace(std::format("Loading model {} successful: {}", path.string(), success));
@@ -36,14 +36,14 @@ public:
         k2::Log::core().trace(std::format("Model contains: {} meshes and {} vertices", num_meshes, num_vertices));
     }
 
-    void draw(const Program& program) {
+    void draw(const Program& program, ResourceManager& resources) {
         for (const auto& mesh : meshes) {
-            mesh.draw(program);
+            mesh.draw(program, resources);
         }
     }
 
 private:
-    bool load_model() {
+    bool load_model(ResourceManager& resources) {
         tinyobj::ObjReader reader;
 
         if (!reader.ParseFromFile(path.string())) {
@@ -57,14 +57,14 @@ private:
             k2::Log::core().warn(std::format("Model at {} has warnings: {}", path.string(), reader.Warning()));
         }
 
-        return process_model(reader);
+        return process_model(reader, resources);
     }
 
-    bool process_model(const tinyobj::ObjReader& reader) {
+    bool process_model(const tinyobj::ObjReader& reader, ResourceManager& resources) {
         auto& attrib = reader.GetAttrib();
         auto& shapes = reader.GetShapes();
 
-        auto materials = process_materials(reader.GetMaterials());
+        auto materials = process_materials(reader.GetMaterials(), resources);
 
         for (auto& shape : shapes) {
             std::unordered_map<Mesh::Vertex, uint32_t> unique_vertices;
@@ -128,18 +128,19 @@ private:
         return true;
     }
 
-    std::vector<Mesh::Material> process_materials(const std::vector<tinyobj::material_t>& materials_) {
+    std::vector<Mesh::Material> process_materials(
+        const std::vector<tinyobj::material_t>& materials_, ResourceManager& resources) {
         std::vector<Mesh::Material> materials;
 
         auto parent_path = path.parent_path();
 
         for (auto& material_ : materials_) {
             Mesh::Material material;
-            material.albedo = get_material_texture(parent_path / material_.diffuse_texname);
-            material.metallic = get_material_texture(parent_path / material_.metallic_texname);
-            material.roughness = get_material_texture(parent_path / material_.roughness_texname);
-            material.normal = get_material_texture(parent_path / material_.normal_texname);
-            material.ambient_occlusion = get_material_texture(parent_path / material_.ambient_texname);
+            material.albedo = get_material_texture(parent_path / material_.diffuse_texname, resources);
+            material.metallic = get_material_texture(parent_path / material_.metallic_texname, resources);
+            material.roughness = get_material_texture(parent_path / material_.roughness_texname, resources);
+            material.normal = get_material_texture(parent_path / material_.normal_texname, resources);
+            material.ambient_occlusion = get_material_texture(parent_path / material_.ambient_texname, resources);
 
             material.albedo_value = { material_.diffuse[0], material_.diffuse[1], material_.diffuse[2] };
             material.metallic_value = material_.metallic;
@@ -150,17 +151,16 @@ private:
         return materials;
     }
 
-    std::uint64_t get_material_texture(const std::filesystem::path& material_path) {
+    static std::uint64_t get_material_texture(const std::filesystem::path& material_path, ResourceManager& resources) {
         auto path_str = material_path.string();
-        if (!Resources::get<Texture2D>().contains(fnv1a(path_str))) {
+        if (!resources.contains<Texture2D>(fnv1a(path_str))) {
             auto image = Image(material_path);
             if (!image) {
                 k2::Log::core().warn(std::format("Model material not found: {}", path_str));
                 return fnv1a(path_str);
             }
 
-            Texture2D texture { image };
-            Resources::get<Texture2D>()[fnv1a(path_str)] = std::move(texture);
+            resources.set(path_str, Texture2D { image });
         }
         return fnv1a(path_str);
     }

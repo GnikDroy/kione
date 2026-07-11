@@ -26,7 +26,7 @@ void FileExplorerWidget::cache_entries() {
     }
 }
 
-void FileExplorerWidget::render(EditorLayer&) {
+void FileExplorerWidget::render(EditorLayer& editor_layer) {
     if (ImGui::BeginTable("##FileExplorerHeader", 2, ImGuiTableFlags_SizingStretchProp)) {
         ImGui::TableNextColumn();
         if (ImGui::Button(ICON_FA_BACKWARD)) {
@@ -56,10 +56,10 @@ void FileExplorerWidget::render(EditorLayer&) {
 
         ImGui::EndTable();
     }
-    render_directory_table();
+    render_directory_table(editor_layer.resources);
 }
 
-void FileExplorerWidget::render_directory_table() {
+void FileExplorerWidget::render_directory_table(k2::ResourceManager& resources) {
     namespace fs = std::filesystem;
     auto avail_width = ImGui::GetContentRegionAvail().x;
     auto num_columns = std::max(1, static_cast<int>(avail_width / (icon_size + icon_padding)));
@@ -67,19 +67,19 @@ void FileExplorerWidget::render_directory_table() {
     if (ImGui::BeginTable("Directory View", num_columns)) {
         cache_entries();
         for (const auto& entry : cached_entries.second) {
-            render_directory(entry);
+            render_directory(resources, entry);
         }
         ImGui::EndTable();
     }
 }
 
-void FileExplorerWidget::render_directory(const std::filesystem::directory_entry& entry) {
+void FileExplorerWidget::render_directory(k2::ResourceManager& resources, const std::filesystem::directory_entry& entry) {
     std::string path = entry.path().filename().string();
     if (filter.PassFilter(path.c_str(), path.c_str() + path.size())) {
         ImGui::TableNextColumn();
 
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-        auto texture_id = predict_icon_texture(entry);
+        auto texture_id = predict_icon_texture(resources, entry);
         ImGui::ImageButton((const char*)entry.path().string().c_str(), (std::uint64_t)texture_id,
             { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
         ImGui::PopStyleColor();
@@ -106,8 +106,10 @@ std::uint64_t FileExplorerWidget::predict_icon_type(const std::filesystem::direc
     return "icon_file"_fnv1a;
 }
 
-ResourceID FileExplorerWidget::predict_icon_texture(const std::filesystem::directory_entry& dirent) {
-    return editor::Resources::get<Texture2D>(predict_icon_type(dirent)).id;
+ResourceID FileExplorerWidget::predict_icon_texture(
+    k2::ResourceManager& resources, const std::filesystem::directory_entry& dirent) {
+    auto* texture = resources.try_get<Texture2D>(predict_icon_type(dirent));
+    return texture ? texture->id : 0;
 }
 
 }

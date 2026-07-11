@@ -30,6 +30,8 @@ public:
 
     void erase(ResourceID id) { resources.erase(id); }
 
+    void clear() { resources.clear(); }
+
     auto begin() const { return resources.cbegin(); }
     auto end() const { return resources.cend(); }
 

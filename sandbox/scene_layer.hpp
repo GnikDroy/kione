@@ -14,6 +14,7 @@ class SceneLayer : public k2::Layer {
     k2::Window& window;
 
     k2::Scene scene;
+    k2::ResourceManager resources {};
 
     k2::Program pbr_program {};
     k2::Program skybox_program {};
@@ -37,6 +38,7 @@ public:
         : window { window }
         , mouse_controller { .last_cursor_x = float(window.get_width()) / 2,
             .last_cursor_y = float(window.get_height()) / 2 } {
+        scene.registry.ctx().emplace<k2::ResourceManager&>(resources);
         auto program_loader = [](auto vertex, auto fragment) {
             namespace fs = std::filesystem;
             auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path(vertex));
@@ -109,7 +111,7 @@ public:
                 .set_uniform("model", model_mat)
                 .set_uniform("view", view_mat)
                 .set_uniform("projection", projection_mat);
-            model.draw(pbr_program);
+            model.draw(pbr_program, resources);
         });
         
     }
@@ -172,7 +174,7 @@ private:
         }
         
         auto backpack = scene.registry.create();
-        scene.registry.emplace<k2::Model>(backpack, model_path);
+        scene.registry.emplace<k2::Model>(backpack, model_path, resources);
         auto& transform = scene.registry.emplace<k2::TransformComponent>(backpack);
         transform.orientation = glm::rotate(transform.orientation, 3.1415f, glm::vec3(0.f, 1.f, 0.f));
     }

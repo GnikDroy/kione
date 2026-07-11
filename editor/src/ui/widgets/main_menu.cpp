@@ -17,6 +17,7 @@ static void render_file_menu(EditorLayer& editor_layer) {
                 if (NFD::OpenDialog(path, filters.data(), nfdfiltersize_t(filters.size())) == NFD_OKAY) {
                     auto new_scene = YAML::LoadFile(path.get()).as<Scene>();
                     new_scene.registry.ctx().emplace<EditorLayer&>(editor_layer);
+                    new_scene.registry.ctx().emplace<ResourceManager&>(editor_layer.resources);
                     editor_layer.scene = std::move(new_scene);
                     editor_layer.entity_selector.get_widget().reset_selection();
                     Log::core().info(std::format("Opening file: {}", std::string_view { path.get() }));
