@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 
+#include <numeric>
 #include <vector>
 
 #include "buffer.hpp"

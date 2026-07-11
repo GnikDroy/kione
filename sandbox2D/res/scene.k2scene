@@ -1,0 +1,10 @@
+- Entity: 0
+  TagComponent: Cobble
+  TransformComponent:
+    Translation: [0, 0, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [300, 300, 1]
+  SpriteComponent:
+    Texture: cobble
+    Color: [1, 0, 0, 1]
+    UvRect: [0, 0, 1, 1]

@@ -39,36 +39,7 @@ template <> struct convert<k2::Scene> {
         return node;
     }
 
-    static bool decode(const Node& node, k2::Scene& scene) {
-        auto& registry = scene.registry;
-
-        auto deserialize = [&]<class Component>(auto& node, const auto& label, const auto& entity) {
-            if (node[label].IsDefined()) {
-                auto component = node[label].template as<Component>();
-                registry.emplace<Component>(entity, component);
-            }
-        };
-
-        if (!node.IsSequence()) {
-            return false;
-        }
-
-        for (auto entity_node : node) {
-            if (!entity_node.IsMap()) {
-                return false;
-            }
-
-            auto entity = entity_node["Entity"].as<entt::entity>();
-            entity = registry.create(entity);
-
-            deserialize.template operator()<k2::TagComponent>(entity_node, "TagComponent", entity);
-            deserialize.template operator()<k2::TransformComponent>(entity_node, "TransformComponent", entity);
-            deserialize.template operator()<k2::RelationComponent>(entity_node, "RelationComponent", entity);
-            deserialize.template operator()<k2::Camera>(entity_node, "Camera", entity);
-            deserialize.template operator()<k2::SpriteComponent>(entity_node, "SpriteComponent", entity);
-        }
-
-        return true;
-    }
+    // Decoding lives in k2::SceneLoader: stored entity references must be
+    // remapped, which convert<> cannot do.
 };
 }
