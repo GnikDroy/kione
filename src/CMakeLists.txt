@@ -13,6 +13,7 @@ add_library(
     core/logger.cpp
     core/project.cpp
     core/scene_loader.cpp
+    core/script_system.cpp
     events/event.cpp
     platform/desktop/window.cpp
     platform/desktop/window_impl.cpp

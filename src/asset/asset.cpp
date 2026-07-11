@@ -18,6 +18,7 @@ std::string_view Asset::get_type_strv() const {
     case k2::Asset::Type::Model: return "Model";
     case k2::Asset::Type::Audio: return "Audio";
     case k2::Asset::Type::Data: return "Data";
+    case k2::Asset::Type::Script: return "Script";
     default: throw std::invalid_argument("Enum value reached an invalid state.");
     }
 }
@@ -32,6 +33,7 @@ Asset::Type Asset::get_type(std::string_view type) {
     case "Model"_fnv1a: return k2::Asset::Type::Model;
     case "Audio"_fnv1a: return k2::Asset::Type::Audio;
     case "Data"_fnv1a: return k2::Asset::Type::Data;
+    case "Script"_fnv1a: return k2::Asset::Type::Script;
     default: throw std::invalid_argument("Invalid enum string received");
     }
 }

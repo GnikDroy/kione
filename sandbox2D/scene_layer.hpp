@@ -3,6 +3,7 @@
 #include "core/project.hpp"
 #include "core/scene.hpp"
 #include "core/scene_loader.hpp"
+#include "core/script_system.hpp"
 #include "kione2D.hpp"
 #include "rendering/renderer2D.hpp"
 
@@ -15,6 +16,7 @@ class SceneLayer : public k2::Layer {
     k2::ResourceManager resources {};
     k2::Scene scene = k2::SceneLoader::load(project.main_scene, resources, project.assets);
     k2::Renderer2D renderer2D {};
+    k2::ScriptSystem scripts { window };
 
 public:
     explicit SceneLayer(k2::Window& window)
@@ -39,7 +41,7 @@ public:
 
     SceneLayer& operator=(const SceneLayer&) = delete;
 
-    void update(float) override { }
+    void update(float dt) override { scripts.update(scene, project.assets, dt); }
 
     void render() override {
         renderer2D.camera = scene.registry.ctx().get<k2::Camera>();

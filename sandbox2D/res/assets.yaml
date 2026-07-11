@@ -8,3 +8,5 @@ assets:
   Shader:
       2D_vs: file:///shaders/2D_vs.glsl
       2D_fs: file:///shaders/2D_fs.glsl
+  Script:
+      mover: file:///scripts/mover.lua

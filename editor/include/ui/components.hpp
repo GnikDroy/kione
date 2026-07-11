@@ -4,6 +4,7 @@
 
 #include "components/camera.hpp"
 #include "components/relation.hpp"
+#include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
 #include "components/transform.hpp"
@@ -89,6 +90,12 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
 }
 
 template <> void ComponentWidget<k2::MainCamera>(entt::registry&, entt::registry::entity_type) { }
+
+template <> void ComponentWidget<k2::ScriptComponent>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& script = reg.get<k2::ScriptComponent>(e);
+    auto& editor_layer = reg.ctx().get<EditorLayer&>();
+    ResourceInputWidget("Script", script.script, editor_layer.active_assets(), k2::Asset::Type::Script);
+}
 
 template <> void ComponentWidget<k2::TagComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& tag = reg.get<k2::TagComponent>(e).tag;

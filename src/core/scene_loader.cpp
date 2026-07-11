@@ -7,6 +7,7 @@
 
 #include "asset/loader.hpp"
 #include "components/relation.hpp"
+#include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "core/logger.hpp"
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
@@ -93,6 +94,7 @@ Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, cons
         deserialize.template operator()<Camera>(entity_node, "Camera", entity);
         deserialize.template operator()<MainCamera>(entity_node, "MainCamera", entity);
         deserialize.template operator()<SpriteComponent>(entity_node, "SpriteComponent", entity);
+        deserialize.template operator()<ScriptComponent>(entity_node, "ScriptComponent", entity);
     }
 
     load_referenced_textures(registry, resources, assets);
