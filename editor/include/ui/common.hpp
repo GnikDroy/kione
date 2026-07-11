@@ -1,6 +1,4 @@
 #pragma once
-#include <algorithm>
-
 #include "asset/asset_handle.hpp"
 #include "asset/asset_registry.hpp"
 #include "core/resource_container.hpp"
@@ -11,6 +9,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <imgui_stdlib.h>
 
 namespace k2::editor {
 
@@ -267,24 +266,19 @@ inline void OrientationInputWidget(const std::string& label, glm::quat& quaterni
 }
 
 inline void ResourceInputWidget(const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry) {
-    // TODO: Switch to the cpp imgui implementation of InputText
-    std::array<char, 64> input {};
-    auto length = std::min(handle.name.size(), input.size() - 1);
-    std::memcpy(input.data(), handle.name.c_str(), length);
-    input[length] = 0;
+    std::string input = handle.name;
 
     bool known = asset_registry.count(handle.id) > 0;
     if (!known) {
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
-    bool edited = ImGui::InputText(label.c_str(), input.data(), input.size());
+    bool edited = ImGui::InputText(label.c_str(), &input);
     if (!known) {
         ImGui::PopStyleColor();
     }
 
-    // Write back only on edit: the truncated display must never overwrite the handle.
     if (edited) {
-        handle.set(input.data());
+        handle.set(std::move(input));
     }
 }
 }

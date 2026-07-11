@@ -65,8 +65,8 @@ static void entity_drag_drop_target(
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 { 7.0f, 7.0f });
     if (ImGui::BeginDragDropSource()) {
         ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(entity));
-        if (tag && tag->tag[0] != '\0') {
-            ImGui::TextUnformatted(tag->tag.data());
+        if (tag && !tag->tag.empty()) {
+            ImGui::TextUnformatted(tag->tag.c_str());
         } else {
             ImGui::Text("Entity %d", entt::to_integral(entity));
         }
@@ -139,9 +139,9 @@ static void recursive_draw(EntityType& entity_clicked, const EntityType& active_
 
     bool node_open {};
     auto* tag = registry.template try_get<TagComponent>(entity);
-    if (tag && tag->tag[0] != '\0') {
+    if (tag && !tag->tag.empty()) {
         node_open = ImGui::TreeNodeEx(reinterpret_cast<const void*>((uintptr_t)entt::to_integral(entity)), flags,
-            ICON_FA_CUBE "  %s", tag->tag.data());
+            ICON_FA_CUBE "  %s", tag->tag.c_str());
     } else {
         node_open = ImGui::TreeNodeEx(reinterpret_cast<const void*>((uintptr_t)entt::to_integral(entity)), flags,
             ICON_FA_CUBE "  Entity %d", entt::to_integral(entity));

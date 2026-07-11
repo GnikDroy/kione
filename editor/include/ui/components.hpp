@@ -90,6 +90,6 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
 
 template <> void ComponentWidget<k2::TagComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& tag = reg.get<k2::TagComponent>(e).tag;
-    ImGui::InputText("Tag", tag.data(), tag.size());
+    ImGui::InputText("Tag", &tag);
 }
 }
