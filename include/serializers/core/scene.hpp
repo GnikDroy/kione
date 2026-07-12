@@ -5,6 +5,7 @@
 // Note that these headers need to be included
 // So that yaml-cpp recognizes how to deserialize these components
 #include "serializers/components/camera.hpp" // IWYU pragma: keep
+#include "serializers/components/light.hpp" // IWYU pragma: keep
 #include "serializers/components/relation.hpp" // IWYU pragma: keep
 #include "serializers/components/script.hpp" // IWYU pragma: keep
 #include "serializers/components/sprite.hpp" // IWYU pragma: keep
@@ -43,6 +44,10 @@ template <> struct convert<k2::Scene> {
             serialize.template operator()<k2::MainCamera>(entity_node, "MainCamera", entity);
             serialize.template operator()<k2::SpriteComponent>(entity_node, "SpriteComponent", entity);
             serialize.template operator()<k2::ScriptComponent>(entity_node, "ScriptComponent", entity);
+            serialize.template operator()<k2::AmbientLight>(entity_node, "AmbientLight", entity);
+            serialize.template operator()<k2::PointLight>(entity_node, "PointLight", entity);
+            serialize.template operator()<k2::SpotLight>(entity_node, "SpotLight", entity);
+            serialize.template operator()<k2::SpriteLight>(entity_node, "SpriteLight", entity);
             node.push_back(entity_node);
         }
         return node;

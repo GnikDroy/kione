@@ -42,8 +42,8 @@ void Viewport2DWidget::update_camera() {
             .right = width * zoom,
             .top = height * zoom,
             .bottom = -height * zoom,
-            .far_clip = -1000.f,
-            .near_clip = 1000.f,
+            .far_clip = 0.f,
+            .near_clip = 2000.f,
         } },
     };
 }
@@ -95,7 +95,7 @@ void Viewport2DWidget::draw_gizmo(EditorLayer& editor_layer, ImVec2 rect_min) {
             static_cast<ImGuizmo::OPERATION>(gizmo_operation), ImGuizmo::LOCAL, glm::value_ptr(model))) {
         float translation[3], rotation[3], scale[3];
         ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(model), translation, rotation, scale);
-        transform->translation = { translation[0], translation[1], translation[2] };
+        transform->translation = { translation[0], translation[1], transform->translation.z };
         transform->orientation = glm::quat(glm::radians(glm::vec3 { rotation[0], rotation[1], rotation[2] }));
         transform->scale = { scale[0], scale[1], scale[2] };
     }

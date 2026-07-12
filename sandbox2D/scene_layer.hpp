@@ -31,8 +31,8 @@ public:
                 .right = float(window.get_width()),
                 .top = float(window.get_height()),
                 .bottom = -float(window.get_height()),
-                .far_clip = -1000.f,
-                .near_clip = 1000.f,
+                .far_clip = 0.f,
+                .near_clip = 2000.f,
             } },
         });
     }

@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "asset/loader.hpp"
+#include "components/light.hpp"
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
@@ -18,21 +19,25 @@ Scene SceneLoader::load(const std::filesystem::path& path, ResourceManager& reso
     return load(YAML::LoadFile(path.string()), resources, assets);
 }
 
+static void load_texture(const AssetHandle& handle, ResourceManager& resources, const AssetRegistry& assets) {
+    if (handle.name.empty() || resources.contains<Texture2D>(handle.id)) {
+        return;
+    }
+
+    auto it = assets.find(handle.id);
+    if (it == assets.end() || it->second.second.type != Asset::Type::Image) {
+        Log::core().warn(std::format("Scene references unknown texture asset '{}'", handle.name));
+        return;
+    }
+    resources.set(handle.name, Texture2D { AssetLoader::get<Image>(it->second.second) });
+}
+
 static void load_referenced_textures(
     entt::registry& registry, ResourceManager& resources, const AssetRegistry& assets) {
-    registry.view<SpriteComponent>().each([&](auto, const SpriteComponent& sprite) {
-        const auto& handle = sprite.texture;
-        if (handle.name.empty() || resources.contains<Texture2D>(handle.id)) {
-            return;
-        }
-
-        auto it = assets.find(handle.id);
-        if (it == assets.end() || it->second.second.type != Asset::Type::Image) {
-            Log::core().warn(std::format("Scene references unknown texture asset '{}'", handle.name));
-            return;
-        }
-        resources.set(handle.name, Texture2D { AssetLoader::get<Image>(it->second.second) });
-    });
+    registry.view<SpriteComponent>().each(
+        [&](auto, const SpriteComponent& sprite) { load_texture(sprite.texture, resources, assets); });
+    registry.view<SpriteLight>().each(
+        [&](auto, const SpriteLight& light) { load_texture(light.texture, resources, assets); });
 }
 
 Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets) {
@@ -95,6 +100,10 @@ Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, cons
         deserialize.template operator()<MainCamera>(entity_node, "MainCamera", entity);
         deserialize.template operator()<SpriteComponent>(entity_node, "SpriteComponent", entity);
         deserialize.template operator()<ScriptComponent>(entity_node, "ScriptComponent", entity);
+        deserialize.template operator()<AmbientLight>(entity_node, "AmbientLight", entity);
+        deserialize.template operator()<PointLight>(entity_node, "PointLight", entity);
+        deserialize.template operator()<SpotLight>(entity_node, "SpotLight", entity);
+        deserialize.template operator()<SpriteLight>(entity_node, "SpriteLight", entity);
     }
 
     load_referenced_textures(registry, resources, assets);

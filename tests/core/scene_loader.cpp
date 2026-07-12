@@ -44,6 +44,8 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
 
     auto child_b = registry.create();
     registry.emplace<k2::TagComponent>(child_b, "child_b");
+    registry.emplace<k2::PointLight>(child_b, glm::vec3 { 1.0f, 0.5f, 0.25f }, 2.0f, 640.0f);
+    registry.emplace<k2::AmbientLight>(child_b, glm::vec3 { 0.1f, 0.2f, 0.3f }, 0.5f);
     k2::RelationComponent::attach_last(registry, child_b, parent);
 
     k2::ResourceManager resources;
@@ -82,6 +84,12 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
 
     REQUIRE(loaded_registry.get<k2::TransformComponent>(new_parent).scale.x == 2.0f);
     REQUIRE(loaded_registry.all_of<k2::MainCamera>(new_parent));
+
+    auto& point_light = loaded_registry.get<k2::PointLight>(new_child_b);
+    REQUIRE(point_light.color.x == 1.0f);
+    REQUIRE(point_light.intensity == 2.0f);
+    REQUIRE(point_light.radius == 640.0f);
+    REQUIRE(loaded_registry.get<k2::AmbientLight>(new_child_b).intensity == 0.5f);
 }
 
 TEST_CASE("SceneLoader rejects malformed scenes") {

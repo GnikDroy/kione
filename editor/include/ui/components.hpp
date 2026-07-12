@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include "components/camera.hpp"
+#include "components/light.hpp"
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
@@ -100,5 +101,35 @@ template <> void ComponentWidget<k2::ScriptComponent>(entt::registry& reg, entt:
 template <> void ComponentWidget<k2::TagComponent>(entt::registry& reg, entt::registry::entity_type e) {
     auto& tag = reg.get<k2::TagComponent>(e).tag;
     ImGui::InputText("Tag", &tag);
+}
+
+template <> void ComponentWidget<k2::AmbientLight>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& light = reg.get<k2::AmbientLight>(e);
+    ImGui::ColorEdit3("Color", glm::value_ptr(light.color));
+    ImGui::DragFloat("Intensity", &light.intensity, 0.01f, 0.0f, 100.0f);
+}
+
+template <> void ComponentWidget<k2::PointLight>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& light = reg.get<k2::PointLight>(e);
+    ImGui::ColorEdit3("Color", glm::value_ptr(light.color));
+    ImGui::DragFloat("Intensity", &light.intensity, 0.01f, 0.0f, 100.0f);
+    ImGui::DragFloat("Radius", &light.radius, 1.0f, 0.0f, 100000.0f);
+}
+
+template <> void ComponentWidget<k2::SpotLight>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& light = reg.get<k2::SpotLight>(e);
+    ImGui::ColorEdit3("Color", glm::value_ptr(light.color));
+    ImGui::DragFloat("Intensity", &light.intensity, 0.01f, 0.0f, 100.0f);
+    ImGui::DragFloat("Radius", &light.radius, 1.0f, 0.0f, 100000.0f);
+    ImGui::SliderAngle("Inner Angle", &light.inner_angle, 0.0f, 180.0f);
+    ImGui::SliderAngle("Outer Angle", &light.outer_angle, 0.0f, 180.0f);
+}
+
+template <> void ComponentWidget<k2::SpriteLight>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& light = reg.get<k2::SpriteLight>(e);
+    auto& editor_layer = reg.ctx().get<EditorLayer&>();
+    ResourceInputWidget("Texture", light.texture, editor_layer.active_assets(), k2::Asset::Type::Image);
+    ImGui::ColorEdit3("Color", glm::value_ptr(light.color));
+    ImGui::DragFloat("Intensity", &light.intensity, 0.01f, 0.0f, 100.0f);
 }
 }

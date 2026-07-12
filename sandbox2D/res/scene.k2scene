@@ -1,4 +1,14 @@
 - Entity: 0
+  TagComponent: Background
+  TransformComponent:
+    Translation: [0, 0, -1]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1300, 750, 1]
+  SpriteComponent:
+    Texture: cobble
+    Color: [1, 1, 1, 1]
+    UvRect: [0, 0, 4, 2]
+- Entity: 1
   TagComponent: Cobble
   TransformComponent:
     Translation: [0, 0, 0]
@@ -6,7 +16,28 @@
     Scale: [300, 300, 1]
   SpriteComponent:
     Texture: cobble
-    Color: [1, 0, 0, 1]
+    Color: [1, 0.2, 0.2, 1]
     UvRect: [0, 0, 1, 1]
   ScriptComponent:
     Script: mover
+  PointLight:
+    Color: [1, 0.9, 0.7]
+    Intensity: 1.2
+    Radius: 700
+- Entity: 2
+  TagComponent: World Light
+  AmbientLight:
+    Color: [0.4, 0.4, 0.6]
+    Intensity: 0.35
+- Entity: 3
+  TagComponent: Spot
+  TransformComponent:
+    Translation: [-800, 400, 0]
+    Orientation: [0, 0, -0.3826834, 0.9238795]
+    Scale: [1, 1, 1]
+  SpotLight:
+    Color: [0.4, 1, 0.5]
+    Intensity: 1.5
+    Radius: 1200
+    InnerAngle: 0.25
+    OuterAngle: 0.55

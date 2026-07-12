@@ -42,7 +42,25 @@ private:
         std::array<Vertex, 4> vertices;
     };
 
+    struct PointLightDraw {
+        glm::mat4 model;
+        glm::vec3 color;
+    };
+    struct SpotLightDraw {
+        glm::mat4 model;
+        glm::vec3 color;
+        float cos_inner;
+        float cos_outer;
+    };
+    struct SpriteLightDraw {
+        glm::mat4 model;
+        glm::vec3 color;
+        ResourceID texture;
+    };
+
     Program default_shader;
+    Program light_shader;
+    Program composite_shader;
 
     std::vector<SpriteQuad> sprite_quads {};
     std::unordered_map<std::uint32_t, std::vector<Renderer2D::VertexShaderInput>> vertices_buffer {};
@@ -55,11 +73,24 @@ private:
     VertexArray vao;
     VertexBuffer vbo;
     IndexBuffer ebo;
+    VertexArray light_vao;
+    VertexBuffer light_vbo;
+    VertexArray empty_vao;
     FrameBuffer frame_buffer;
+    FrameBuffer albedo_buffer;
+    FrameBuffer light_buffer;
+    const FrameBuffer* batch_target = &frame_buffer;
     Texture2D fallback_texture = Texture2D::create_white_texture<uint8_t>();
     // Picked up from the scene's registry context in draw(Scene), or set explicitly
     // via set_resources() when drawing without a scene.
     ResourceManager* resources {};
+
+    glm::vec4 clear_color { 0.0f, 0.0f, 0.0f, 1.0f };
+    glm::vec3 ambient_light {};
+    bool has_lights {};
+    std::vector<PointLightDraw> point_lights {};
+    std::vector<SpotLightDraw> spot_lights {};
+    std::vector<SpriteLightDraw> sprite_lights {};
 
 public:
     Renderer2D();
@@ -89,6 +120,11 @@ public:
 private:
     static std::array<Vertex, 4> build_sprite_quad(const SpriteComponent& sprite);
 
+    void collect_lights(Scene& scene);
+    void ensure_light_targets(std::size_t width, std::size_t height);
+    void light_pass();
+    void composite_pass();
     void flush();
+    void flush_batches(const FrameBuffer& target);
 };
 }
