@@ -5,6 +5,7 @@ add_executable(
     core/resource_container.cpp
     core/resource_manager.cpp
     core/scene_loader.cpp
+    core/transforms.cpp
     core/vector.cpp
     core/utils.cpp
     core/imgui_theme.cpp

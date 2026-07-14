@@ -193,23 +193,23 @@ void Renderer2D::collect_lights(Scene& scene) {
         has_lights = true;
     });
 
-    registry.view<TransformComponent, PointLight>().each([&](auto, const auto& transform, const PointLight& light) {
-        auto model = glm::translate(glm::mat4(1.0f), transform.translation) * glm::toMat4(transform.orientation)
+    registry.view<TransformComponent, PointLight>().each([&](auto entity, const auto&, const PointLight& light) {
+        auto model = TransformComponent::world(registry, entity)
             * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
         point_lights.push_back({ model, light.color * light.intensity });
         has_lights = true;
     });
 
-    registry.view<TransformComponent, SpotLight>().each([&](auto, const auto& transform, const SpotLight& light) {
-        auto model = glm::translate(glm::mat4(1.0f), transform.translation) * glm::toMat4(transform.orientation)
+    registry.view<TransformComponent, SpotLight>().each([&](auto entity, const auto&, const SpotLight& light) {
+        auto model = TransformComponent::world(registry, entity)
             * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
         spot_lights.push_back(
             { model, light.color * light.intensity, std::cos(light.inner_angle), std::cos(light.outer_angle) });
         has_lights = true;
     });
 
-    registry.view<TransformComponent, SpriteLight>().each([&](auto, const auto& transform, const SpriteLight& light) {
-        sprite_lights.push_back({ transform.get_matrix(), light.color * light.intensity, light.texture.id });
+    registry.view<TransformComponent, SpriteLight>().each([&](auto entity, const auto&, const SpriteLight& light) {
+        sprite_lights.push_back({ TransformComponent::world(registry, entity), light.color * light.intensity, light.texture.id });
         has_lights = true;
     });
 }
@@ -227,7 +227,14 @@ void Renderer2D::draw(Scene& scene) {
     collect_lights(scene);
 
     scene.registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
-        [&](auto, const auto& transform, const auto& sprite) { draw(transform, sprite); });
+        [&](auto entity, const auto&, const auto& sprite) {
+            auto world = TransformComponent::world(scene.registry, entity);
+            sprite_quads.push_back({
+                .z = world[3][2],
+                .transform = world,
+                .vertices = build_sprite_quad(sprite),
+            });
+        });
 }
 
 void Renderer2D::ensure_light_targets(std::size_t width, std::size_t height) {

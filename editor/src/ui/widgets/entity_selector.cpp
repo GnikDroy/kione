@@ -7,12 +7,26 @@
 
 #include "components/relation.hpp"
 #include "components/tag.hpp"
+#include "components/transform.hpp"
 #include "editor_layer.hpp"
 #include "ui/widgets/entity_selector.hpp"
 
 namespace k2::editor {
 
 using DeferredOps = std::vector<std::function<void()>>;
+
+// Reparenting changes what local transform is relative to.
+// Rewrite it so we keep world position.
+template <class EntityType, class Reparent>
+static void reparent_preserving_world(
+    entt::basic_registry<EntityType>& registry, EntityType entity, Reparent&& reparent) {
+    auto* transform = registry.template try_get<TransformComponent>(entity);
+    auto world = transform ? TransformComponent::world(registry, entity) : glm::mat4 { 1.0f };
+    reparent();
+    if (transform != nullptr) {
+        transform->set_from_matrix(glm::inverse(TransformComponent::parent_world(registry, entity)) * world);
+    }
+}
 
 template <class EntityType>
 static bool is_ancestor_or_self(entt::basic_registry<EntityType>& registry, EntityType ancestor, EntityType node) {
@@ -41,18 +55,17 @@ static void in_between_drag_drop_target(
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
             auto dragged = *static_cast<EntityType*>(payload->Data);
             deferred_ops.push_back([&registry, dragged, entity]() {
-                // Attaching next to `entity` reparents `dragged` under `entity`'s
-                // parent; attach_* performs no cycle checks, so reject drops that
-                // would move an entity into its own subtree.
                 if (dragged == entity || is_ancestor_or_self(registry, dragged, entity)) {
                     return;
                 }
-                RelationComponent::detach(registry, dragged);
-                if constexpr (AttachBefore) {
-                    RelationComponent::attach_before(registry, dragged, entity);
-                } else {
-                    RelationComponent::attach_after(registry, dragged, entity);
-                }
+                reparent_preserving_world(registry, dragged, [&] {
+                    RelationComponent::detach(registry, dragged);
+                    if constexpr (AttachBefore) {
+                        RelationComponent::attach_before(registry, dragged, entity);
+                    } else {
+                        RelationComponent::attach_after(registry, dragged, entity);
+                    }
+                });
             });
         }
         ImGui::EndDragDropTarget();
@@ -81,8 +94,10 @@ static void entity_drag_drop_target(
                 if (dragged == entity || is_ancestor_or_self(registry, dragged, entity)) {
                     return;
                 }
-                RelationComponent::detach(registry, dragged);
-                RelationComponent::attach_last(registry, dragged, entity);
+                reparent_preserving_world(registry, dragged, [&] {
+                    RelationComponent::detach(registry, dragged);
+                    RelationComponent::attach_last(registry, dragged, entity);
+                });
             });
         }
         ImGui::EndDragDropTarget();
@@ -100,7 +115,9 @@ static void entity_context_menu(entt::basic_registry<EntityType>& registry, Enti
             });
         }
         if (ImGui::MenuItem("Detach")) {
-            deferred_ops.push_back([&registry, entity]() { RelationComponent::detach(registry, entity); });
+            deferred_ops.push_back([&registry, entity]() {
+                reparent_preserving_world(registry, entity, [&] { RelationComponent::detach(registry, entity); });
+            });
         }
         if (ImGui::MenuItem("Delete")) {
             deferred_ops.push_back([&registry, entity, &to_delete]() {

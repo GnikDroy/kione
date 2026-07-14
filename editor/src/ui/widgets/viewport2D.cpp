@@ -89,15 +89,14 @@ void Viewport2DWidget::draw_gizmo(EditorLayer& editor_layer, ImVec2 rect_min) {
 
     auto view = renderer2D.camera.get_view();
     auto projection = renderer2D.camera.get_projection();
-    auto model = transform->get_matrix();
+    auto parent_world = k2::TransformComponent::parent_world(registry, active);
+    auto model = parent_world * transform->get_matrix();
 
     if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection),
             static_cast<ImGuizmo::OPERATION>(gizmo_operation), ImGuizmo::LOCAL, glm::value_ptr(model))) {
-        float translation[3], rotation[3], scale[3];
-        ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(model), translation, rotation, scale);
-        transform->translation = { translation[0], translation[1], transform->translation.z };
-        transform->orientation = glm::quat(glm::radians(glm::vec3 { rotation[0], rotation[1], rotation[2] }));
-        transform->scale = { scale[0], scale[1], scale[2] };
+        auto z = transform->translation.z;
+        transform->set_from_matrix(glm::inverse(parent_world) * model);
+        transform->translation.z = z;
     }
 }
 
@@ -126,17 +125,15 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
         auto picked = entt::entity { entt::null };
         auto picked_z = -std::numeric_limits<float>::infinity();
 
-        // Sprite quads are +-1 in local space; rotation is ignored for picking.
-        editor_layer.active_scene().registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
-            [&](auto entity, const auto& transform, const auto&) {
-                auto half = glm::abs(glm::vec2 { transform.scale });
-                if (std::abs(world.x - transform.translation.x) <= half.x
-                    && std::abs(world.y - transform.translation.y) <= half.y
-                    && transform.translation.z >= picked_z) {
-                    picked = entity;
-                    picked_z = transform.translation.z;
-                }
-            });
+        auto& registry = editor_layer.active_scene().registry;
+        registry.view<k2::TransformComponent, k2::SpriteComponent>().each([&](auto entity, const auto&, const auto&) {
+            auto world_matrix = k2::TransformComponent::world(registry, entity);
+            auto local = glm::inverse(world_matrix) * glm::vec4 { world.x, world.y, world_matrix[3][2], 1.0f };
+            if (std::abs(local.x) <= 1.0f && std::abs(local.y) <= 1.0f && world_matrix[3][2] >= picked_z) {
+                picked = entity;
+                picked_z = world_matrix[3][2];
+            }
+        });
 
         editor_layer.entity_selector.get_widget().set_active(picked);
     }
