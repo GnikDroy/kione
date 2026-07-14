@@ -9,6 +9,7 @@
 
 #include "asset/scheme.hpp"
 #include "components/animation.hpp"
+#include "components/light.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
@@ -28,6 +29,10 @@ namespace {
         [[nodiscard]] TransformComponent* transform() const { return registry->try_get<TransformComponent>(entity); }
         [[nodiscard]] SpriteComponent* sprite() const { return registry->try_get<SpriteComponent>(entity); }
         [[nodiscard]] AnimationComponent* animation() const { return registry->try_get<AnimationComponent>(entity); }
+        [[nodiscard]] PointLight* point_light() const { return registry->try_get<PointLight>(entity); }
+        [[nodiscard]] SpotLight* spot_light() const { return registry->try_get<SpotLight>(entity); }
+        [[nodiscard]] AmbientLight* ambient_light() const { return registry->try_get<AmbientLight>(entity); }
+        [[nodiscard]] SpriteLight* sprite_light() const { return registry->try_get<SpriteLight>(entity); }
         [[nodiscard]] std::string tag() const {
             auto* tag_component = registry->try_get<TagComponent>(entity);
             return tag_component ? tag_component->tag : std::string {};
@@ -81,11 +86,45 @@ struct ScriptSystem::Impl {
                 [](TransformComponent& transform, const glm::vec3& value) { transform.translation = value; }),
             "scale",
             sol::property([](TransformComponent& transform) -> glm::vec3& { return transform.scale; },
-                [](TransformComponent& transform, const glm::vec3& value) { transform.scale = value; }));
+                [](TransformComponent& transform, const glm::vec3& value) { transform.scale = value; }),
+            "angle",
+            sol::property([](TransformComponent& transform) { return glm::eulerAngles(transform.orientation).z; },
+                [](TransformComponent& transform, float angle) {
+                    transform.orientation = glm::quat(glm::vec3 { 0.0f, 0.0f, angle });
+                }));
+
+        lua.new_usertype<Rectf>(
+            "Rect", "x", &Rectf::x, "y", &Rectf::y, "w", &Rectf::w, "h", &Rectf::h);
 
         lua.new_usertype<SpriteComponent>("Sprite", "color",
             sol::property([](SpriteComponent& sprite) -> glm::vec4& { return sprite.color; },
-                [](SpriteComponent& sprite, const glm::vec4& value) { sprite.color = value; }));
+                [](SpriteComponent& sprite, const glm::vec4& value) { sprite.color = value; }),
+            "uv",
+            sol::property([](SpriteComponent& sprite) -> Rectf& { return sprite.uv_rect; },
+                [](SpriteComponent& sprite, const Rectf& value) { sprite.uv_rect = value; }),
+            "texture",
+            sol::property([](SpriteComponent& sprite) { return sprite.texture.name; },
+                [](SpriteComponent& sprite, const std::string& name) { sprite.texture.set(name); }));
+
+        auto color_property = []<class Light>() {
+            return sol::property([](Light& light) -> glm::vec3& { return light.color; },
+                [](Light& light, const glm::vec3& value) { light.color = value; });
+        };
+
+        lua.new_usertype<PointLight>("PointLight", "color", color_property.template operator()<PointLight>(),
+            "intensity", &PointLight::intensity, "radius", &PointLight::radius);
+
+        lua.new_usertype<SpotLight>("SpotLight", "color", color_property.template operator()<SpotLight>(),
+            "intensity", &SpotLight::intensity, "radius", &SpotLight::radius, "inner_angle", &SpotLight::inner_angle,
+            "outer_angle", &SpotLight::outer_angle);
+
+        lua.new_usertype<AmbientLight>("AmbientLight", "color", color_property.template operator()<AmbientLight>(),
+            "intensity", &AmbientLight::intensity);
+
+        lua.new_usertype<SpriteLight>("SpriteLight", "color", color_property.template operator()<SpriteLight>(),
+            "intensity", &SpriteLight::intensity, "texture",
+            sol::property([](SpriteLight& light) { return light.texture.name; },
+                [](SpriteLight& light, const std::string& name) { light.texture.set(name); }));
 
         lua.new_usertype<AnimationComponent>("Animation", "playing", &AnimationComponent::playing, "speed",
             &AnimationComponent::speed, "finished",
@@ -100,7 +139,9 @@ struct ScriptSystem::Impl {
             "stop", [](AnimationComponent& animation) { animation.playing = false; });
 
         lua.new_usertype<LuaEntity>("Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite,
-            "animation", &LuaEntity::animation, "tag", &LuaEntity::tag, "valid", &LuaEntity::valid);
+            "animation", &LuaEntity::animation, "point_light", &LuaEntity::point_light, "spot_light",
+            &LuaEntity::spot_light, "ambient_light", &LuaEntity::ambient_light, "sprite_light",
+            &LuaEntity::sprite_light, "tag", &LuaEntity::tag, "valid", &LuaEntity::valid);
 
         auto k2_table = lua.create_named_table("k2");
         k2_table["log"] = [](const std::string& message) { Log::app().info(message); };
