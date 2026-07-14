@@ -6,11 +6,13 @@
 #include <unordered_map>
 
 #include "asset/loader.hpp"
+#include "components/animation.hpp"
 #include "components/light.hpp"
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "core/logger.hpp"
+#include "rendering/sprite_animation.hpp"
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
 
 namespace k2 {
@@ -38,6 +40,28 @@ static void load_referenced_textures(
         [&](auto, const SpriteComponent& sprite) { load_texture(sprite.texture, resources, assets); });
     registry.view<SpriteLight>().each(
         [&](auto, const SpriteLight& light) { load_texture(light.texture, resources, assets); });
+}
+
+static void load_animation_clips(entt::registry& registry, ResourceManager& resources, const AssetRegistry& assets) {
+    for (const auto& [id, pair] : assets) {
+        const auto& [name, asset] = pair;
+        if (asset.type != Asset::Type::Animation) {
+            continue;
+        }
+        try {
+            auto clip = AssetLoader::get<SpriteAnimation>(asset);
+            load_texture(clip.texture, resources, assets);
+            resources.set(name, std::move(clip));
+        } catch (const std::exception& e) {
+            Log::core().error(std::format("Failed to load animation clip '{}': {}", name, e.what()));
+        }
+    }
+
+    registry.view<AnimationComponent>().each([&](auto, const AnimationComponent& animation) {
+        if (!animation.clip.name.empty() && !resources.contains<SpriteAnimation>(animation.clip.id)) {
+            Log::core().warn(std::format("Scene references unknown animation clip '{}'", animation.clip.name));
+        }
+    });
 }
 
 Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets) {
@@ -71,8 +95,8 @@ Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, cons
         return it->second;
     };
 
-    auto deserialize = [&]<class Component>(const auto& entity_node, const auto& label,
-                           entt::entity entity) -> Component* {
+    auto deserialize
+        = [&]<class Component>(const auto& entity_node, const auto& label, entt::entity entity) -> Component* {
         if (!entity_node[label].IsDefined()) {
             return nullptr;
         }
@@ -99,6 +123,7 @@ Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, cons
         deserialize.template operator()<Camera>(entity_node, "Camera", entity);
         deserialize.template operator()<MainCamera>(entity_node, "MainCamera", entity);
         deserialize.template operator()<SpriteComponent>(entity_node, "SpriteComponent", entity);
+        deserialize.template operator()<AnimationComponent>(entity_node, "AnimationComponent", entity);
         deserialize.template operator()<ScriptComponent>(entity_node, "ScriptComponent", entity);
         deserialize.template operator()<AmbientLight>(entity_node, "AmbientLight", entity);
         deserialize.template operator()<PointLight>(entity_node, "PointLight", entity);
@@ -107,6 +132,7 @@ Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, cons
     }
 
     load_referenced_textures(registry, resources, assets);
+    load_animation_clips(registry, resources, assets);
     return scene;
 }
 

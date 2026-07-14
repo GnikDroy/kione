@@ -1,5 +1,6 @@
 #include "editor_layer.hpp"
 #include "asset/loader.hpp"
+#include "core/animation_system.hpp"
 #include "core/scene_loader.hpp"
 #include "core/window.hpp"
 #include "events/window.hpp"
@@ -126,6 +127,7 @@ void EditorLayer::build_default_layout(unsigned int dockspace_id) {
 void EditorLayer::update(float dt) {
     if (runtime_scene) {
         scripts.update(*runtime_scene, active_assets(), dt);
+        AnimationSystem::update(*runtime_scene, dt);
     }
     auto dockspace_id = ImGui::DockSpaceOverViewport();
     if (layout_pending) {

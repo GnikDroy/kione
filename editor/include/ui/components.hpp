@@ -2,6 +2,7 @@
 #include <entt/entt.hpp>
 #include <imgui.h>
 
+#include "components/animation.hpp"
 #include "components/camera.hpp"
 #include "components/light.hpp"
 #include "components/script.hpp"
@@ -112,6 +113,20 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
         ResourceInputWidget("##Texture", sprite.texture, editor_layer.active_assets(), k2::Asset::Type::Image);
         PropertyLabel("UV Rect");
         RectField("##UvRect", sprite.uv_rect, { 0.0f, 0.0f, 1.0f, 1.0f });
+        EndPropertyTable();
+    }
+}
+
+template <> void ComponentWidget<k2::AnimationComponent>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& animation = reg.get<k2::AnimationComponent>(e);
+    auto& editor_layer = reg.ctx().get<EditorLayer&>();
+    if (BeginPropertyTable("Animation")) {
+        PropertyLabel("Clip");
+        ResourceInputWidget("##Clip", animation.clip, editor_layer.active_assets(), k2::Asset::Type::Animation);
+        PropertyLabel("Speed");
+        ImGui::DragFloat("##Speed", &animation.speed, 0.01f, -100.0f, 100.0f);
+        PropertyLabel("Playing");
+        ImGui::Checkbox("##Playing", &animation.playing);
         EndPropertyTable();
     }
 }

@@ -11,7 +11,7 @@ namespace k2 {
 struct Asset {
     using ID = decltype(fnv1a(""));
     enum class Scheme { file };
-    enum class Type { AssetBundle, Image, Shader, Font, Model, Audio, Data, Script };
+    enum class Type { AssetBundle, Image, Shader, Font, Model, Audio, Data, Script, Animation };
 
     struct URL {
         std::string_view scheme, authority, path, query, fragment;

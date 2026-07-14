@@ -35,6 +35,9 @@ IconInfo icon_for(const std::filesystem::directory_entry& entry) {
     if (ext == ".k2project") {
         return { ICON_FA_GAMEPAD, { 0.47f, 0.53f, 0.80f, 1.0f } };
     }
+    if (ext == ".k2anim") {
+        return { ICON_FA_FILM, { 0.78f, 0.57f, 0.40f, 1.0f } };
+    }
     if (ext == ".ttf" || ext == ".otf") {
         return { ICON_FA_FONT, { 0.90f, 0.75f, 0.48f, 1.0f } };
     }

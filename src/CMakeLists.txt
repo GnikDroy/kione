@@ -6,6 +6,7 @@ add_library(
     asset/asset_registry.cpp
     asset/loader.cpp
     asset/scheme.cpp
+    core/animation_system.cpp
     core/app.cpp
     core/imgui_layer.cpp
     core/imgui_theme.cpp

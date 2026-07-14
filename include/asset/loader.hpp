@@ -21,6 +21,7 @@ template <> Image AssetLoader::get<Image>(const Asset& asset);
 template <> Texture2D AssetLoader::get<Texture2D>(const Asset& asset);
 template <> Shader AssetLoader::get<Shader>(const Asset& asset);
 template <> AssetBundle AssetLoader::get<AssetBundle>(const Asset& asset);
+template <> SpriteAnimation AssetLoader::get<SpriteAnimation>(const Asset& asset);
 template <> Model AssetLoader::get<Model>(const Asset& asset, ResourceManager& resources);
 
 }

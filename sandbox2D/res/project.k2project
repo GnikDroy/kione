@@ -12,3 +12,5 @@ assets:
     2D_fs: file:///shaders/2D_fs.glsl
   Script:
     mover: file:///scripts/mover.lua
+  Animation:
+    spin: file:///animations/spin.k2anim

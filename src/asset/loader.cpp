@@ -10,6 +10,7 @@
 #include "core/utils.hpp"
 #include "rendering/model.hpp"
 #include "serializers/asset/asset.hpp" // IWYU pragma: keep
+#include "serializers/asset/sprite_animation.hpp" // IWYU pragma: keep
 
 namespace k2 {
 
@@ -53,6 +54,14 @@ template <> AssetBundle AssetLoader::get<AssetBundle>(const Asset& asset) {
     auto bundle = YAML::Load(*stream).as<AssetBundle>();
     bundle.assets[""] = asset;
     return bundle;
+}
+
+template <> SpriteAnimation AssetLoader::get<SpriteAnimation>(const Asset& asset) {
+    if (asset.type != Asset::Type::Animation) {
+        throw std::invalid_argument("Invalid Asset Type!");
+    }
+    auto stream = AssetScheme::get_stream(asset);
+    return YAML::Load(*stream).as<SpriteAnimation>();
 }
 
 template <> Model AssetLoader::get<Model>(const Asset& asset, ResourceManager& resources) {

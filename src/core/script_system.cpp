@@ -8,6 +8,7 @@
 #include <sol/sol.hpp>
 
 #include "asset/scheme.hpp"
+#include "components/animation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
@@ -26,6 +27,7 @@ namespace {
 
         [[nodiscard]] TransformComponent* transform() const { return registry->try_get<TransformComponent>(entity); }
         [[nodiscard]] SpriteComponent* sprite() const { return registry->try_get<SpriteComponent>(entity); }
+        [[nodiscard]] AnimationComponent* animation() const { return registry->try_get<AnimationComponent>(entity); }
         [[nodiscard]] std::string tag() const {
             auto* tag_component = registry->try_get<TagComponent>(entity);
             return tag_component ? tag_component->tag : std::string {};
@@ -85,8 +87,20 @@ struct ScriptSystem::Impl {
             sol::property([](SpriteComponent& sprite) -> glm::vec4& { return sprite.color; },
                 [](SpriteComponent& sprite, const glm::vec4& value) { sprite.color = value; }));
 
-        lua.new_usertype<LuaEntity>("Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "tag",
-            &LuaEntity::tag, "valid", &LuaEntity::valid);
+        lua.new_usertype<AnimationComponent>("Animation", "playing", &AnimationComponent::playing, "speed",
+            &AnimationComponent::speed, "finished",
+            sol::property([](AnimationComponent& animation) { return animation.finished; }), "clip",
+            sol::property([](AnimationComponent& animation) { return animation.clip.name; }), "play",
+            [](AnimationComponent& animation, const std::string& clip) {
+                animation.clip.set(clip);
+                animation.elapsed = 0.0f;
+                animation.playing = true;
+                animation.finished = false;
+            },
+            "stop", [](AnimationComponent& animation) { animation.playing = false; });
+
+        lua.new_usertype<LuaEntity>("Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite,
+            "animation", &LuaEntity::animation, "tag", &LuaEntity::tag, "valid", &LuaEntity::valid);
 
         auto k2_table = lua.create_named_table("k2");
         k2_table["log"] = [](const std::string& message) { Log::app().info(message); };

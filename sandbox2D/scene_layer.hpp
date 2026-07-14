@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/animation_system.hpp"
 #include "core/project.hpp"
 #include "core/scene.hpp"
 #include "core/scene_loader.hpp"
@@ -41,7 +42,10 @@ public:
 
     SceneLayer& operator=(const SceneLayer&) = delete;
 
-    void update(float dt) override { scripts.update(scene, project.assets, dt); }
+    void update(float dt) override {
+        scripts.update(scene, project.assets, dt);
+        k2::AnimationSystem::update(scene, dt);
+    }
 
     void render() override {
         const auto* main_camera = k2::find_main_camera(scene.registry);
