@@ -36,10 +36,10 @@ public:
             .up { 0, 1.0f, 0 },
 
             .projection_traits { k2::Camera::OrthographicTraits {
-                .left = -float(window.get_width()),
-                .right = float(window.get_width()),
-                .top = float(window.get_height()),
-                .bottom = -float(window.get_height()),
+                .left = -float(window.get_width()) / 2.0f,
+                .right = float(window.get_width()) / 2.0f,
+                .top = float(window.get_height()) / 2.0f,
+                .bottom = -float(window.get_height()) / 2.0f,
                 .far_clip = 0.f,
                 .near_clip = 2000.f,
             } },

@@ -38,10 +38,10 @@ void Viewport2DWidget::update_camera() {
         .up { 0, 1.0f, 0 },
 
         .projection_traits { k2::Camera::OrthographicTraits {
-            .left = -width * zoom,
-            .right = width * zoom,
-            .top = height * zoom,
-            .bottom = -height * zoom,
+            .left = -width * 0.5f * zoom,
+            .right = width * 0.5f * zoom,
+            .top = height * 0.5f * zoom,
+            .bottom = -height * 0.5f * zoom,
             .far_clip = 0.f,
             .near_clip = 2000.f,
         } },
@@ -51,8 +51,8 @@ void Viewport2DWidget::update_camera() {
 glm::vec2 Viewport2DWidget::screen_to_world(ImVec2 screen, ImVec2 rect_min) const {
     auto u = (screen.x - rect_min.x) / width;
     auto v = (screen.y - rect_min.y) / height;
-    return { camera_position.x + (u - 0.5f) * 2.0f * width * zoom,
-        camera_position.y + (0.5f - v) * 2.0f * height * zoom };
+    return { camera_position.x + (u - 0.5f) * width * zoom,
+        camera_position.y + (0.5f - v) * height * zoom };
 }
 
 void Viewport2DWidget::draw_gizmo(EditorLayer& editor_layer, ImVec2 rect_min) {
@@ -123,8 +123,8 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
         && (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
             || (ImGui::IsKeyDown(ImGuiKey_Space) && ImGui::IsMouseDragging(ImGuiMouseButton_Left)));
     if (panning) {
-        camera_position.x -= io.MouseDelta.x * 2.0f * zoom;
-        camera_position.y += io.MouseDelta.y * 2.0f * zoom;
+        camera_position.x -= io.MouseDelta.x * zoom;
+        camera_position.y += io.MouseDelta.y * zoom;
     }
 
     if (hovered && io.MouseWheel != 0.0f) {
@@ -144,7 +144,7 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
         registry.view<k2::TransformComponent, k2::SpriteComponent>().each([&](auto entity, const auto&, const auto&) {
             auto world_matrix = k2::TransformComponent::world(registry, entity);
             auto local = glm::inverse(world_matrix) * glm::vec4 { world.x, world.y, world_matrix[3][2], 1.0f };
-            if (std::abs(local.x) <= 1.0f && std::abs(local.y) <= 1.0f && world_matrix[3][2] >= picked_z) {
+            if (std::abs(local.x) <= 0.5f && std::abs(local.y) <= 0.5f && world_matrix[3][2] >= picked_z) {
                 picked = entity;
                 picked_z = world_matrix[3][2];
             }

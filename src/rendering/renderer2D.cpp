@@ -153,25 +153,25 @@ void Renderer2D::draw(const TransformComponent& transform, const SpriteComponent
 std::array<Renderer2D::Vertex, 4> Renderer2D::build_sprite_quad(const SpriteComponent& sprite) {
     return {
         Vertex {
-            .position = { 1.0f, -1.0f, 0.0f },
+            .position = { 0.5f, -0.5f, 0.0f },
             .color = sprite.color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
         Vertex {
-            .position = { -1.0f, 1.0f, 0.0f },
+            .position = { -0.5f, 0.5f, 0.0f },
             .color = sprite.color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y + sprite.uv_rect.h },
             .texture = sprite.texture.id,
         },
         Vertex {
-            .position = { -1.0f, -1.0f, 0.0f },
+            .position = { -0.5f, -0.5f, 0.0f },
             .color = sprite.color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
         Vertex {
-            .position = { 1.0f, 1.0f, 0.0f },
+            .position = { 0.5f, 0.5f, 0.0f },
             .color = sprite.color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y + sprite.uv_rect.h },
             .texture = sprite.texture.id,
@@ -193,23 +193,36 @@ void Renderer2D::collect_lights(Scene& scene) {
         has_lights = true;
     });
 
+    // Lights take position and rotation from the world transform; the
+    // entity's scale must not multiply the light radius.
+    auto light_basis = [&](entt::entity entity) {
+        auto world = TransformComponent::world(registry, entity);
+        glm::mat4 basis { 1.0f };
+        for (int column = 0; column < 3; column++) {
+            auto axis = glm::vec3(world[column]);
+            auto length = glm::length(axis);
+            basis[column] = length > 0.0f ? glm::vec4(axis / length, 0.0f) : world[column];
+        }
+        basis[3] = world[3];
+        return basis;
+    };
+
     registry.view<TransformComponent, PointLight>().each([&](auto entity, const auto&, const PointLight& light) {
-        auto model = TransformComponent::world(registry, entity)
-            * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
+        auto model = light_basis(entity) * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
         point_lights.push_back({ model, light.color * light.intensity });
         has_lights = true;
     });
 
     registry.view<TransformComponent, SpotLight>().each([&](auto entity, const auto&, const SpotLight& light) {
-        auto model = TransformComponent::world(registry, entity)
-            * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
+        auto model = light_basis(entity) * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
         spot_lights.push_back({ model, light.color * light.intensity,
             std::cos(std::min(light.inner_angle, light.outer_angle)), std::cos(light.outer_angle) });
         has_lights = true;
     });
 
     registry.view<TransformComponent, SpriteLight>().each([&](auto entity, const auto&, const SpriteLight& light) {
-        sprite_lights.push_back({ TransformComponent::world(registry, entity), light.color * light.intensity, light.texture.id });
+        auto model = TransformComponent::world(registry, entity) * glm::scale(glm::mat4(1.0f), { 0.5f, 0.5f, 1.0f });
+        sprite_lights.push_back({ model, light.color * light.intensity, light.texture.id });
         has_lights = true;
     });
 }
