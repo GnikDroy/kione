@@ -1,9 +1,12 @@
 #include "editor_layer.hpp"
 #include "asset/loader.hpp"
 #include "core/scene_loader.hpp"
+#include "core/window.hpp"
+#include "events/window.hpp"
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
 #include <ImGuizmo.h>
 #include <format>
+#include <fstream>
 #include <imgui_internal.h>
 
 namespace k2 {
@@ -45,6 +48,25 @@ void EditorLayer::open_project(const std::filesystem::path& path) {
     entity_selector.get_widget().reset_selection();
     project = std::move(new_project);
 }
+
+void EditorLayer::create_project(const std::filesystem::path& path) {
+    auto project_file = path;
+    if (project_file.extension() != ".k2project") {
+        project_file += ".k2project";
+    }
+    auto root = std::filesystem::absolute(project_file).parent_path();
+    auto name = project_file.stem().string();
+    auto scene_file = name + ".k2scene";
+
+    std::ofstream { root / "assets.yaml" } << "version: 0.0.1\nassets: {}\n";
+    std::ofstream { root / scene_file } << "[]\n";
+    std::ofstream { project_file } << std::format(
+        "version: 0.0.1\nname: {}\nassets: assets.yaml\nmain_scene: {}\n", name, scene_file);
+
+    open_project(project_file);
+}
+
+void EditorLayer::request_exit() { window->events.push(std::make_unique<WindowCloseEvent>()); }
 
 void EditorLayer::play() {
     try {

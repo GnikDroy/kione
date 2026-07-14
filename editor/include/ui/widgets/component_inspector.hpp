@@ -5,6 +5,7 @@
 #include <cassert>
 #include <entt/entt.hpp>
 #include <functional>
+#include <imgui.h>
 #include <utility>
 #include <vector>
 
@@ -65,6 +66,19 @@ public:
 
     template <class Component> ComponentInfo& register_component(const std::string& name) {
         return register_component<Component>(name, ComponentWidget<Component, EntityType>);
+    }
+
+    void add_component_menu_items(Registry& registry, EntityType entity) {
+        for (auto& [component_type_id, ci] : component_infos) {
+            if (entity_has_component(registry, entity, component_type_id)) {
+                continue;
+            }
+            ImGui::PushID(int(component_type_id));
+            if (ImGui::MenuItem(ci.name.c_str())) {
+                ci.create(registry, entity);
+            }
+            ImGui::PopID();
+        }
     }
 
     void render(EditorLayer&) override;

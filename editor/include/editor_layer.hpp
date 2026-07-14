@@ -47,6 +47,10 @@ public:
 
     void open_project(const std::filesystem::path& path);
 
+    void create_project(const std::filesystem::path& path);
+
+    void request_exit();
+
     void reset_layout() { layout_pending = true; }
 
     void play();

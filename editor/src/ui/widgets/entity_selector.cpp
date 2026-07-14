@@ -15,12 +15,6 @@ namespace k2::editor {
 
 using DeferredOps = std::vector<std::function<void()>>;
 
-template <class EntityType> static EntityType create_entity(entt::basic_registry<EntityType>& registry) {
-    auto entity = registry.create();
-    registry.template emplace<TransformComponent>(entity);
-    return entity;
-}
-
 // Reparenting changes what local transform is relative to.
 // Rewrite it so we keep world position.
 template <class EntityType, class Reparent>
@@ -116,7 +110,7 @@ static void entity_context_menu(entt::basic_registry<EntityType>& registry, Enti
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::MenuItem("Create Child")) {
             deferred_ops.push_back([&registry, entity]() {
-                auto child = create_entity(registry);
+                auto child = EntitySelector<EntityType>::create_entity(registry);
                 RelationComponent::attach_last(registry, child, entity);
             });
         }
