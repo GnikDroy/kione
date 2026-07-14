@@ -53,6 +53,9 @@ namespace {
         if (key.size() == 1 && key[0] >= 'a' && key[0] <= 'z') {
             return static_cast<KeyCode>(int(KeyCode::key_a) + (key[0] - 'a'));
         }
+        if (key.size() == 1 && key[0] >= '0' && key[0] <= '9') {
+            return static_cast<KeyCode>(int(KeyCode::key_0) + (key[0] - '0'));
+        }
         if (auto it = named.find(key); it != named.end()) {
             return it->second;
         }

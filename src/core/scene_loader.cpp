@@ -44,12 +44,13 @@ static void load_texture(const AssetHandle& handle, ResourceManager& resources, 
     resources.set(handle.name, Texture2D { *image });
 }
 
-static void load_referenced_textures(
-    entt::registry& registry, ResourceManager& resources, const AssetRegistry& assets) {
-    registry.view<SpriteComponent>().each(
-        [&](auto, const SpriteComponent& sprite) { load_texture(sprite.texture, resources, assets); });
-    registry.view<SpriteLight>().each(
-        [&](auto, const SpriteLight& light) { load_texture(light.texture, resources, assets); });
+static void load_textures(ResourceManager& resources, const AssetRegistry& assets) {
+    for (const auto& [id, pair] : assets) {
+        const auto& [name, asset] = pair;
+        if (asset.type == Asset::Type::Image) {
+            load_texture(AssetHandle { name }, resources, assets);
+        }
+    }
 }
 
 static void load_animation_clips(entt::registry& registry, ResourceManager& resources, const AssetRegistry& assets) {
@@ -142,7 +143,7 @@ std::expected<Scene, std::string> SceneLoader::load(
         deserialize.template operator()<SpriteLight>(entity_node, "SpriteLight", entity);
     }
 
-    load_referenced_textures(registry, resources, assets);
+    load_textures(resources, assets);
     load_animation_clips(registry, resources, assets);
     return scene;
 } catch (const std::exception& e) {
