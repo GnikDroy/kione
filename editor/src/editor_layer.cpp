@@ -51,6 +51,7 @@ void EditorLayer::play() {
         auto copy = SceneLoader::load(YAML::Node { scene }, resources, active_assets());
         copy.registry.ctx().emplace<EditorLayer&>(*this);
         runtime_scene = std::move(copy);
+        scripts.clear_cache();
         entity_selector.get_widget().reset_selection();
     } catch (const std::exception& e) {
         Log::core().error(std::format("Failed to start play mode: {}", e.what()));

@@ -169,6 +169,11 @@ ScriptSystem::~ScriptSystem() = default;
 
 void ScriptSystem::set_input_enabled(bool enabled) { impl->input_enabled = enabled; }
 
+void ScriptSystem::clear_cache() {
+    impl->sources.clear();
+    impl->instances.clear();
+}
+
 void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
     if (impl->attached != &registry) {
