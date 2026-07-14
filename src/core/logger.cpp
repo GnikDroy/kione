@@ -30,7 +30,13 @@ namespace sinks {
     template <typename Mutex> class ringbuffer_sink final : public spdlog::sinks::base_sink<Mutex> {
     public:
         explicit ringbuffer_sink(size_t n_items)
-            : q_ { n_items } { }
+            : capacity_ { n_items }
+            , q_ { n_items } { }
+
+        void clear() {
+            [[maybe_unused]] std::lock_guard<Mutex> lock(spdlog::sinks::base_sink<Mutex>::mutex_);
+            q_ = spdlog::details::circular_q<spdlog::details::log_msg_buffer> { capacity_ };
+        }
 
         std::vector<std::pair<LogLevel, std::string>> get(size_t lim = 0) {
             [[maybe_unused]] std::lock_guard<Mutex> lock(spdlog::sinks::base_sink<Mutex>::mutex_);
@@ -53,6 +59,7 @@ namespace sinks {
         void flush_() override { }
 
     private:
+        size_t capacity_;
         spdlog::details::circular_q<spdlog::details::log_msg_buffer> q_;
     };
 
@@ -160,6 +167,10 @@ template <LoggerSinkType V> std::vector<std::pair<LogLevel, std::string>> RingBu
 template <LoggerSinkType V> void RingBufferSink<V>::set_pattern(const std::string& pattern) {
     return std::static_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))
         ->set_pattern(pattern);
+}
+
+template <LoggerSinkType V> void RingBufferSink<V>::clear() {
+    std::static_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))->clear();
 }
 
 template class RingBufferSink<LoggerSinkType::SingleThreaded>;

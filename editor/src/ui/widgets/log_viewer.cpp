@@ -7,10 +7,25 @@ namespace k2::editor {
 void LogViewer::render(EditorLayer& editor_layer) {
     auto* theme = editor_layer.theme.get();
 
-    auto&& lines = EditorLoggerSink::get().get(EditorLoggerSink::max_items);
-    static ImGuiTextFilter filter;
+    if (ImGui::Button(ICON_FA_TRASH "  Clear")) {
+        EditorLoggerSink::get().clear();
+    }
+    ImGui::SameLine();
+    constexpr std::array levels { "Trace", "Debug", "Info", "Warn", "Error", "Critical" };
+    ImGui::SetNextItemWidth(110.0f);
+    ImGui::Combo("##MinLevel", &min_level, levels.data(), int(levels.size()));
+    ImGui::SameLine();
     filter.Draw(ICON_FA_SEARCH " Search");
+
+    if (!ImGui::BeginChild("##LogLines")) {
+        ImGui::EndChild();
+        return;
+    }
+    auto&& lines = EditorLoggerSink::get().get(EditorLoggerSink::max_items);
     for (const auto& [log_level, line] : lines) {
+        if (int(log_level) < min_level) {
+            continue;
+        }
         auto hash = [&] {
             using namespace k2::literals;
             switch (log_level) {
@@ -28,5 +43,10 @@ void LogViewer::render(EditorLayer& editor_layer) {
             ImGui::TextColored(theme->colors.at(hash), "%s", line.c_str());
         }
     }
+    // Follow new output unless the user has scrolled up.
+    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+        ImGui::SetScrollHereY(1.0f);
+    }
+    ImGui::EndChild();
 }
 }

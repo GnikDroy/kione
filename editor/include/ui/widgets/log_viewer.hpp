@@ -2,6 +2,7 @@
 
 #include "core/logger.hpp"
 #include "ui/widgets/widget.hpp"
+#include <imgui.h>
 
 namespace k2::editor {
 
@@ -25,6 +26,9 @@ private:
 };
 
 class LogViewer : public IWidget {
+    ImGuiTextFilter filter;
+    int min_level = int(Log::LogLevel::Trace);
+
 public:
     void render(EditorLayer&) override;
 };
