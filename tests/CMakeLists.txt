@@ -10,7 +10,12 @@ add_executable(
     core/utils.cpp
     core/imgui_theme.cpp
     core/fnv.cpp
-    
+
+    components/camera.cpp
+    components/relation.cpp
+
+    serializers/components.cpp
+
     asset/assets.cpp
     asset/asset_handle.cpp
 )

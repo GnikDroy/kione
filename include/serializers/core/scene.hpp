@@ -19,7 +19,7 @@
 namespace YAML {
 template <> struct convert<k2::Scene> {
     static Node encode(const k2::Scene& scene) {
-        YAML::Node node;
+        YAML::Node node { YAML::NodeType::Sequence };
         auto& registry = scene.registry;
 
         auto serialize = [&]<class Component>(auto& node, const auto& label, const auto& entity) {
