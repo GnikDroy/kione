@@ -2,6 +2,7 @@ add_executable(
     editor
     src/main.cpp
     src/editor_layer.cpp
+    src/ui/widgets/animation_editor.cpp
     src/ui/widgets/asset.cpp
     src/ui/widgets/asset_list.cpp
     src/ui/widgets/component_inspector.cpp

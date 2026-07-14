@@ -175,6 +175,9 @@ static void render_view_menu(EditorLayer& editor_layer) {
         if (ImGui::MenuItem(editor_layer.asset_list.title.c_str(), "", editor_layer.asset_list.show)) {
             editor_layer.asset_list.show = !editor_layer.asset_list.show;
         }
+        if (ImGui::MenuItem(editor_layer.animation_editor.title.c_str(), "", editor_layer.animation_editor.show)) {
+            editor_layer.animation_editor.show = !editor_layer.animation_editor.show;
+        }
         ImGui::Separator();
         if (ImGui::MenuItem("Reset Layout")) {
             editor_layer.reset_layout();

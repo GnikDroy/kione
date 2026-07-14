@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "ui/widgets/main_menu.hpp"
+#include "ui/windows/animation_editor.hpp"
 #include "ui/windows/asset_list.hpp"
 #include "ui/windows/component_inspector.hpp"
 #include "ui/windows/debug.hpp"
@@ -37,6 +38,7 @@ public:
     k2::editor::Viewport2DWindow viewport2D { ICON_FA_BINOCULARS "  Viewport 2D" };
     k2::editor::ProjectSettingsWindow project_settings { ICON_FA_COG "  Project Settings" };
     k2::editor::AssetListWindow asset_list { ICON_FA_ARCHIVE "  Assets" };
+    k2::editor::AnimationEditorWindow animation_editor { ICON_FA_FILM "  Animation" };
 
     explicit EditorLayer(k2::Window& window);
     void begin_frame() override;
@@ -66,7 +68,6 @@ public:
     [[nodiscard]] bool is_playing() const { return runtime_scene.has_value(); }
     [[nodiscard]] Scene& active_scene() { return runtime_scene ? *runtime_scene : scene; }
 
-    // The opened project's assets; the editor's own UI assets otherwise.
     [[nodiscard]] const AssetRegistry& active_assets() const { return project ? project->assets : assets; }
 };
 
