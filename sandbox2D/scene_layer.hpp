@@ -21,15 +21,16 @@ template <class T> T value_or_abort(std::expected<T, std::string> result) {
 class SceneLayer : public k2::Layer {
     k2::Window& window;
 
-    k2::Project project = value_or_abort(k2::Project::load("res/project.k2project"));
+    k2::Project project;
     k2::ResourceManager resources {};
     k2::Scene scene = value_or_abort(k2::SceneLoader::load(project.main_scene, resources, project.assets));
     k2::Renderer2D renderer2D {};
     k2::ScriptSystem scripts { window };
 
 public:
-    explicit SceneLayer(k2::Window& window)
-        : window { window } {
+    explicit SceneLayer(k2::Window& window, const std::string& project_path)
+        : window { window }
+        , project { value_or_abort(k2::Project::load(project_path)) } {
         scene.registry.ctx().emplace<k2::Camera>(k2::Camera {
             .position { 0, 0, 1000.f },
             .target { 0, 0, 0 },
