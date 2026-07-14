@@ -1,5 +1,6 @@
 #pragma once
 
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <variant>
@@ -7,19 +8,18 @@
 #include "core/utils.hpp"
 
 namespace k2 {
-// Tag: marks the camera entity the renderer should use.
 struct MainCamera { };
 
 struct Camera {
-    enum class Projection { Perspective, Orthographic };
+    enum class Projection : uint8_t { Perspective, Orthographic };
 
     template <auto T> struct ProjectionTraits;
 
     template <> struct ProjectionTraits<Projection::Perspective> {
-        float fov;
-        float aspect_ratio;
-        float far_clip;
-        float near_clip;
+        float fov = glm::radians(60.0f);
+        float aspect_ratio = 16.0f / 9.0f;
+        float far_clip = 1000.f;
+        float near_clip = 0.1f;
     };
 
     template <> struct ProjectionTraits<Projection::Orthographic> {
@@ -27,8 +27,8 @@ struct Camera {
         float right;
         float top;
         float bottom;
-        float far_clip = -1000.0f;
-        float near_clip = 1000.0f;
+        float far_clip = 0.f;
+        float near_clip = 2000.0f;
     };
 
     using PerspectiveTraits = ProjectionTraits<Projection::Perspective>;
@@ -60,4 +60,12 @@ struct Camera {
 
     glm::mat4 get_view_projection() { return get_projection() * get_view(); }
 };
+
+template <class EntityType>
+const Camera* find_main_camera(const entt::basic_registry<EntityType>& registry) {
+    for (auto entity : registry.template view<Camera, MainCamera>()) {
+        return &registry.template get<Camera>(entity);
+    }
+    return nullptr;
+}
 }

@@ -197,6 +197,12 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
 
     update_camera();
 
+    if (editor_layer.is_playing()) {
+        if (const auto* main_camera = k2::find_main_camera(scene.registry)) {
+            renderer2D.camera = *main_camera;
+        }
+    }
+
     renderer2D.set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
     renderer2D.clear();
     renderer2D.draw(scene);

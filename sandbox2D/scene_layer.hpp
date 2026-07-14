@@ -44,7 +44,8 @@ public:
     void update(float dt) override { scripts.update(scene, project.assets, dt); }
 
     void render() override {
-        renderer2D.camera = scene.registry.ctx().get<k2::Camera>();
+        const auto* main_camera = k2::find_main_camera(scene.registry);
+        renderer2D.camera = main_camera ? *main_camera : scene.registry.ctx().get<k2::Camera>();
         renderer2D.draw(scene);
         renderer2D.render();
     }

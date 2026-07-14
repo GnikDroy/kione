@@ -219,11 +219,6 @@ void Renderer2D::draw(Scene& scene) {
         resources = &scene.registry.ctx().get<ResourceManager&>();
     }
 
-    for (auto entity : scene.registry.view<k2::Camera, k2::MainCamera>()) {
-        camera = scene.registry.get<k2::Camera>(entity);
-        break;
-    }
-
     collect_lights(scene);
 
     scene.registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
