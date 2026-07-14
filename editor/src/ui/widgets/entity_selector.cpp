@@ -15,6 +15,12 @@ namespace k2::editor {
 
 using DeferredOps = std::vector<std::function<void()>>;
 
+template <class EntityType> static EntityType create_entity(entt::basic_registry<EntityType>& registry) {
+    auto entity = registry.create();
+    registry.template emplace<TransformComponent>(entity);
+    return entity;
+}
+
 // Reparenting changes what local transform is relative to.
 // Rewrite it so we keep world position.
 template <class EntityType, class Reparent>
@@ -110,7 +116,7 @@ static void entity_context_menu(entt::basic_registry<EntityType>& registry, Enti
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::MenuItem("Create Child")) {
             deferred_ops.push_back([&registry, entity]() {
-                auto child = registry.create();
+                auto child = create_entity(registry);
                 RelationComponent::attach_last(registry, child, entity);
             });
         }
@@ -199,6 +205,11 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
         active_entity = entt::null;
     }
 
+    if (ImGui::Button(ICON_FA_PLUS "  Create Entity", { -std::numeric_limits<float>::min(), 0.0f })) {
+        active_entity = create_entity(registry);
+    }
+    ImGui::Separator();
+
     EntityType entity_clicked = active_entity;
     std::vector<EntityType> to_delete;
     DeferredOps deferred_ops;
@@ -220,7 +231,7 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
             "##CreateEntityRoot", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonRight)) {
         // TODO: Create entity after last root entity
         if (ImGui::MenuItem("Create Entity")) {
-            static_cast<void>(registry.create());
+            active_entity = create_entity(registry);
         }
         ImGui::EndPopup();
     }
