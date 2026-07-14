@@ -203,8 +203,8 @@ void Renderer2D::collect_lights(Scene& scene) {
     registry.view<TransformComponent, SpotLight>().each([&](auto entity, const auto&, const SpotLight& light) {
         auto model = TransformComponent::world(registry, entity)
             * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
-        spot_lights.push_back(
-            { model, light.color * light.intensity, std::cos(light.inner_angle), std::cos(light.outer_angle) });
+        spot_lights.push_back({ model, light.color * light.intensity,
+            std::cos(std::min(light.inner_angle, light.outer_angle)), std::cos(light.outer_angle) });
         has_lights = true;
     });
 

@@ -121,8 +121,12 @@ template <> void ComponentWidget<k2::SpotLight>(entt::registry& reg, entt::regis
     ImGui::ColorEdit3("Color", glm::value_ptr(light.color));
     ImGui::DragFloat("Intensity", &light.intensity, 0.01f, 0.0f, 100.0f);
     ImGui::DragFloat("Radius", &light.radius, 1.0f, 0.0f, 100000.0f);
-    ImGui::SliderAngle("Inner Angle", &light.inner_angle, 0.0f, 180.0f);
-    ImGui::SliderAngle("Outer Angle", &light.outer_angle, 0.0f, 180.0f);
+    if (ImGui::SliderAngle("Inner Angle", &light.inner_angle, 0.0f, 180.0f)) {
+        light.outer_angle = std::max(light.outer_angle, light.inner_angle);
+    }
+    if (ImGui::SliderAngle("Outer Angle", &light.outer_angle, 0.0f, 180.0f)) {
+        light.inner_angle = std::min(light.inner_angle, light.outer_angle);
+    }
 }
 
 template <> void ComponentWidget<k2::SpriteLight>(entt::registry& reg, entt::registry::entity_type e) {
