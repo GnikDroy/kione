@@ -64,6 +64,15 @@ template <> SpriteAnimation AssetLoader::get<SpriteAnimation>(const Asset& asset
     return YAML::Load(*stream).as<SpriteAnimation>();
 }
 
+template <>
+std::expected<SpriteAnimation, std::string> AssetLoader::try_get<SpriteAnimation>(const Asset& asset) noexcept {
+    try {
+        return get<SpriteAnimation>(asset);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
 template <> Model AssetLoader::get<Model>(const Asset& asset, ResourceManager& resources) {
     if (asset.type != Asset::Type::Model) {
         throw std::invalid_argument("Invalid Asset Type!");

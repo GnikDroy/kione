@@ -38,16 +38,17 @@ void Project::reload_assets() {
     assets = load_registry(file);
 }
 
-void Project::save() const {
+std::expected<void, std::string> Project::save() const {
     if (file.empty()) {
-        throw std::runtime_error("Project has no backing file to save to.");
+        return std::unexpected("Project has no backing file to save to.");
     }
 
     std::ofstream out { file };
     out << YAML::Node { *this } << "\n";
     if (!out) {
-        throw std::runtime_error(std::format("Failed to write project file: {}", file.string()));
+        return std::unexpected(std::format("Failed to write project file: {}", file.string()));
     }
+    return {};
 }
 
 }

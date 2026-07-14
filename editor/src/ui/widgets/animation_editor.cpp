@@ -21,12 +21,13 @@ void AnimationEditorWidget::load_clip(EditorLayer& editor_layer) {
     if (it == editor_layer.active_assets().end() || it->second.second.type != Asset::Type::Animation) {
         return;
     }
-    try {
-        clip = AssetLoader::get<SpriteAnimation>(it->second.second);
-        loaded = true;
-    } catch (const std::exception& e) {
-        Log::core().error(std::format("Failed to load animation clip '{}': {}", selected.name, e.what()));
+    auto result = AssetLoader::try_get<SpriteAnimation>(it->second.second);
+    if (!result) {
+        Log::core().error(std::format("Failed to load animation clip '{}': {}", selected.name, result.error()));
+        return;
     }
+    clip = std::move(*result);
+    loaded = true;
 }
 
 void AnimationEditorWidget::save_clip(EditorLayer& editor_layer) {
@@ -48,42 +49,46 @@ void AnimationEditorWidget::save_clip(EditorLayer& editor_layer) {
 }
 
 void AnimationEditorWidget::new_clip(EditorLayer& editor_layer) {
-    try {
-        std::array filters = { nfdfilteritem_t { "Kione animation", "k2anim" } };
-        [[maybe_unused]] auto lock = NFD::Guard();
-        NFD::UniquePathU8 chosen;
-        if (NFD::SaveDialog(chosen, filters.data(), nfdfiltersize_t(filters.size())) != NFD_OKAY) {
-            return;
-        }
-        std::filesystem::path path { chosen.get() };
-        if (path.extension() != ".k2anim") {
-            path += ".k2anim";
-        }
-
-        SpriteAnimation fresh { .frames = { {} } };
-        std::ofstream out { path };
-        out << YAML::Node { fresh } << "\n";
-        if (!out) {
-            Log::core().error(std::format("Failed to write animation clip: {}", path.string()));
-            return;
-        }
-
-        auto& project = *editor_layer.project;
-        auto name = path.stem().string();
-        if (!project.assets_node.IsDefined() || project.assets_node.IsNull()) {
-            project.assets_node = YAML::Node { YAML::NodeType::Map };
-        }
-        project.assets_node["Animation"][name]
-            = std::format("file:///{}", std::filesystem::relative(path, project.root).generic_string());
-        project.save();
-        editor_layer.reload_assets();
-
-        selected.set(name);
-        loaded_id = {};
-        Log::core().info(std::format("Created animation clip: {}", path.string()));
-    } catch (const std::exception& e) {
-        Log::core().error(std::format("Failed to create animation clip: {}", e.what()));
+    std::array filters = { nfdfilteritem_t { "Kione animation", "k2anim" } };
+    [[maybe_unused]] auto lock = NFD::Guard();
+    NFD::UniquePathU8 chosen;
+    if (NFD::SaveDialog(chosen, filters.data(), nfdfiltersize_t(filters.size())) != NFD_OKAY) {
+        return;
     }
+    std::filesystem::path path { chosen.get() };
+    if (path.extension() != ".k2anim") {
+        path += ".k2anim";
+    }
+
+    SpriteAnimation fresh { .frames = { {} } };
+    std::ofstream out { path };
+    out << YAML::Node { fresh } << "\n";
+    if (!out) {
+        Log::core().error(std::format("Failed to write animation clip: {}", path.string()));
+        return;
+    }
+
+    auto& project = *editor_layer.project;
+    auto name = path.stem().string();
+    std::error_code ec;
+    auto relative = std::filesystem::relative(path, project.root, ec);
+    if (ec) {
+        Log::core().error(std::format("Clip path cannot be made project-relative: {}", ec.message()));
+        return;
+    }
+    if (!project.assets_node.IsDefined() || project.assets_node.IsNull()) {
+        project.assets_node = YAML::Node { YAML::NodeType::Map };
+    }
+    project.assets_node["Animation"][name] = std::format("file:///{}", relative.generic_string());
+    if (auto saved = project.save(); !saved) {
+        Log::core().error(std::format("Failed to save project: {}", saved.error()));
+        return;
+    }
+    editor_layer.reload_assets();
+
+    selected.set(name);
+    loaded_id = {};
+    Log::core().info(std::format("Created animation clip: {}", path.string()));
 }
 
 static int frame_index_at(const k2::SpriteAnimation& clip, float time) {

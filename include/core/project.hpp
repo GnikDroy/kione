@@ -1,5 +1,6 @@
 #pragma once
 
+#include <expected>
 #include <filesystem>
 #include <string>
 
@@ -20,6 +21,6 @@ struct Project {
 
     void reload_assets();
 
-    void save() const;
+    [[nodiscard]] std::expected<void, std::string> save() const;
 };
 }

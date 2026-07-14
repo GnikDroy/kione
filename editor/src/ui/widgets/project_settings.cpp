@@ -31,13 +31,12 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
 
     ImGui::Spacing();
     if (ImGui::Button(ICON_FA_SAVE "  Save")) {
-        try {
-            project.name = name;
-            project.main_scene = project.root / main_scene;
-            project.save();
+        project.name = name;
+        project.main_scene = project.root / main_scene;
+        if (auto saved = project.save()) {
             Log::core().info(std::format("Saved project: {}", project.file.string()));
-        } catch (const std::exception& e) {
-            Log::core().error(std::format("Failed to save project: {}", e.what()));
+        } else {
+            Log::core().error(std::format("Failed to save project: {}", saved.error()));
         }
     }
     ImGui::SameLine();

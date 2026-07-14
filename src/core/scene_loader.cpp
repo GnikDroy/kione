@@ -48,13 +48,13 @@ static void load_animation_clips(entt::registry& registry, ResourceManager& reso
         if (asset.type != Asset::Type::Animation) {
             continue;
         }
-        try {
-            auto clip = AssetLoader::get<SpriteAnimation>(asset);
-            load_texture(clip.texture, resources, assets);
-            resources.set(name, std::move(clip));
-        } catch (const std::exception& e) {
-            Log::core().error(std::format("Failed to load animation clip '{}': {}", name, e.what()));
+        auto clip = AssetLoader::try_get<SpriteAnimation>(asset);
+        if (!clip) {
+            Log::core().error(std::format("Failed to load animation clip '{}': {}", name, clip.error()));
+            continue;
         }
+        load_texture(clip->texture, resources, assets);
+        resources.set(name, std::move(*clip));
     }
 
     registry.view<AnimationComponent>().each([&](auto, const AnimationComponent& animation) {

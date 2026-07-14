@@ -71,7 +71,7 @@ TEST_CASE("Project save round-trips settings and preserves the manifest") {
     auto project = k2::Project::load(dir / "game.k2project");
     project.name = "Renamed";
     project.main_scene = project.root / "other.k2scene";
-    project.save();
+    REQUIRE(project.save().has_value());
 
     auto reloaded = k2::Project::load(dir / "game.k2project");
     REQUIRE(reloaded.name == "Renamed");
@@ -95,5 +95,5 @@ TEST_CASE("Project rejects malformed files") {
 
 TEST_CASE("Project without a backing file cannot save") {
     k2::Project project;
-    REQUIRE_THROWS(project.save());
+    REQUIRE_FALSE(project.save().has_value());
 }

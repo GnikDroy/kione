@@ -74,7 +74,10 @@ void EditorLayer::create_project(const std::filesystem::path& path) {
     new_project.main_scene = new_project.root / (new_project.name + ".k2scene");
 
     std::ofstream { new_project.main_scene } << YAML::Node { Scene {} } << "\n";
-    new_project.save();
+    if (auto saved = new_project.save(); !saved) {
+        Log::core().error(std::format("Failed to save project: {}", saved.error()));
+        return;
+    }
 
     open_project(project_file);
 }
