@@ -104,6 +104,21 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
     auto& io = ImGui::GetIO();
     bool hovered = ImGui::IsItemHovered();
 
+    if (ImGui::IsWindowFocused() && !editor_layer.is_playing()) {
+        if (ImGui::IsKeyPressed(ImGuiKey_F)) {
+            auto& registry = editor_layer.active_scene().registry;
+            auto active = editor_layer.entity_selector.get_widget().get_active();
+            if (registry.valid(active) && registry.all_of<k2::TransformComponent>(active)) {
+                auto world_matrix = k2::TransformComponent::world(registry, active);
+                focus({ world_matrix[3][0], world_matrix[3][1] });
+            }
+        }
+        if (ImGui::IsKeyPressed(ImGuiKey_Home)) {
+            camera_position = {};
+            zoom = 1.0f;
+        }
+    }
+
     bool panning = hovered
         && (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)
             || (ImGui::IsKeyDown(ImGuiKey_Space) && ImGui::IsMouseDragging(ImGuiMouseButton_Left)));

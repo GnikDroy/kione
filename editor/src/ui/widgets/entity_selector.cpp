@@ -141,9 +141,9 @@ static void entity_context_menu(entt::basic_registry<EntityType>& registry, Enti
 }
 
 template <class EntityType>
-static void recursive_draw(EntityType& entity_clicked, const EntityType& active_entity, EntityType entity,
-    entt::basic_registry<EntityType>& registry, bool first_node, std::vector<EntityType>& to_delete,
-    DeferredOps& deferred_ops) {
+static void recursive_draw(EditorLayer& editor_layer, EntityType& entity_clicked, const EntityType& active_entity,
+    EntityType entity, entt::basic_registry<EntityType>& registry, bool first_node,
+    std::vector<EntityType>& to_delete, DeferredOps& deferred_ops) {
     ImGui::PushID((void*)(std::uintptr_t)entt::to_integral(entity));
 
     auto* relation = registry.template try_get<RelationComponent>(entity);
@@ -174,6 +174,12 @@ static void recursive_draw(EntityType& entity_clicked, const EntityType& active_
         entity_clicked = entity;
     }
 
+    if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)
+        && registry.template all_of<TransformComponent>(entity)) {
+        auto world = TransformComponent::world(registry, entity);
+        editor_layer.viewport2D.get_widget().focus({ world[3][0], world[3][1] });
+    }
+
     entity_drag_drop_target(registry, entity, tag, deferred_ops);
 
     entity_context_menu(registry, entity, to_delete, deferred_ops);
@@ -184,8 +190,8 @@ static void recursive_draw(EntityType& entity_clicked, const EntityType& active_
             auto curr = relation->first;
             for (std::size_t i {}; i < relation->children; i++) {
                 auto& curr_relation = registry.template get<RelationComponent>(curr);
-                recursive_draw(
-                    entity_clicked, active_entity, curr, registry, curr == relation->first, to_delete, deferred_ops);
+                recursive_draw(editor_layer, entity_clicked, active_entity, curr, registry,
+                    curr == relation->first, to_delete, deferred_ops);
                 curr = curr_relation.next;
             }
         }
@@ -216,7 +222,8 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
     for (auto entity : registry.view<entt::entity>()) {
         auto* relation = registry.try_get<RelationComponent>(entity);
         if (!relation || relation->parent == entt::null) {
-            recursive_draw(entity_clicked, active_entity, entity, registry, false, to_delete, deferred_ops);
+            recursive_draw(editor_layer, entity_clicked, active_entity, entity, registry, false, to_delete,
+                deferred_ops);
         }
     }
 

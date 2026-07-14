@@ -16,6 +16,8 @@ public:
     Viewport2DWidget();
     void render(EditorLayer&) override;
 
+    void focus(glm::vec2 world_position) { camera_position = world_position; }
+
 private:
     bool draw_toolbar(EditorLayer&, ImVec2 rect_min);
     void resize_frame_buffer();
