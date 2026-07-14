@@ -23,10 +23,10 @@ struct Camera {
     };
 
     template <> struct ProjectionTraits<Projection::Orthographic> {
-        float left;
-        float right;
-        float top;
-        float bottom;
+        float left = -640.0f;
+        float right = 640.0f;
+        float top = 360.0f;
+        float bottom = -360.0f;
         float far_clip = 0.f;
         float near_clip = 2000.0f;
     };
@@ -34,11 +34,11 @@ struct Camera {
     using PerspectiveTraits = ProjectionTraits<Projection::Perspective>;
     using OrthographicTraits = ProjectionTraits<Projection::Orthographic>;
 
-    glm::vec3 position { 0, 0, 10.f };
+    glm::vec3 position { 0, 0, 1000.f };
     glm::vec3 target { 0, 0, 0 };
     glm::vec3 up { 0, 1.0f, 0 };
 
-    std::variant<PerspectiveTraits, OrthographicTraits> projection_traits;
+    std::variant<PerspectiveTraits, OrthographicTraits> projection_traits { OrthographicTraits {} };
 
     glm::mat4 get_view() { return glm::lookAt(position, target, up); }
 
