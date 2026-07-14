@@ -1,14 +1,13 @@
 #pragma once
 #include "asset/asset_handle.hpp"
 #include "asset/asset_registry.hpp"
-#include "core/resource_container.hpp"
 #include "core/utils.hpp"
+#include <array>
+#include <cfloat>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <imgui.h>
-#include <imgui_internal.h>
 #include <imgui_stdlib.h>
 
 namespace k2::editor {
@@ -23,251 +22,101 @@ template <k2::arithmetic T, class... Args> constexpr auto ImGuiDrag(Args&&... ar
     }
 }
 
-template <class T>
-void Vec3InputWidget(
-    const std::string& label, glm::vec<3, T, glm::defaultp>& vec, const glm::vec<3, T, glm::defaultp>& reset = {}) {
-    constexpr auto num_columns = 2;
-    if (ImGui::BeginTable(label.c_str(), num_columns)) {
-        ImGui::TableSetupColumn("###Items", ImGuiTableColumnFlags_WidthStretch, 3);
-        ImGui::TableSetupColumn("###Labels", ImGuiTableColumnFlags_WidthStretch, 1);
-        ImGui::TableNextColumn();
-        ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 { 0, 0 });
+inline bool BeginPropertyTable(const char* id) {
+    if (!ImGui::BeginTable(id, 2)) {
+        return false;
+    }
+    ImGui::TableSetupColumn("##label", ImGuiTableColumnFlags_WidthStretch, 2.0f);
+    ImGui::TableSetupColumn("##field", ImGuiTableColumnFlags_WidthStretch, 5.0f);
+    return true;
+}
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.9f, 0.2f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        if (ImGui::Button("X")) {
-            vec.x = reset.x;
+inline void PropertyLabel(const char* label) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted(label);
+    ImGui::TableNextColumn();
+    ImGui::SetNextItemWidth(-FLT_MIN);
+}
+
+inline void EndPropertyTable() { ImGui::EndTable(); }
+
+namespace detail {
+    struct Axis {
+        const char* name;
+        ImVec4 color;
+    };
+
+    inline constexpr Axis axis_x { .name = "X", .color { 0.75f, 0.31f, 0.33f, 1.0f } };
+    inline constexpr Axis axis_y { .name = "Y", .color { 0.36f, 0.58f, 0.32f, 1.0f } };
+    inline constexpr Axis axis_z { .name = "Z", .color { 0.27f, 0.42f, 0.70f, 1.0f } };
+    inline constexpr Axis axis_w { .name = "W", .color { 0.55f, 0.39f, 0.67f, 1.0f } };
+
+    template <k2::arithmetic T, std::size_t N>
+    void MultiAxisField(const std::array<Axis, N>& axes, const std::array<T*, N>& values,
+        const std::array<T, N>& resets, float speed) {
+        constexpr auto gap = 4.0f;
+        auto slot = (ImGui::GetContentRegionAvail().x - gap * (N - 1)) / N;
+        for (std::size_t i = 0; i < N; i++) {
+            if (i != 0) {
+                ImGui::SameLine(0.0f, gap);
+            }
+            ImGui::PushID(static_cast<int>(i));
+            const auto& color = axes[i].color;
+            ImVec4 hovered { std::min(color.x * 1.2f, 1.0f), std::min(color.y * 1.2f, 1.0f),
+                std::min(color.z * 1.2f, 1.0f), 1.0f };
+            ImGui::PushStyleColor(ImGuiCol_Button, color);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hovered);
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+            if (ImGui::Button(axes[i].name)) {
+                *values[i] = resets[i];
+            }
+            ImGui::PopStyleColor(3);
+            ImGui::SameLine(0.0f, 0.0f);
+            ImGui::SetNextItemWidth(std::max(slot - ImGui::GetItemRectSize().x, 40.0f));
+            ImGuiDrag<T>("##value", values[i], speed);
+            ImGui::PopID();
         }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##X", &vec.x, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.2f, 0.6f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        if (ImGui::Button("Y")) {
-            vec.y = reset.y;
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##Y", &vec.y, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.1f, 0.1f, 0.8f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.2f, 0.2f, 0.9f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.1f, 0.1f, 0.8f, 1.0f });
-        if (ImGui::Button("Z")) {
-            vec.z = reset.z;
-        }
-        ImGui::PopStyleColor(3);
-        ImGui::SameLine();
-        ImGuiDrag<T>("##Z", &vec.z, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-        ImGui::PopStyleVar();
-
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::EndTable();
     }
 }
 
 template <class T>
-void Vec2InputWidget(const std::string& label, glm::vec<2, T, glm::defaultp>& vec,
-    const glm::vec<2, T, glm::defaultp>& reset = { .0f }) {
-    constexpr auto num_columns = 2;
-    if (ImGui::BeginTable(label.c_str(), num_columns)) {
-        ImGui::TableSetupColumn("###Items", ImGuiTableColumnFlags_WidthStretch, 3);
-        ImGui::TableSetupColumn("###Labels", ImGuiTableColumnFlags_WidthStretch, 1);
-        ImGui::TableNextColumn();
-        ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 { 0, 0 });
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.9f, 0.2f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        if (ImGui::Button("X")) {
-            vec.x = reset.x;
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##X", &vec.x, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.2f, 0.6f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        if (ImGui::Button("Y")) {
-            vec.y = reset.y;
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##Y", &vec.y, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PopStyleVar();
-
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::EndTable();
-    }
+void Vec2Field(glm::vec<2, T, glm::defaultp>& vec, const glm::vec<2, T, glm::defaultp>& reset = {},
+    float speed = 0.1f) {
+    detail::MultiAxisField<T, 2>(
+        { detail::axis_x, detail::axis_y }, { &vec.x, &vec.y }, { reset.x, reset.y }, speed);
 }
 
 template <class T>
-void Vec4InputWidget(const std::string& label, glm::vec<4, T, glm::defaultp>& vec,
-    const glm::vec<4, T, glm::defaultp>& reset = { .0f }) {
-    constexpr auto num_columns = 2;
-    if (ImGui::BeginTable(label.c_str(), num_columns)) {
-        ImGui::TableSetupColumn("###Items", ImGuiTableColumnFlags_WidthStretch, 3);
-        ImGui::TableSetupColumn("###Labels", ImGuiTableColumnFlags_WidthStretch, 1);
-        ImGui::TableNextColumn();
-        ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 { 0, 0 });
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.9f, 0.2f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        if (ImGui::Button("X")) {
-            vec.x = reset.x;
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##X", &vec.x, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.2f, 0.6f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        if (ImGui::Button("Y")) {
-            vec.y = reset.y;
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##Y", &vec.y, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.1f, 0.1f, 0.8f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.2f, 0.2f, 0.9f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.1f, 0.1f, 0.8f, 1.0f });
-        if (ImGui::Button("Z")) {
-            vec.z = reset.z;
-        }
-        ImGui::PopStyleColor(3);
-        ImGui::SameLine();
-        ImGuiDrag<T>("##Z", &vec.z, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.5f, 0.3f, 0.6f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.6f, 0.4f, 0.7f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.5f, 0.3f, 0.6f, 1.0f });
-        if (ImGui::Button("W")) {
-            vec.w = reset.w;
-        }
-        ImGui::PopStyleColor(3);
-        ImGui::SameLine();
-        ImGuiDrag<T>("##W", &vec.w, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-        ImGui::PopStyleVar();
-
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::EndTable();
-    }
-}
-template <arithmetic T>
-void RectInputWidget(const std::string& label, k2::Rect<T>& rect, const k2::Rect<T>& reset = {}) {
-    constexpr auto num_columns = 2;
-    if (ImGui::BeginTable(label.c_str(), num_columns)) {
-        ImGui::TableSetupColumn("###Items", ImGuiTableColumnFlags_WidthStretch, 3);
-        ImGui::TableSetupColumn("###Labels", ImGuiTableColumnFlags_WidthStretch, 1);
-        ImGui::TableNextColumn();
-        ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 { 0, 0 });
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.9f, 0.2f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.8f, 0.1f, 0.10f, 1.0f });
-        if (ImGui::Button("X")) {
-            rect.x = reset.x;
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##X", &rect.x, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.2f, 0.6f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.2f, 0.5f, 0.10f, 1.0f });
-        if (ImGui::Button("Y")) {
-            rect.y = reset.y;
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGuiDrag<T>("##Y", &rect.y, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.1f, 0.1f, 0.8f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.2f, 0.2f, 0.9f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.1f, 0.1f, 0.8f, 1.0f });
-        if (ImGui::Button("W")) {
-            rect.w = reset.w;
-        }
-        ImGui::PopStyleColor(3);
-        ImGui::SameLine();
-        ImGuiDrag<T>("##W", &rect.w, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 { 0.5f, 0.3f, 0.6f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 { 0.6f, 0.4f, 0.7f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 { 0.5f, 0.3f, 0.6f, 1.0f });
-        if (ImGui::Button("H")) {
-            rect.h = reset.h;
-        }
-        ImGui::PopStyleColor(3);
-        ImGui::SameLine();
-        ImGuiDrag<T>("##H", &rect.h, 0.1f);
-        ImGui::SameLine();
-        ImGui::PopItemWidth();
-        ImGui::PopStyleVar();
-
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(label.c_str());
-        ImGui::EndTable();
-    }
+void Vec3Field(glm::vec<3, T, glm::defaultp>& vec, const glm::vec<3, T, glm::defaultp>& reset = {},
+    float speed = 0.1f) {
+    detail::MultiAxisField<T, 3>({ detail::axis_x, detail::axis_y, detail::axis_z }, { &vec.x, &vec.y, &vec.z },
+        { reset.x, reset.y, reset.z }, speed);
 }
 
-inline void OrientationInputWidget(const std::string& label, glm::quat& quaternion) {
-    auto euler_angles = glm::degrees(glm::eulerAngles(quaternion));
-    Vec3InputWidget(label, euler_angles);
-    euler_angles = glm::radians(euler_angles);
-    quaternion = glm::quat(euler_angles);
+template <class T>
+void Vec4Field(glm::vec<4, T, glm::defaultp>& vec, const glm::vec<4, T, glm::defaultp>& reset = {},
+    float speed = 0.1f) {
+    detail::MultiAxisField<T, 4>({ detail::axis_x, detail::axis_y, detail::axis_z, detail::axis_w },
+        { &vec.x, &vec.y, &vec.z, &vec.w }, { reset.x, reset.y, reset.z, reset.w }, speed);
+}
+
+template <arithmetic T> void RectField(k2::Rect<T>& rect, const k2::Rect<T>& reset = {}, float speed = 0.1f) {
+    detail::MultiAxisField<T, 4>(
+        { detail::axis_x, detail::axis_y, detail::Axis { .name = "W", .color = detail::axis_z.color },
+            detail::Axis { .name = "H", .color = detail::axis_w.color } },
+        { &rect.x, &rect.y, &rect.w, &rect.h }, { reset.x, reset.y, reset.w, reset.h }, speed);
+}
+
+inline void RotationField(glm::quat& quaternion) {
+    auto euler = glm::degrees(glm::eulerAngles(quaternion));
+    Vec3Field(euler, {}, 0.5f);
+    quaternion = glm::quat(glm::radians(euler));
 }
 
 inline void ResourceInputWidget(
     const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry, Asset::Type type) {
-    // Red border: a non-empty reference that no registered asset resolves.
     bool dangling = !handle.name.empty() && asset_registry.count(handle.id) == 0;
     if (dangling) {
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));

@@ -5,7 +5,8 @@
 #include <cassert>
 #include <entt/entt.hpp>
 #include <functional>
-#include <map>
+#include <utility>
+#include <vector>
 
 namespace k2::editor {
 
@@ -35,7 +36,7 @@ public:
     };
 
 private:
-    std::map<ComponentTypeID, ComponentInfo> component_infos;
+    std::vector<std::pair<ComponentTypeID, ComponentInfo>> component_infos;
 
     bool entity_has_component(Registry& registry, EntityType entity, ComponentTypeID type_id) {
         const auto* storage_ptr = registry.storage(type_id);
@@ -47,9 +48,9 @@ public:
 
     template <class Component> ComponentInfo& register_component(const ComponentInfo& component_info) {
         auto index = entt::type_hash<Component>::value();
-        auto insert_info = component_infos.insert_or_assign(index, component_info);
-        assert(insert_info.second);
-        return std::get<ComponentInfo>(*insert_info.first);
+        assert(std::ranges::find(component_infos, index, &std::pair<ComponentTypeID, ComponentInfo>::first)
+            == component_infos.end());
+        return component_infos.emplace_back(index, component_info).second;
     }
 
     template <class Component>
