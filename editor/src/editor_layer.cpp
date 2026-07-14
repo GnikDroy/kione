@@ -45,11 +45,7 @@ void EditorLayer::reload_assets() {
     if (!project.has_value()) {
         return;
     }
-    auto bundle_path = std::filesystem::relative(project->assets_file);
-    project->assets = AssetRegistryLoader::load({
-        .url = std::format("file:///{}", bundle_path.generic_string()),
-        .type = Asset::Type::AssetBundle,
-    });
+    project->reload_assets();
     load_image_resources(project->assets);
 }
 
@@ -69,14 +65,15 @@ void EditorLayer::create_project(const std::filesystem::path& path) {
     if (project_file.extension() != ".k2project") {
         project_file += ".k2project";
     }
-    auto root = std::filesystem::absolute(project_file).parent_path();
-    auto name = project_file.stem().string();
-    auto scene_file = name + ".k2scene";
 
-    std::ofstream { root / "assets.yaml" } << "version: 0.0.1\nassets: {}\n";
-    std::ofstream { root / scene_file } << "[]\n";
-    std::ofstream { project_file } << std::format(
-        "version: 0.0.1\nname: {}\nassets: assets.yaml\nmain_scene: {}\n", name, scene_file);
+    Project new_project;
+    new_project.file = std::filesystem::absolute(project_file);
+    new_project.root = new_project.file.parent_path();
+    new_project.name = project_file.stem().string();
+    new_project.main_scene = new_project.root / (new_project.name + ".k2scene");
+
+    std::ofstream { new_project.main_scene } << YAML::Node { Scene {} } << "\n";
+    new_project.save();
 
     open_project(project_file);
 }

@@ -13,12 +13,12 @@ struct Project {
     std::filesystem::path file;
     std::filesystem::path root;
     std::filesystem::path main_scene;
-    std::filesystem::path assets_file;
+    YAML::Node assets_node;
     AssetRegistry assets;
 
     static Project load(const std::filesystem::path& project_file);
 
-    static Project load(const YAML::Node& node, const std::filesystem::path& root);
+    void reload_assets();
 
     void save() const;
 };

@@ -7,22 +7,20 @@
 
 using namespace k2::literals;
 
-TEST_CASE("Project loads paths and asset bundle") {
+TEST_CASE("Project loads settings and the inline asset manifest") {
     namespace fs = std::filesystem;
     auto dir = fs::temp_directory_path() / "k2_project_test";
     fs::create_directories(dir);
 
     {
-        std::ofstream file { dir / "assets.yaml" };
-        file << "version: 0.0.1\nassets:\n  Image:\n    player: file:///textures/player.png\n";
-    }
-    {
         std::ofstream file { dir / "game.k2project" };
-        file << "version: 0.0.1\nname: Test\nassets: assets.yaml\nmain_scene: scene.k2scene\n";
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+                "assets:\n  Image:\n    player: file:///textures/player.png\n";
     }
 
     auto project = k2::Project::load(dir / "game.k2project");
     REQUIRE(project.name == "Test");
+    REQUIRE(project.file == fs::absolute(dir / "game.k2project"));
     REQUIRE(project.root == fs::absolute(dir));
     REQUIRE(project.main_scene == dir / "scene.k2scene");
 
@@ -34,28 +32,43 @@ TEST_CASE("Project loads paths and asset bundle") {
     fs::remove_all(dir);
 }
 
-TEST_CASE("Project rejects malformed files") {
-    REQUIRE_THROWS(k2::Project::load(YAML::Load("not a map"), "/tmp"));
+TEST_CASE("Project manifest recurses into referenced bundles") {
+    namespace fs = std::filesystem;
+    auto dir = fs::temp_directory_path() / "k2_project_nested_test";
+    fs::create_directories(dir / "bundles");
+
+    {
+        std::ofstream file { dir / "bundles" / "characters.yaml" };
+        file << "version: 0.0.1\nassets:\n  Image:\n    hero: file:///hero.png\n";
+    }
+    {
+        std::ofstream file { dir / "game.k2project" };
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+                "assets:\n  AssetBundle:\n    characters: file:///bundles/characters.yaml\n";
+    }
+
+    auto project = k2::Project::load(dir / "game.k2project");
+    REQUIRE(project.assets.count("characters.hero"_fnv1a) == 1);
+    auto& [asset_name, asset] = project.assets.at("characters.hero"_fnv1a);
+    REQUIRE(asset_name == "characters.hero");
+    // Relative urls in a child bundle resolve against the child's directory.
+    REQUIRE(std::string { asset.url }.contains("bundles"));
+
+    fs::remove_all(dir);
 }
 
-TEST_CASE("Project save round-trips edited settings") {
+TEST_CASE("Project save round-trips settings and preserves the manifest") {
     namespace fs = std::filesystem;
     auto dir = fs::temp_directory_path() / "k2_project_save_test";
     fs::create_directories(dir);
 
     {
-        std::ofstream file { dir / "assets.yaml" };
-        file << "version: 0.0.1\nassets: {}\n";
-    }
-    {
         std::ofstream file { dir / "game.k2project" };
-        file << "version: 0.0.1\nname: Test\nassets: assets.yaml\nmain_scene: scene.k2scene\n";
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+                "assets:\n  Image:\n    player: file:///textures/player.png\n";
     }
 
     auto project = k2::Project::load(dir / "game.k2project");
-    REQUIRE(project.file == fs::absolute(dir / "game.k2project"));
-    REQUIRE(project.assets_file == dir / "assets.yaml");
-
     project.name = "Renamed";
     project.main_scene = project.root / "other.k2scene";
     project.save();
@@ -63,8 +76,20 @@ TEST_CASE("Project save round-trips edited settings") {
     auto reloaded = k2::Project::load(dir / "game.k2project");
     REQUIRE(reloaded.name == "Renamed");
     REQUIRE(reloaded.main_scene == dir / "other.k2scene");
-    REQUIRE(reloaded.assets_file == dir / "assets.yaml");
+    REQUIRE(reloaded.assets.count("player"_fnv1a) == 1);
 
+    fs::remove_all(dir);
+}
+
+TEST_CASE("Project rejects malformed files") {
+    namespace fs = std::filesystem;
+    auto dir = fs::temp_directory_path() / "k2_project_bad_test";
+    fs::create_directories(dir);
+    {
+        std::ofstream file { dir / "bad.k2project" };
+        file << "not a map";
+    }
+    REQUIRE_THROWS(k2::Project::load(dir / "bad.k2project"));
     fs::remove_all(dir);
 }
 

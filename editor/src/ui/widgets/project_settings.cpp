@@ -15,7 +15,6 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
         loaded_file = project.file;
         name = project.name;
         main_scene = std::filesystem::relative(project.main_scene, project.root).generic_string();
-        assets = std::filesystem::relative(project.assets_file, project.root).generic_string();
     }
 
     if (BeginPropertyTable("ProjectSettings")) {
@@ -27,8 +26,6 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
         ImGui::InputText("##Name", &name);
         PropertyLabel("Main Scene");
         ImGui::InputText("##MainScene", &main_scene);
-        PropertyLabel("Asset Bundle");
-        ImGui::InputText("##AssetBundle", &assets);
         EndPropertyTable();
     }
 
@@ -37,7 +34,6 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
         try {
             project.name = name;
             project.main_scene = project.root / main_scene;
-            project.assets_file = project.root / assets;
             project.save();
             Log::core().info(std::format("Saved project: {}", project.file.string()));
         } catch (const std::exception& e) {

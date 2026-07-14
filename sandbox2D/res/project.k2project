@@ -1,4 +1,14 @@
 version: 0.0.1
 name: Sandbox2D
-assets: assets.yaml
 main_scene: scene.k2scene
+assets:
+  Font:
+    FontAwesome5: file:///fonts/fa-regular-400.ttf
+    NotoSansRegular: file:///fonts/NotoSans-Regular.ttf
+  Image:
+    cobble: file:///textures/texture.jpg
+  Shader:
+    2D_vs: file:///shaders/2D_vs.glsl
+    2D_fs: file:///shaders/2D_fs.glsl
+  Script:
+    mover: file:///scripts/mover.lua

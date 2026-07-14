@@ -75,7 +75,7 @@ AssetBundle AssetRegistryLoader::merge(const Asset& base_asset) {
     auto bundle = AssetLoader::get<AssetBundle>(base_asset);
     auto base_name = get_fully_qualified_name(base_asset);
 
-    for (auto [child_name, child_asset] : bundle.assets) {
+    for (auto& [child_name, child_asset] : bundle.assets) {
         auto full_name = join_name(base_name, child_name);
 
         // File paths can be relative, therefore,
@@ -125,7 +125,8 @@ std::string AssetRegistryLoader::get_fully_qualified_name(const Asset& asset) {
     auto id = asset.get_id();
     std::string full_name = asset_id_to_name[id];
 
-    for (; node_to_parent.contains(id); id = node_to_parent.at(id)) {
+    while (node_to_parent.contains(id)) {
+        id = node_to_parent.at(id);
         full_name = join_name(asset_id_to_name[id], full_name);
     }
     return full_name;
