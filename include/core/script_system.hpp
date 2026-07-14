@@ -23,5 +23,7 @@ public:
     ScriptSystem& operator=(const ScriptSystem&) = delete;
 
     void update(Scene& scene, const AssetRegistry& assets, float dt);
+
+    void set_input_enabled(bool enabled);
 };
 }

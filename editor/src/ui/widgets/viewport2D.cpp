@@ -71,7 +71,7 @@ void Viewport2DWidget::draw_gizmo(EditorLayer& editor_layer, ImVec2 rect_min) {
         return;
     }
 
-    if (ImGui::IsWindowFocused()) {
+    if (ImGui::IsWindowFocused() && !editor_layer.is_playing()) {
         if (ImGui::IsKeyPressed(ImGuiKey_W)) {
             gizmo_operation = ImGuizmo::TRANSLATE;
         }
@@ -139,12 +139,13 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
     }
 }
 
-void Viewport2DWidget::draw_toolbar(EditorLayer& editor_layer, ImVec2 rect_min) {
+bool Viewport2DWidget::draw_toolbar(EditorLayer& editor_layer, ImVec2 rect_min) {
     ImGui::SetNextWindowPos({ rect_min.x + width * 0.5f, rect_min.y + 8.0f }, ImGuiCond_Always, { 0.5f, 0.0f });
     ImGui::SetNextWindowBgAlpha(0.35f);
     constexpr auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings
         | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoFocusOnAppearing;
 
+    bool started = false;
     if (ImGui::Begin("##viewport_toolbar", nullptr, flags)) {
         bool playing = editor_layer.is_playing();
         auto base = playing ? ImVec4 { 0.75f, 0.15f, 0.15f, 1.0f } : ImVec4 { 0.15f, 0.60f, 0.20f, 1.0f };
@@ -156,11 +157,13 @@ void Viewport2DWidget::draw_toolbar(EditorLayer& editor_layer, ImVec2 rect_min) 
 
         if (ImGui::Button(playing ? ICON_FA_STOP : ICON_FA_PLAY, { 36.0f, 0 })) {
             playing ? editor_layer.stop() : editor_layer.play();
+            started = !playing;
         }
 
         ImGui::PopStyleColor(3);
     }
     ImGui::End();
+    return started;
 }
 
 void Viewport2DWidget::render(EditorLayer& editor_layer) {
@@ -195,6 +198,14 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
     auto rect_min = ImGui::GetItemRectMin();
     draw_gizmo(editor_layer, rect_min);
     handle_interaction(editor_layer, rect_min);
-    draw_toolbar(editor_layer, rect_min);
+    // Clicking Play focuses the toolbar overlay; hand focus straight to the
+    // viewport so game input flows without an extra click.
+    if (draw_toolbar(editor_layer, rect_min)) {
+        ImGui::SetWindowFocus();
+    }
+
+    if (editor_layer.is_playing()) {
+        editor_layer.scripts.set_input_enabled(ImGui::IsWindowFocused());
+    }
 }
 }

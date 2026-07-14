@@ -60,6 +60,7 @@ struct ScriptSystem::Impl {
     std::unordered_map<entt::entity, sol::environment> instances;
     std::unordered_map<ResourceID, std::string> sources;
     entt::registry* attached {};
+    bool input_enabled { true };
 
     explicit Impl(Window& window)
         : window { window } {
@@ -92,7 +93,7 @@ struct ScriptSystem::Impl {
 
         auto input = lua.create_named_table("Input");
         input["is_key_down"] = [this](const std::string& key) {
-            return window.keyboard.get_state(key_code_from(key)) == KeyboardDevice::KeyState::press;
+            return input_enabled && window.keyboard.get_state(key_code_from(key)) == KeyboardDevice::KeyState::press;
         };
     }
 
@@ -165,6 +166,8 @@ ScriptSystem::ScriptSystem(Window& window)
     : impl { std::make_unique<Impl>(window) } { }
 
 ScriptSystem::~ScriptSystem() = default;
+
+void ScriptSystem::set_input_enabled(bool enabled) { impl->input_enabled = enabled; }
 
 void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;

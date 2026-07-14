@@ -17,7 +17,7 @@ public:
     void render(EditorLayer&) override;
 
 private:
-    void draw_toolbar(EditorLayer&, ImVec2 rect_min);
+    bool draw_toolbar(EditorLayer&, ImVec2 rect_min);
     void resize_frame_buffer();
     void update_camera();
     void draw_gizmo(EditorLayer&, ImVec2 rect_min);
