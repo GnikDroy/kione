@@ -9,13 +9,21 @@
 #include "rendering/renderer2D.hpp"
 
 #include <glm/glm.hpp>
+#include <stdexcept>
+
+template <class T> T value_or_abort(std::expected<T, std::string> result) {
+    if (!result) {
+        throw std::runtime_error(result.error());
+    }
+    return std::move(*result);
+}
 
 class SceneLayer : public k2::Layer {
     k2::Window& window;
 
-    k2::Project project = k2::Project::load("res/project.k2project");
+    k2::Project project = value_or_abort(k2::Project::load("res/project.k2project"));
     k2::ResourceManager resources {};
-    k2::Scene scene = k2::SceneLoader::load(project.main_scene, resources, project.assets);
+    k2::Scene scene = value_or_abort(k2::SceneLoader::load(project.main_scene, resources, project.assets));
     k2::Renderer2D renderer2D {};
     k2::ScriptSystem scripts { window };
 

@@ -12,30 +12,30 @@
 namespace k2::editor {
 
 static void new_project_dialog(EditorLayer& editor_layer) {
-    try {
-        std::array filters = { nfdfilteritem_t { "Kione project", "k2project" } };
-        [[maybe_unused]] auto lock = NFD::Guard();
-        NFD::UniquePathU8 path;
-        if (NFD::SaveDialog(path, filters.data(), nfdfiltersize_t(filters.size())) == NFD_OKAY) {
-            editor_layer.create_project(std::filesystem::path { path.get() });
-            Log::core().info(std::format("Created project: {}", std::string_view { path.get() }));
-        }
-    } catch (const std::exception& e) {
-        Log::core().error(std::format("Failed to create project: {}", e.what()));
+    std::array filters = { nfdfilteritem_t { "Kione project", "k2project" } };
+    [[maybe_unused]] auto lock = NFD::Guard();
+    NFD::UniquePathU8 path;
+    if (NFD::SaveDialog(path, filters.data(), nfdfiltersize_t(filters.size())) != NFD_OKAY) {
+        return;
+    }
+    if (auto created = editor_layer.create_project(std::filesystem::path { path.get() })) {
+        Log::core().info(std::format("Created project: {}", std::string_view { path.get() }));
+    } else {
+        Log::core().error(std::format("Failed to create project: {}", created.error()));
     }
 }
 
 static void open_project_dialog(EditorLayer& editor_layer) {
-    try {
-        std::array filters = { nfdfilteritem_t { "Kione project", "k2project" } };
-        [[maybe_unused]] auto lock = NFD::Guard();
-        NFD::UniquePathU8 path;
-        if (NFD::OpenDialog(path, filters.data(), nfdfiltersize_t(filters.size())) == NFD_OKAY) {
-            editor_layer.open_project(std::filesystem::path { path.get() });
-            Log::core().info(std::format("Opened project: {}", std::string_view { path.get() }));
-        }
-    } catch (const std::exception& e) {
-        Log::core().error(std::format("Failed to open project: {}", e.what()));
+    std::array filters = { nfdfilteritem_t { "Kione project", "k2project" } };
+    [[maybe_unused]] auto lock = NFD::Guard();
+    NFD::UniquePathU8 path;
+    if (NFD::OpenDialog(path, filters.data(), nfdfiltersize_t(filters.size())) != NFD_OKAY) {
+        return;
+    }
+    if (auto opened = editor_layer.open_project(std::filesystem::path { path.get() })) {
+        Log::core().info(std::format("Opened project: {}", std::string_view { path.get() }));
+    } else {
+        Log::core().error(std::format("Failed to open project: {}", opened.error()));
     }
 }
 

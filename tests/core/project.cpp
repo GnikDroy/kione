@@ -18,7 +18,9 @@ TEST_CASE("Project loads settings and the inline asset manifest") {
                 "assets:\n  Image:\n    player: file:///textures/player.png\n";
     }
 
-    auto project = k2::Project::load(dir / "game.k2project");
+    auto loaded = k2::Project::load(dir / "game.k2project");
+    REQUIRE(loaded.has_value());
+    auto& project = *loaded;
     REQUIRE(project.name == "Test");
     REQUIRE(project.file == fs::absolute(dir / "game.k2project"));
     REQUIRE(project.root == fs::absolute(dir));
@@ -47,7 +49,9 @@ TEST_CASE("Project manifest recurses into referenced bundles") {
                 "assets:\n  AssetBundle:\n    characters: file:///bundles/characters.yaml\n";
     }
 
-    auto project = k2::Project::load(dir / "game.k2project");
+    auto loaded = k2::Project::load(dir / "game.k2project");
+    REQUIRE(loaded.has_value());
+    auto& project = *loaded;
     REQUIRE(project.assets.count("characters.hero"_fnv1a) == 1);
     auto& [asset_name, asset] = project.assets.at("characters.hero"_fnv1a);
     REQUIRE(asset_name == "characters.hero");
@@ -68,15 +72,18 @@ TEST_CASE("Project save round-trips settings and preserves the manifest") {
                 "assets:\n  Image:\n    player: file:///textures/player.png\n";
     }
 
-    auto project = k2::Project::load(dir / "game.k2project");
+    auto loaded = k2::Project::load(dir / "game.k2project");
+    REQUIRE(loaded.has_value());
+    auto& project = *loaded;
     project.name = "Renamed";
     project.main_scene = project.root / "other.k2scene";
     REQUIRE(project.save().has_value());
 
     auto reloaded = k2::Project::load(dir / "game.k2project");
-    REQUIRE(reloaded.name == "Renamed");
-    REQUIRE(reloaded.main_scene == dir / "other.k2scene");
-    REQUIRE(reloaded.assets.count("player"_fnv1a) == 1);
+    REQUIRE(reloaded.has_value());
+    REQUIRE(reloaded->name == "Renamed");
+    REQUIRE(reloaded->main_scene == dir / "other.k2scene");
+    REQUIRE(reloaded->assets.count("player"_fnv1a) == 1);
 
     fs::remove_all(dir);
 }
@@ -89,7 +96,7 @@ TEST_CASE("Project rejects malformed files") {
         std::ofstream file { dir / "bad.k2project" };
         file << "not a map";
     }
-    REQUIRE_THROWS(k2::Project::load(dir / "bad.k2project"));
+    REQUIRE_FALSE(k2::Project::load(dir / "bad.k2project").has_value());
     fs::remove_all(dir);
 }
 

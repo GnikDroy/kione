@@ -41,10 +41,8 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
     }
     ImGui::SameLine();
     if (ImGui::Button(ICON_FA_SYNC "  Reload Project")) {
-        try {
-            editor_layer.open_project(project.file);
-        } catch (const std::exception& e) {
-            Log::core().error(std::format("Failed to reload project: {}", e.what()));
+        if (auto opened = editor_layer.open_project(project.file); !opened) {
+            Log::core().error(std::format("Failed to reload project: {}", opened.error()));
         }
     }
     if (ImGui::IsItemHovered()) {

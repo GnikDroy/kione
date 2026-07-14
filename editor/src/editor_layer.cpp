@@ -36,32 +36,48 @@ EditorLayer::EditorLayer(k2::Window& window)
 void EditorLayer::load_image_resources(const AssetRegistry& asset_registry) {
     for (auto& [id, pair] : asset_registry) {
         auto& [name, asset] = pair;
-        if (asset.type == Asset::Type::Image && !resources.contains<Texture2D>(id)) {
-            resources.set(name, Texture2D { AssetLoader::get<Image>(asset) });
+        if (asset.type != Asset::Type::Image || resources.contains<Texture2D>(id)) {
+            continue;
         }
+        auto image = AssetLoader::try_get<Image>(asset);
+        if (!image) {
+            Log::core().error(std::format("Failed to load image '{}': {}", name, image.error()));
+            continue;
+        }
+        resources.set(name, Texture2D { *image });
     }
 }
 
-void EditorLayer::reload_assets() {
+std::expected<void, std::string> EditorLayer::reload_assets() {
     if (!project.has_value()) {
-        return;
+        return {};
     }
-    project->reload_assets();
+    if (auto reloaded = project->reload_assets(); !reloaded) {
+        return reloaded;
+    }
     load_image_resources(project->assets);
+    return {};
 }
 
-void EditorLayer::open_project(const std::filesystem::path& path) {
+std::expected<void, std::string> EditorLayer::open_project(const std::filesystem::path& path) {
     auto new_project = Project::load(path);
-    load_image_resources(new_project.assets);
+    if (!new_project) {
+        return std::unexpected(new_project.error());
+    }
+    load_image_resources(new_project->assets);
 
-    auto new_scene = SceneLoader::load(new_project.main_scene, resources, new_project.assets);
-    new_scene.registry.ctx().emplace<EditorLayer&>(*this);
-    scene = std::move(new_scene);
+    auto new_scene = SceneLoader::load(new_project->main_scene, resources, new_project->assets);
+    if (!new_scene) {
+        return std::unexpected(new_scene.error());
+    }
+    new_scene->registry.ctx().emplace<EditorLayer&>(*this);
+    scene = std::move(*new_scene);
     entity_selector.get_widget().reset_selection();
-    project = std::move(new_project);
+    project = std::move(*new_project);
+    return {};
 }
 
-void EditorLayer::create_project(const std::filesystem::path& path) {
+std::expected<void, std::string> EditorLayer::create_project(const std::filesystem::path& path) {
     auto project_file = path;
     if (project_file.extension() != ".k2project") {
         project_file += ".k2project";
@@ -73,27 +89,30 @@ void EditorLayer::create_project(const std::filesystem::path& path) {
     new_project.name = project_file.stem().string();
     new_project.main_scene = new_project.root / (new_project.name + ".k2scene");
 
-    std::ofstream { new_project.main_scene } << YAML::Node { Scene {} } << "\n";
+    std::ofstream scene_out { new_project.main_scene };
+    scene_out << YAML::Node { Scene {} } << "\n";
+    if (!scene_out) {
+        return std::unexpected(std::format("Failed to write scene file: {}", new_project.main_scene.string()));
+    }
     if (auto saved = new_project.save(); !saved) {
-        Log::core().error(std::format("Failed to save project: {}", saved.error()));
-        return;
+        return saved;
     }
 
-    open_project(project_file);
+    return open_project(project_file);
 }
 
 void EditorLayer::request_exit() { window->events.push(std::make_unique<WindowCloseEvent>()); }
 
 void EditorLayer::play() {
-    try {
-        auto copy = SceneLoader::load(YAML::Node { scene }, resources, active_assets());
-        copy.registry.ctx().emplace<EditorLayer&>(*this);
-        runtime_scene = std::move(copy);
-        scripts.clear_cache();
-        entity_selector.get_widget().reset_selection();
-    } catch (const std::exception& e) {
-        Log::core().error(std::format("Failed to start play mode: {}", e.what()));
+    auto copy = SceneLoader::load(YAML::Node { scene }, resources, active_assets());
+    if (!copy) {
+        Log::core().error(std::format("Failed to start play mode: {}", copy.error()));
+        return;
     }
+    copy->registry.ctx().emplace<EditorLayer&>(*this);
+    runtime_scene = std::move(*copy);
+    scripts.clear_cache();
+    entity_selector.get_widget().reset_selection();
 }
 
 void EditorLayer::stop() {

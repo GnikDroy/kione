@@ -10,11 +10,10 @@ namespace k2::editor {
 void AssetListWidget::render(EditorLayer& editor_layer) {
     ImGui::BeginDisabled(!editor_layer.project.has_value());
     if (ImGui::Button(ICON_FA_SYNC "  Reload")) {
-        try {
-            editor_layer.reload_assets();
-            Log::core().info("Reloaded asset bundle.");
-        } catch (const std::exception& e) {
-            Log::core().error(std::format("Failed to reload assets: {}", e.what()));
+        if (auto reloaded = editor_layer.reload_assets()) {
+            Log::core().info("Reloaded asset manifest.");
+        } else {
+            Log::core().error(std::format("Failed to reload assets: {}", reloaded.error()));
         }
     }
     ImGui::EndDisabled();

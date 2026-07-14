@@ -13,10 +13,8 @@ public:
         : k2::App({ .title { "Kione Editor" } }) {
         auto layer = std::make_unique<k2::EditorLayer>(window);
         if (!args.empty()) {
-            try {
-                layer->open_project(args.front());
-            } catch (const std::exception& e) {
-                k2::Log::app().error(std::format("Cannot open project '{}': {}", args.front(), e.what()));
+            if (auto opened = layer->open_project(args.front()); !opened) {
+                k2::Log::app().error(std::format("Cannot open project '{}': {}", args.front(), opened.error()));
             }
         }
         layers.push_back(std::move(layer));

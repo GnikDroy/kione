@@ -17,9 +17,9 @@ struct Project {
     YAML::Node assets_node;
     AssetRegistry assets;
 
-    static Project load(const std::filesystem::path& project_file);
+    [[nodiscard]] static std::expected<Project, std::string> load(const std::filesystem::path& project_file) noexcept;
 
-    void reload_assets();
+    [[nodiscard]] std::expected<void, std::string> reload_assets() noexcept;
 
     [[nodiscard]] std::expected<void, std::string> save() const;
 };

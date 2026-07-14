@@ -17,8 +17,13 @@
 
 namespace k2 {
 
-Scene SceneLoader::load(const std::filesystem::path& path, ResourceManager& resources, const AssetRegistry& assets) {
-    return load(YAML::LoadFile(path.string()), resources, assets);
+std::expected<Scene, std::string> SceneLoader::load(
+    const std::filesystem::path& path, ResourceManager& resources, const AssetRegistry& assets) noexcept {
+    try {
+        return load(YAML::LoadFile(path.string()), resources, assets);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
 }
 
 static void load_texture(const AssetHandle& handle, ResourceManager& resources, const AssetRegistry& assets) {
@@ -31,7 +36,12 @@ static void load_texture(const AssetHandle& handle, ResourceManager& resources, 
         Log::core().warn(std::format("Scene references unknown texture asset '{}'", handle.name));
         return;
     }
-    resources.set(handle.name, Texture2D { AssetLoader::get<Image>(it->second.second) });
+    auto image = AssetLoader::try_get<Image>(it->second.second);
+    if (!image) {
+        Log::core().error(std::format("Failed to load texture '{}': {}", handle.name, image.error()));
+        return;
+    }
+    resources.set(handle.name, Texture2D { *image });
 }
 
 static void load_referenced_textures(
@@ -64,9 +74,10 @@ static void load_animation_clips(entt::registry& registry, ResourceManager& reso
     });
 }
 
-Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets) {
+std::expected<Scene, std::string> SceneLoader::load(
+    const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets) noexcept try {
     if (!node.IsSequence()) {
-        throw std::runtime_error("A scene must be a sequence of entities.");
+        return std::unexpected("A scene must be a sequence of entities.");
     }
 
     Scene scene;
@@ -134,6 +145,8 @@ Scene SceneLoader::load(const YAML::Node& node, ResourceManager& resources, cons
     load_referenced_textures(registry, resources, assets);
     load_animation_clips(registry, resources, assets);
     return scene;
+} catch (const std::exception& e) {
+    return std::unexpected(e.what());
 }
 
 }

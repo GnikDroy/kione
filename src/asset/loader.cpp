@@ -64,6 +64,14 @@ template <> SpriteAnimation AssetLoader::get<SpriteAnimation>(const Asset& asset
     return YAML::Load(*stream).as<SpriteAnimation>();
 }
 
+template <> std::expected<Image, std::string> AssetLoader::try_get<Image>(const Asset& asset) noexcept {
+    try {
+        return get<Image>(asset);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
 template <>
 std::expected<SpriteAnimation, std::string> AssetLoader::try_get<SpriteAnimation>(const Asset& asset) noexcept {
     try {

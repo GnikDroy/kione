@@ -50,8 +50,9 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
 
     k2::ResourceManager resources;
     k2::AssetRegistry assets;
-    auto loaded = k2::SceneLoader::load(YAML::Node { original }, resources, assets);
-    auto& loaded_registry = loaded.registry;
+    auto result = k2::SceneLoader::load(YAML::Node { original }, resources, assets);
+    REQUIRE(result.has_value());
+    auto& loaded_registry = result->registry;
 
     REQUIRE(loaded_registry.ctx().contains<k2::ResourceManager&>());
 
@@ -95,14 +96,15 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
 TEST_CASE("SceneLoader rejects malformed scenes") {
     k2::ResourceManager resources;
     k2::AssetRegistry assets;
-    REQUIRE_THROWS_AS(k2::SceneLoader::load(YAML::Load("not a sequence"), resources, assets), std::runtime_error);
+    REQUIRE_FALSE(k2::SceneLoader::load(YAML::Load("not a sequence"), resources, assets).has_value());
 }
 
 TEST_CASE("SceneLoader loads an empty scene") {
     k2::ResourceManager resources;
     k2::AssetRegistry assets;
     auto loaded = k2::SceneLoader::load(YAML::Node { k2::Scene {} }, resources, assets);
-    REQUIRE(loaded.registry.view<entt::entity>().size() == 0);
+    REQUIRE(loaded.has_value());
+    REQUIRE(loaded->registry.view<entt::entity>().size() == 0);
 }
 
 TEST_CASE("SceneLoader round trips script, camera, and remaining light components") {
@@ -126,7 +128,8 @@ TEST_CASE("SceneLoader round trips script, camera, and remaining light component
     k2::ResourceManager resources;
     k2::AssetRegistry assets;
     auto loaded = k2::SceneLoader::load(YAML::Node { original }, resources, assets);
-    auto& loaded_registry = loaded.registry;
+    REQUIRE(loaded.has_value());
+    auto& loaded_registry = loaded->registry;
 
     auto new_entity = find_by_tag(loaded_registry, "loaded");
     REQUIRE((new_entity != entt::null));
@@ -169,7 +172,8 @@ TEST_CASE("SceneLoader remaps grandchildren across the whole subtree") {
     k2::ResourceManager resources;
     k2::AssetRegistry assets;
     auto loaded = k2::SceneLoader::load(YAML::Node { original }, resources, assets);
-    auto& loaded_registry = loaded.registry;
+    REQUIRE(loaded.has_value());
+    auto& loaded_registry = loaded->registry;
 
     auto new_root = find_by_tag(loaded_registry, "root");
     auto new_child = find_by_tag(loaded_registry, "child");

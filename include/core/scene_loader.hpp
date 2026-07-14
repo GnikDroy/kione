@@ -1,6 +1,8 @@
 #pragma once
 
+#include <expected>
 #include <filesystem>
+#include <string>
 
 #include <yaml-cpp/yaml.h>
 
@@ -10,8 +12,10 @@
 
 namespace k2 {
 struct SceneLoader {
-    static Scene load(const std::filesystem::path& path, ResourceManager& resources, const AssetRegistry& assets);
+    [[nodiscard]] static std::expected<Scene, std::string> load(
+        const std::filesystem::path& path, ResourceManager& resources, const AssetRegistry& assets) noexcept;
 
-    static Scene load(const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets);
+    [[nodiscard]] static std::expected<Scene, std::string> load(
+        const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets) noexcept;
 };
 }

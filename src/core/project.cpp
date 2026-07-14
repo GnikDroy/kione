@@ -16,26 +16,35 @@ static AssetRegistry load_registry(const std::filesystem::path& project_file) {
     });
 }
 
-Project Project::load(const std::filesystem::path& project_file) {
-    auto node = YAML::LoadFile(project_file.string());
-    if (!node.IsMap()) {
-        throw std::runtime_error("A project must be a map.");
-    }
+std::expected<Project, std::string> Project::load(const std::filesystem::path& project_file) noexcept {
+    try {
+        auto node = YAML::LoadFile(project_file.string());
+        if (!node.IsMap()) {
+            return std::unexpected("A project must be a map.");
+        }
 
-    Project project;
-    project.file = std::filesystem::absolute(project_file);
-    project.root = project.file.parent_path();
-    project.name = node["name"].as<std::string>("");
-    project.main_scene = project.root / node["main_scene"].as<std::string>();
-    project.assets_node = node["assets"];
-    project.assets = load_registry(project.file);
-    return project;
+        Project project;
+        project.file = std::filesystem::absolute(project_file);
+        project.root = project.file.parent_path();
+        project.name = node["name"].as<std::string>("");
+        project.main_scene = project.root / node["main_scene"].as<std::string>();
+        project.assets_node = node["assets"];
+        project.assets = load_registry(project.file);
+        return project;
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
 }
 
-void Project::reload_assets() {
-    auto node = YAML::LoadFile(file.string());
-    assets_node = node["assets"];
-    assets = load_registry(file);
+std::expected<void, std::string> Project::reload_assets() noexcept {
+    try {
+        auto node = YAML::LoadFile(file.string());
+        assets_node = node["assets"];
+        assets = load_registry(file);
+        return {};
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
 }
 
 std::expected<void, std::string> Project::save() const {

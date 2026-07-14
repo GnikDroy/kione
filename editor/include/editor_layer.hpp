@@ -5,6 +5,7 @@
 #include "core/scene.hpp"
 #include "core/script_system.hpp"
 
+#include <expected>
 #include <filesystem>
 #include <optional>
 
@@ -53,11 +54,11 @@ private:
 
 public:
 
-    void open_project(const std::filesystem::path& path);
+    [[nodiscard]] std::expected<void, std::string> open_project(const std::filesystem::path& path);
 
-    void create_project(const std::filesystem::path& path);
+    [[nodiscard]] std::expected<void, std::string> create_project(const std::filesystem::path& path);
 
-    void reload_assets();
+    [[nodiscard]] std::expected<void, std::string> reload_assets();
 
     void request_exit();
 

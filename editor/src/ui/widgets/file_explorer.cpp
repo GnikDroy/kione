@@ -225,7 +225,9 @@ void FileExplorerWidget::render_directory(EditorLayer& editor_layer, const std::
             if (entry.is_directory(ec)) {
                 current_directory /= entry.path().filename();
             } else if (entry.path().extension() == ".k2project") {
-                editor_layer.open_project(entry.path());
+                if (auto opened = editor_layer.open_project(entry.path()); !opened) {
+                    Log::core().error(std::format("Failed to open project: {}", opened.error()));
+                }
             }
         }
     }

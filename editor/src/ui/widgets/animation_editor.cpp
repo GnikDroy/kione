@@ -84,7 +84,10 @@ void AnimationEditorWidget::new_clip(EditorLayer& editor_layer) {
         Log::core().error(std::format("Failed to save project: {}", saved.error()));
         return;
     }
-    editor_layer.reload_assets();
+    if (auto reloaded = editor_layer.reload_assets(); !reloaded) {
+        Log::core().error(std::format("Failed to reload assets: {}", reloaded.error()));
+        return;
+    }
 
     selected.set(name);
     loaded_id = {};

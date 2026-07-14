@@ -28,6 +28,7 @@ template <> Texture2D AssetLoader::get<Texture2D>(const Asset& asset);
 template <> Shader AssetLoader::get<Shader>(const Asset& asset);
 template <> AssetBundle AssetLoader::get<AssetBundle>(const Asset& asset);
 template <> SpriteAnimation AssetLoader::get<SpriteAnimation>(const Asset& asset);
+template <> std::expected<Image, std::string> AssetLoader::try_get<Image>(const Asset& asset) noexcept;
 template <> std::expected<SpriteAnimation, std::string> AssetLoader::try_get<SpriteAnimation>(
     const Asset& asset) noexcept;
 template <> Model AssetLoader::get<Model>(const Asset& asset, ResourceManager& resources);
