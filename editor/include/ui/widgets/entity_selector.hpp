@@ -28,4 +28,6 @@ public:
     // Must be called when the scene (registry) is replaced
     void reset_selection() { active_entity = entt::null; }
 };
+
+entt::entity duplicate_entity(EditorLayer& editor_layer, entt::registry& registry, entt::entity source);
 }

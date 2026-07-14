@@ -126,6 +126,9 @@ static void render_scene_menu(EditorLayer& editor_layer) {
             RelationComponent::attach_last(registry, child, active);
             selector.set_active(child);
         }
+        if (ImGui::MenuItem("Duplicate Entity", nullptr, false, has_selection)) {
+            selector.set_active(duplicate_entity(editor_layer, registry, active));
+        }
         if (ImGui::MenuItem("Delete Entity", nullptr, false, has_selection)) {
             RelationComponent::detach(registry, active);
             auto&& children = RelationComponent::get_children(registry, active, true);

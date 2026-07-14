@@ -25,6 +25,19 @@ void ComponentRemoveAction(entt::basic_registry<EntityType>& registry, EntityTyp
     registry.template remove<Component>(entity);
 }
 
+template <class Component, class EntityType>
+void ComponentCopyAction(entt::basic_registry<EntityType>& registry, EntityType from, EntityType to) {
+    if constexpr (std::is_empty_v<Component>) {
+        if (registry.template all_of<Component>(from)) {
+            registry.template emplace_or_replace<Component>(to);
+        }
+    } else {
+        if (const auto* component = registry.template try_get<Component>(from)) {
+            registry.template emplace_or_replace<Component>(to, *component);
+        }
+    }
+}
+
 template <class EntityType> class ComponentInspectorWidget : public IWidget {
 public:
     using Registry = entt::basic_registry<EntityType>;
@@ -32,8 +45,10 @@ public:
 
     struct ComponentInfo {
         using Callback = std::function<void(Registry&, EntityType)>;
+        using CopyCallback = std::function<void(Registry&, EntityType, EntityType)>;
         std::string name;
         Callback widget, create, destroy;
+        CopyCallback copy;
     };
 
 private:
@@ -41,7 +56,7 @@ private:
 
     bool entity_has_component(Registry& registry, EntityType entity, ComponentTypeID type_id) {
         const auto* storage_ptr = registry.storage(type_id);
-        return storage_ptr != nullptr && storage_ptr ->contains(entity);
+        return storage_ptr != nullptr && storage_ptr->contains(entity);
     }
 
 public:
@@ -61,11 +76,20 @@ public:
             widget,
             ComponentAddAction<Component, EntityType>,
             ComponentRemoveAction<Component, EntityType>,
+            ComponentCopyAction<Component, EntityType>,
         });
     }
 
     template <class Component> ComponentInfo& register_component(const std::string& name) {
         return register_component<Component>(name, ComponentWidget<Component, EntityType>);
+    }
+
+    void copy_components(Registry& registry, EntityType from, EntityType to) {
+        for (auto& [component_type_id, ci] : component_infos) {
+            if (ci.copy) {
+                ci.copy(registry, from, to);
+            }
+        }
     }
 
     void add_component_menu_items(Registry& registry, EntityType entity) {

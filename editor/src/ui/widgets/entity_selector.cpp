@@ -28,6 +28,24 @@ static void reparent_preserving_world(
     }
 }
 
+static entt::entity duplicate_subtree(EditorLayer& editor_layer, entt::registry& registry, entt::entity source) {
+    auto clone = registry.create();
+    editor_layer.component_inspector.get_widget().copy_components(registry, source, clone);
+    for (auto& [child, relation] : RelationComponent::get_children(registry, source)) {
+        RelationComponent::attach_last(registry, duplicate_subtree(editor_layer, registry, child), clone);
+    }
+    return clone;
+}
+
+entt::entity duplicate_entity(EditorLayer& editor_layer, entt::registry& registry, entt::entity source) {
+    auto clone = duplicate_subtree(editor_layer, registry, source);
+    if (auto* relation = registry.try_get<RelationComponent>(source);
+        relation != nullptr && relation->parent != entt::null) {
+        RelationComponent::attach_after(registry, clone, source);
+    }
+    return clone;
+}
+
 template <class EntityType>
 static bool is_ancestor_or_self(entt::basic_registry<EntityType>& registry, EntityType ancestor, EntityType node) {
     for (auto curr = node; curr != entt::null;) {
@@ -105,13 +123,19 @@ static void entity_drag_drop_target(
 }
 
 template <class EntityType>
-static void entity_context_menu(entt::basic_registry<EntityType>& registry, EntityType entity,
-    std::vector<EntityType>& to_delete, DeferredOps& deferred_ops) {
+static void entity_context_menu(EditorLayer& editor_layer, entt::basic_registry<EntityType>& registry,
+    EntityType entity, std::vector<EntityType>& to_delete, DeferredOps& deferred_ops) {
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::MenuItem("Create Child")) {
             deferred_ops.push_back([&registry, entity]() {
                 auto child = EntitySelector<EntityType>::create_entity(registry);
                 RelationComponent::attach_last(registry, child, entity);
+            });
+        }
+        if (ImGui::MenuItem("Duplicate")) {
+            deferred_ops.push_back([&editor_layer, &registry, entity]() {
+                auto clone = duplicate_entity(editor_layer, registry, entity);
+                editor_layer.entity_selector.get_widget().set_active(clone);
             });
         }
         if (ImGui::MenuItem("Detach")) {
@@ -176,7 +200,7 @@ static void recursive_draw(EditorLayer& editor_layer, EntityType& entity_clicked
 
     entity_drag_drop_target(registry, entity, tag, deferred_ops);
 
-    entity_context_menu(registry, entity, to_delete, deferred_ops);
+    entity_context_menu(editor_layer, registry, entity, to_delete, deferred_ops);
 
     if (node_open) {
         // Recurse here.
