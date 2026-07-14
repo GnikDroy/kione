@@ -17,11 +17,11 @@ template <> void ComponentWidget<k2::TransformComponent>(entt::registry& reg, en
     auto& transform = reg.get<TransformComponent>(e);
     if (BeginPropertyTable("Transform")) {
         PropertyLabel("Translation");
-        Vec3Field(transform.translation);
+        Vec3Field("##Translation", transform.translation);
         PropertyLabel("Rotation");
-        RotationField(transform.orientation);
+        RotationField("##Rotation", transform.orientation);
         PropertyLabel("Scale");
-        Vec3Field(transform.scale, { 1.0f, 1.0f, 1.0f });
+        Vec3Field("##Scale", transform.scale, { 1.0f, 1.0f, 1.0f });
         EndPropertyTable();
     }
 }
@@ -32,11 +32,11 @@ template <> void ComponentWidget<k2::Camera>(entt::registry& reg, entt::registry
         return;
     }
     PropertyLabel("Position");
-    Vec3Field(camera.position);
+    Vec3Field("##Position", camera.position);
     PropertyLabel("Target");
-    Vec3Field(camera.target);
+    Vec3Field("##Target", camera.target);
     PropertyLabel("Up");
-    Vec3Field(camera.up, { 0.0f, 1.0f, 0.0f });
+    Vec3Field("##Up", camera.up, { 0.0f, 1.0f, 0.0f });
 
     constexpr auto items = []() constexpr {
         std::array<const char*, 2> items {};
@@ -111,7 +111,7 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
         PropertyLabel("Texture");
         ResourceInputWidget("##Texture", sprite.texture, editor_layer.active_assets(), k2::Asset::Type::Image);
         PropertyLabel("UV Rect");
-        RectField(sprite.uv_rect, { 0.0f, 0.0f, 1.0f, 1.0f });
+        RectField("##UvRect", sprite.uv_rect, { 0.0f, 0.0f, 1.0f, 1.0f });
         EndPropertyTable();
     }
 }

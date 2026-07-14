@@ -54,8 +54,9 @@ namespace detail {
     inline constexpr Axis axis_w { .name = "W", .color { 0.55f, 0.39f, 0.67f, 1.0f } };
 
     template <k2::arithmetic T, std::size_t N>
-    void MultiAxisField(const std::array<Axis, N>& axes, const std::array<T*, N>& values,
+    void MultiAxisField(const char* id, const std::array<Axis, N>& axes, const std::array<T*, N>& values,
         const std::array<T, N>& resets, float speed) {
+        ImGui::PushID(id);
         constexpr auto gap = 4.0f;
         auto slot = (ImGui::GetContentRegionAvail().x - gap * (N - 1)) / N;
         for (std::size_t i = 0; i < N; i++) {
@@ -78,40 +79,42 @@ namespace detail {
             ImGuiDrag<T>("##value", values[i], speed);
             ImGui::PopID();
         }
+        ImGui::PopID();
     }
 }
 
 template <class T>
-void Vec2Field(glm::vec<2, T, glm::defaultp>& vec, const glm::vec<2, T, glm::defaultp>& reset = {},
+void Vec2Field(const char* id, glm::vec<2, T, glm::defaultp>& vec, const glm::vec<2, T, glm::defaultp>& reset = {},
     float speed = 0.1f) {
     detail::MultiAxisField<T, 2>(
-        { detail::axis_x, detail::axis_y }, { &vec.x, &vec.y }, { reset.x, reset.y }, speed);
+        id, { detail::axis_x, detail::axis_y }, { &vec.x, &vec.y }, { reset.x, reset.y }, speed);
 }
 
 template <class T>
-void Vec3Field(glm::vec<3, T, glm::defaultp>& vec, const glm::vec<3, T, glm::defaultp>& reset = {},
+void Vec3Field(const char* id, glm::vec<3, T, glm::defaultp>& vec, const glm::vec<3, T, glm::defaultp>& reset = {},
     float speed = 0.1f) {
-    detail::MultiAxisField<T, 3>({ detail::axis_x, detail::axis_y, detail::axis_z }, { &vec.x, &vec.y, &vec.z },
+    detail::MultiAxisField<T, 3>(id, { detail::axis_x, detail::axis_y, detail::axis_z }, { &vec.x, &vec.y, &vec.z },
         { reset.x, reset.y, reset.z }, speed);
 }
 
 template <class T>
-void Vec4Field(glm::vec<4, T, glm::defaultp>& vec, const glm::vec<4, T, glm::defaultp>& reset = {},
+void Vec4Field(const char* id, glm::vec<4, T, glm::defaultp>& vec, const glm::vec<4, T, glm::defaultp>& reset = {},
     float speed = 0.1f) {
-    detail::MultiAxisField<T, 4>({ detail::axis_x, detail::axis_y, detail::axis_z, detail::axis_w },
+    detail::MultiAxisField<T, 4>(id, { detail::axis_x, detail::axis_y, detail::axis_z, detail::axis_w },
         { &vec.x, &vec.y, &vec.z, &vec.w }, { reset.x, reset.y, reset.z, reset.w }, speed);
 }
 
-template <arithmetic T> void RectField(k2::Rect<T>& rect, const k2::Rect<T>& reset = {}, float speed = 0.1f) {
-    detail::MultiAxisField<T, 4>(
+template <arithmetic T>
+void RectField(const char* id, k2::Rect<T>& rect, const k2::Rect<T>& reset = {}, float speed = 0.1f) {
+    detail::MultiAxisField<T, 4>(id,
         { detail::axis_x, detail::axis_y, detail::Axis { .name = "W", .color = detail::axis_z.color },
             detail::Axis { .name = "H", .color = detail::axis_w.color } },
         { &rect.x, &rect.y, &rect.w, &rect.h }, { reset.x, reset.y, reset.w, reset.h }, speed);
 }
 
-inline void RotationField(glm::quat& quaternion) {
+inline void RotationField(const char* id, glm::quat& quaternion) {
     auto euler = glm::degrees(glm::eulerAngles(quaternion));
-    Vec3Field(euler, {}, 0.5f);
+    Vec3Field(id, euler, {}, 0.5f);
     quaternion = glm::quat(glm::radians(euler));
 }
 
