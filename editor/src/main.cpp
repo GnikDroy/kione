@@ -4,13 +4,22 @@
 #include "editor_layer.hpp"
 #include "ui/widgets/log_viewer.hpp"
 
+#include <format>
 #include <memory>
 
 class Editor : public k2::App {
 public:
-    Editor()
+    explicit Editor(std::vector<std::string> args)
         : k2::App({ .title { "Kione Editor" } }) {
-        layers.push_back(std::make_unique<k2::EditorLayer>(window));
+        auto layer = std::make_unique<k2::EditorLayer>(window);
+        if (!args.empty()) {
+            try {
+                layer->open_project(args.front());
+            } catch (const std::exception& e) {
+                k2::Log::app().error(std::format("Cannot open project '{}': {}", args.front(), e.what()));
+            }
+        }
+        layers.push_back(std::move(layer));
         glEnable(GL_MULTISAMPLE);
         k2::Log::app().info("Editor application started.");
     }
@@ -18,8 +27,8 @@ public:
     ~Editor() override { k2::Log::app().info("Editor application closed."); }
 };
 
-auto create_app() -> std::unique_ptr<k2::App> {
+auto create_app(std::vector<std::string> args) -> std::unique_ptr<k2::App> {
     k2::editor::EditorLoggerSink::get(); // Makes sure the sink is registered so that logs are tracked from the very
                                          // beginning.
-    return std::make_unique<Editor>();
+    return std::make_unique<Editor>(std::move(args));
 }

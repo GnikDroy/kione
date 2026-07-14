@@ -19,4 +19,4 @@ public:
     ~Sandbox() override { k2::Log::app().info("Sandbox application stopped."); }
 };
 
-auto create_app() -> std::unique_ptr<k2::App> { return std::make_unique<Sandbox>(); }
+auto create_app(std::vector<std::string>) -> std::unique_ptr<k2::App> { return std::make_unique<Sandbox>(); }
