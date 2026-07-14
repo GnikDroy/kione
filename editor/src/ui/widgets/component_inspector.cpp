@@ -1,8 +1,6 @@
 #include "ui/widgets/component_inspector.hpp"
 #include "editor_layer.hpp"
-#include "ui/components.hpp"
-
-#include <cfloat>
+#include "ui/components.hpp" // IWYU pragma: keep
 
 namespace k2::editor {
 
@@ -51,7 +49,7 @@ template <class EntityType> void ComponentInspectorWidget<EntityType>::render(Ed
 
     ImGui::Spacing();
     if (!missing.empty()) {
-        if (ImGui::Button(ICON_FA_PLUS_SQUARE "  Add Component", { -FLT_MIN, 0.0f })) {
+        if (ImGui::Button(ICON_FA_PLUS_SQUARE "  Add Component", { -std::numeric_limits<float>::min(), 0.0f })) {
             ImGui::OpenPopup("##AddComponent");
         }
 
