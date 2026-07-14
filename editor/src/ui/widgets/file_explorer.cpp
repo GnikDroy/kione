@@ -142,6 +142,15 @@ void FileExplorerWidget::render(EditorLayer& editor_layer) {
         }
         ImGui::EndDisabled();
         ImGui::SameLine();
+        ImGui::BeginDisabled(!editor_layer.project.has_value());
+        if (ImGui::Button(ICON_FA_GAMEPAD)) {
+            current_directory = editor_layer.project->root;
+        }
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+            ImGui::SetTooltip("Go to project root");
+        }
+        ImGui::EndDisabled();
+        ImGui::SameLine();
         render_breadcrumbs();
 
         ImGui::TableNextColumn();
