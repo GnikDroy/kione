@@ -4,6 +4,8 @@
 #include "layer.hpp"
 #include <unordered_set>
 
+struct ImFont;
+
 namespace k2 {
 class Window;
 
@@ -15,6 +17,7 @@ protected:
 
 public:
     std::unique_ptr<Imgui::ImGuiTheme> theme;
+    ImFont* icon_font {};
 
     explicit ImguiLayer(
         k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme = std::make_unique<Imgui::ImGuiThemeDark>());

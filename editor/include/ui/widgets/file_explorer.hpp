@@ -36,6 +36,11 @@ class FileExplorerWidget : public IWidget {
      */
     ImGuiTextFilter filter;
 
+    /**
+     * @brief Whether dotfiles are listed.
+     */
+    bool show_hidden = false;
+
 public:
     /**
      * @brief Renders the file explorer widget.
@@ -50,35 +55,23 @@ private:
     void cache_entries();
 
     /**
-     * @brief Renders the directory table.
-     * @param resources The resource manager holding the icon textures.
+     * @brief Renders the current path as clickable segments.
      */
-    void render_directory_table(k2::ResourceManager& resources);
+    void render_breadcrumbs();
+
+    /**
+     * @brief Renders the directory table.
+     * @param editor_layer The editor layer.
+     */
+    void render_directory_table(EditorLayer& editor_layer);
 
     /**
      * @brief Renders the directory.
      *
-     * @param resources The resource manager holding the icon textures.
+     * @param editor_layer The editor layer.
      * @param entry The directory entry.
      */
-    void render_directory(k2::ResourceManager& resources, const std::filesystem::directory_entry&);
-
-    /**
-     * @brief Predict the icon type based on the directory entry.
-     *
-     * @param entry The directory entry.
-     * @return The fnv1a hash of the icon type.
-     */
-    std::uint64_t predict_icon_type(const std::filesystem::directory_entry&);
-
-    /**
-     * @brief Predict the icon texture based on the directory entry.
-     *
-     * @param resources The resource manager holding the icon textures.
-     * @param entry The directory entry.
-     * @return The GL texture id of the icon texture.
-     */
-    ResourceID predict_icon_texture(k2::ResourceManager& resources, const std::filesystem::directory_entry&);
+    void render_directory(EditorLayer& editor_layer, const std::filesystem::directory_entry&);
 };
 
 }

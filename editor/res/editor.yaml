@@ -3,7 +3,3 @@ assets:
   Font:
       FontAwesome5: file:///fonts/fa-regular-400.ttf
       NotoSansRegular: file:///fonts/NotoSans-Regular.ttf
-  Image:
-      icon_file: file:///icons/file.png
-      icon_folder: file:///icons/folder.png
-      icon_image: file:///icons/image.png

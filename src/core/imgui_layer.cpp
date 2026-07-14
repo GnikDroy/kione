@@ -35,10 +35,10 @@ ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme
 
     ImGui::StyleColorsDark();
     this->theme->apply();
+    static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
     if (io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 18) != nullptr) {
         ImFontConfig config;
         config.MergeMode = true;
-        static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
         if (io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 18.0f, &config, icon_ranges.data()) == nullptr) {
             Log::core().warn("Failed to load res/fonts/fontawesome-webfont.ttf, icons might look corrupt.");
         }
@@ -46,6 +46,7 @@ ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme
         Log::core().warn("Failed to load res/fonts/NotoSans-Regular.ttf, falling back to the default font.");
         io.Fonts->AddFontDefault();
     }
+    icon_font = io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 52.0f, nullptr, icon_ranges.data());
 
     ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
     ImGui_ImplOpenGL3_Init();
