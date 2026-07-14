@@ -9,11 +9,13 @@
 #include <optional>
 
 #include "ui/widgets/main_menu.hpp"
+#include "ui/windows/asset_list.hpp"
 #include "ui/windows/component_inspector.hpp"
 #include "ui/windows/debug.hpp"
 #include "ui/windows/entity_selector.hpp"
 #include "ui/windows/file_explorer.hpp"
 #include "ui/windows/log_viewer.hpp"
+#include "ui/windows/project_settings.hpp"
 #include "ui/windows/viewport2D.hpp"
 
 namespace k2 {
@@ -33,6 +35,8 @@ public:
     k2::editor::DebugWindow debug_widget { ICON_FA_BUG "  Debug" };
     k2::editor::FileExplorerWindow file_explorer { ICON_FA_FILE "  File Explorer" };
     k2::editor::Viewport2DWindow viewport2D { ICON_FA_BINOCULARS "  Viewport 2D" };
+    k2::editor::ProjectSettingsWindow project_settings { ICON_FA_COG "  Project Settings" };
+    k2::editor::AssetListWindow asset_list { ICON_FA_ARCHIVE "  Assets" };
 
     explicit EditorLayer(k2::Window& window);
     void begin_frame() override;
@@ -41,6 +45,8 @@ public:
 private:
     void build_default_layout(unsigned int dockspace_id);
 
+    void load_image_resources(const AssetRegistry& asset_registry);
+
     bool layout_pending = !std::filesystem::exists("imgui.ini");
 
 public:
@@ -48,6 +54,8 @@ public:
     void open_project(const std::filesystem::path& path);
 
     void create_project(const std::filesystem::path& path);
+
+    void reload_assets();
 
     void request_exit();
 

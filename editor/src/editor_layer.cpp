@@ -32,15 +32,30 @@ EditorLayer::EditorLayer(k2::Window& window)
     }
 }
 
-void EditorLayer::open_project(const std::filesystem::path& path) {
-    auto new_project = Project::load(path);
-
-    for (auto& [id, pair] : new_project.assets) {
+void EditorLayer::load_image_resources(const AssetRegistry& asset_registry) {
+    for (auto& [id, pair] : asset_registry) {
         auto& [name, asset] = pair;
         if (asset.type == Asset::Type::Image && !resources.contains<Texture2D>(id)) {
             resources.set(name, Texture2D { AssetLoader::get<Image>(asset) });
         }
     }
+}
+
+void EditorLayer::reload_assets() {
+    if (!project.has_value()) {
+        return;
+    }
+    auto bundle_path = std::filesystem::relative(project->assets_file);
+    project->assets = AssetRegistryLoader::load({
+        .url = std::format("file:///{}", bundle_path.generic_string()),
+        .type = Asset::Type::AssetBundle,
+    });
+    load_image_resources(project->assets);
+}
+
+void EditorLayer::open_project(const std::filesystem::path& path) {
+    auto new_project = Project::load(path);
+    load_image_resources(new_project.assets);
 
     auto new_scene = SceneLoader::load(new_project.main_scene, resources, new_project.assets);
     new_scene.registry.ctx().emplace<EditorLayer&>(*this);
@@ -102,8 +117,10 @@ void EditorLayer::build_default_layout(unsigned int dockspace_id) {
 
     ImGui::DockBuilderDockWindow(entity_selector.title.c_str(), left);
     ImGui::DockBuilderDockWindow(component_inspector.title.c_str(), right);
+    ImGui::DockBuilderDockWindow(project_settings.title.c_str(), right);
     ImGui::DockBuilderDockWindow(log_viewer.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(file_explorer.title.c_str(), bottom);
+    ImGui::DockBuilderDockWindow(asset_list.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(debug_widget.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(viewport2D.title.c_str(), center);
     ImGui::DockBuilderFinish(dockspace_id);
@@ -121,6 +138,8 @@ void EditorLayer::update(float dt) {
     main_menu_widget.render(*this);
     component_inspector.render(*this);
     entity_selector.render(*this);
+    project_settings.render(*this);
+    asset_list.render(*this);
     log_viewer.render(*this);
     debug_widget.render(*this);
     file_explorer.render(*this);

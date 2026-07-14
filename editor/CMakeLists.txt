@@ -3,12 +3,14 @@ add_executable(
     src/main.cpp
     src/editor_layer.cpp
     src/ui/widgets/asset.cpp
+    src/ui/widgets/asset_list.cpp
     src/ui/widgets/component_inspector.cpp
     src/ui/widgets/debug.cpp
     src/ui/widgets/entity_selector.cpp
     src/ui/widgets/file_explorer.cpp
     src/ui/widgets/log_viewer.cpp
     src/ui/widgets/main_menu.cpp
+    src/ui/widgets/project_settings.cpp
     src/ui/widgets/viewport2D.cpp
 )
 add_executable(kione2D::editor ALIAS editor)
