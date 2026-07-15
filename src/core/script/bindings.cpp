@@ -1,6 +1,8 @@
 #include "core/script/bindings.hpp"
 
+#include <format>
 #include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -10,6 +12,43 @@
 #include "core/window.hpp"
 
 namespace k2 {
+namespace {
+
+    // A read-only Lua table: so every read of an unknown key, and every write raise an error.
+    void set_strict_constants(sol::state& lua, const std::string& name, const std::vector<std::string>& values) {
+        auto backing = lua.create_table();
+        for (const auto& value : values) {
+            backing.raw_set(value, value);
+        }
+
+        auto meta = lua.create_table();
+        meta["__index"] = [name, backing](const sol::table&, const std::string& key) -> std::string {
+            auto value = backing.raw_get<sol::optional<std::string>>(key);
+            if (!value) {
+                throw std::runtime_error(std::format("Unknown {} constant '{}'", name, key));
+            }
+            return *value;
+        };
+        meta["__newindex"] = [name](const sol::table&, const sol::object&, const sol::object&) {
+            throw std::runtime_error(std::format("{} is a read-only constant table", name));
+        };
+        meta["__metatable"] = false; // disable getmetatable/setmetatable
+
+        auto table = lua.create_named_table(name);
+        table[sol::metatable_key] = meta;
+    }
+
+}
+
+void bind_constants(sol::state& lua) {
+    set_strict_constants(lua, "Key", key_names_all());
+    set_strict_constants(lua, "MouseButton", { "left", "right", "middle" });
+    set_strict_constants(lua, "InputState", { "press", "release", "repeat" });
+    set_strict_constants(lua, "EventType",
+        { "key", "char", "mouse_button", "mouse_drop", "cursor_position", "cursor_enter", "scroll", "window_close",
+            "window_resize", "framebuffer_resize", "content_scale", "window_reposition", "window_iconify",
+            "window_maximize", "window_focus" });
+}
 
 void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled) {
     lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(), "x",
@@ -61,8 +100,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled)
         sol::property([](SpriteLight& light) { return light.texture.name; },
             [](SpriteLight& light, const std::string& name) { light.texture.set(name); }));
 
-    lua.new_usertype<AnimationComponent>("Animation", "playing", &AnimationComponent::playing, "speed",
-        &AnimationComponent::speed, "finished",
+    lua.new_usertype<AnimationComponent>(
+        "Animation", "playing", &AnimationComponent::playing, "speed", &AnimationComponent::speed, "finished",
         sol::property([](AnimationComponent& animation) { return animation.finished; }), "clip",
         sol::property([](AnimationComponent& animation) { return animation.clip.name; }), "play",
         [](AnimationComponent& animation, const std::string& clip) {
@@ -73,10 +112,12 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled)
         },
         "stop", [](AnimationComponent& animation) { animation.playing = false; });
 
-    lua.new_usertype<LuaEntity>("Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite,
-        "animation", &LuaEntity::animation, "point_light", &LuaEntity::point_light, "spot_light",
-        &LuaEntity::spot_light, "ambient_light", &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light,
-        "tag", &LuaEntity::tag, "valid", &LuaEntity::valid);
+    lua.new_usertype<LuaEntity>("Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "animation",
+        &LuaEntity::animation, "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light,
+        "ambient_light", &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "tag", &LuaEntity::tag,
+        "valid", &LuaEntity::valid);
+
+    bind_constants(lua);
 
     auto k2_table = lua.create_named_table("k2");
     k2_table["log"] = [](const std::string& message) { Log::app().info(message); };

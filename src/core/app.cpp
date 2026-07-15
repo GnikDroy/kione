@@ -20,6 +20,7 @@ void App::close() { running = false; }
 void App::run() {
     using namespace std::chrono;
     auto last_frame = steady_clock::now();
+    float accumulator = 0.0f;
 
     while (running) {
         window.poll();
@@ -28,6 +29,14 @@ void App::run() {
         auto current_frame = steady_clock::now();
         auto dt = std::min(duration<float>(current_frame - last_frame).count(), max_dt);
         last_frame = current_frame;
+
+        accumulator += dt;
+        while (accumulator >= fixed_dt) {
+            for (auto& layer : layers) {
+                layer->fixed_update(fixed_dt);
+            }
+            accumulator -= fixed_dt;
+        }
 
         for (auto& layer : layers) {
             layer->begin_frame();

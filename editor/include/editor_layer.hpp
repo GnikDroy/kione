@@ -43,6 +43,7 @@ public:
 
     explicit EditorLayer(k2::Window& window);
     void begin_frame() override;
+    void fixed_update(float) override;
     void update(float) override;
     bool handle_event(const Event* event) override;
 

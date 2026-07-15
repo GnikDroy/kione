@@ -23,6 +23,7 @@ public:
     Window window;
 
     float max_dt = 0.25f;
+    float fixed_dt = 1.0f / 60.0f;
 
 protected:
     std::vector<std::unique_ptr<Layer>> layers;

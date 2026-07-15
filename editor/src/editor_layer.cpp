@@ -156,6 +156,12 @@ void EditorLayer::build_default_layout(unsigned int dockspace_id) {
     ImGui::DockBuilderFinish(dockspace_id);
 }
 
+void EditorLayer::fixed_update(float dt) {
+    if (runtime_scene) {
+        scripts.fixed_update(*runtime_scene, active_assets(), dt);
+    }
+}
+
 void EditorLayer::update(float dt) {
     if (runtime_scene) {
         scripts.update(*runtime_scene, active_assets(), dt);

@@ -163,4 +163,8 @@ const char* key_state_name(KeyboardDevice::KeyState state) {
     }
 }
 
+std::vector<std::string> key_names_all() {
+    return named_keys | std::ranges::views::keys | std::ranges::to<std::vector>();
+}
+
 }

@@ -128,6 +128,17 @@ void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     }
 }
 
+void ScriptSystem::fixed_update(Scene& scene, const AssetRegistry& assets, float dt) {
+    auto& registry = scene.registry;
+    impl->ensure_attached(registry);
+
+    for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
+        auto& env = impl->instance(registry, entity, script, assets);
+        impl->call_hook(
+            env, "on_fixed_update", script.script, LuaEntity { .entity = entity, .registry = &registry }, dt);
+    }
+}
+
 bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const Event* event) {
     auto translated = translate_event(impl->lua, event);
     if (!translated || (translated->input && !impl->input_enabled)) {
