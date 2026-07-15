@@ -135,8 +135,20 @@ float AnimationEditorWidget::draw_preview(EditorLayer& editor_layer) {
 
     const auto* texture = frame ? editor_layer.resources.try_get<Texture2D>(clip.texture.id) : nullptr;
     if (texture != nullptr) {
+        constexpr auto stage = 128.0f;
+        auto pixel_width = std::abs(frame->uv.w) * float(texture->width);
+        auto pixel_height = std::abs(frame->uv.h) * float(texture->height);
+        auto size = ImVec2 { stage, stage };
+        if (pixel_width > 0.0f && pixel_height > 0.0f) {
+            auto scale = std::min(stage / pixel_width, stage / pixel_height);
+            size = { pixel_width * scale, pixel_height * scale };
+        }
+
+        auto cursor = ImGui::GetCursorPos();
+        ImGui::Dummy({ stage, stage });
+        ImGui::SetCursorPos({ cursor.x + (stage - size.x) * 0.5f, cursor.y + (stage - size.y) * 0.5f });
         // Engine textures are v-flipped
-        ImGui::ImageWithBg((std::uint64_t)texture->id, { 128.0f, 128.0f }, { frame->uv.x, frame->uv.y + frame->uv.h },
+        ImGui::ImageWithBg((std::uint64_t)texture->id, size, { frame->uv.x, frame->uv.y + frame->uv.h },
             { frame->uv.x + frame->uv.w, frame->uv.y }, { 0.0f, 0.0f, 0.0f, 0.0f },
             { frame->color.r, frame->color.g, frame->color.b, frame->color.a });
     } else {
