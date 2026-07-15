@@ -30,6 +30,8 @@ struct Texture2D {
     static GLenum predict_type_from_sized(std::size_t sized);
 
     GLuint id {};
+    int width {};
+    int height {};
 
     Texture2D() = default;
 
@@ -40,6 +42,8 @@ struct Texture2D {
 
     Texture2D& operator=(Texture2D&& other) noexcept {
         std::swap(other.id, id);
+        std::swap(other.width, width);
+        std::swap(other.height, height);
         return *this;
     }
 

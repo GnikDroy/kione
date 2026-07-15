@@ -73,6 +73,8 @@ Texture2D::Texture2D(std::size_t width, std::size_t height, std::span<const T> d
     bool generate_mipmaps) {
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
+    this->width = int(width);
+    this->height = int(height);
     glTexImage2D(GL_TEXTURE_2D, 0, (GLint)sized_format, (GLsizei)width, (GLsizei)height, 0,
         predict_format_from_sized(sized_format), predict_type_from_sized(sized_format), nullptr);
     if (!generate_mipmaps) {
@@ -99,6 +101,8 @@ template <FloatOrUInt8 T> Texture2D Texture2D::create_white_texture() {
     Texture2D texture;
     glGenTextures(1, &texture.id);
     glBindTexture(GL_TEXTURE_2D, texture.id);
+    texture.width = 1;
+    texture.height = 1;
 
     if constexpr (std::same_as<T, uint8_t>) {
         std::array<T, 4> data = { 255, 255, 255, 255 };
@@ -119,6 +123,8 @@ Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps) {
         if (image) {
             glGenTextures(1, &id);
             glBindTexture(GL_TEXTURE_2D, id);
+            width = image.width;
+            height = image.height;
 
             if (!generate_mipmaps) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
