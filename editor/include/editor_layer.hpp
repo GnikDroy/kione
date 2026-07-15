@@ -44,6 +44,7 @@ public:
     explicit EditorLayer(k2::Window& window);
     void begin_frame() override;
     void update(float) override;
+    bool handle_event(const Event* event) override;
 
 private:
     void build_default_layout(unsigned int dockspace_id);

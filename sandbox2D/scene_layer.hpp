@@ -63,5 +63,5 @@ public:
         renderer2D.render();
     }
 
-    bool handle_event(const k2::Event*) override { return false; }
+    bool handle_event(const k2::Event* event) override { return scripts.handle_event(scene, project.assets, event); }
 };

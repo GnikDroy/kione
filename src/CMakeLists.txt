@@ -14,6 +14,9 @@ add_library(
     core/logger.cpp
     core/project.cpp
     core/scene_loader.cpp
+    core/script/bindings.cpp
+    core/script/event_translation.cpp
+    core/script/key_names.cpp
     core/script_system.cpp
     events/event.cpp
     platform/desktop/window.cpp
@@ -37,6 +40,7 @@ target_include_directories(kione2D
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PRIVATE ${PROJECT_SOURCE_DIR}/src
 )
+target_compile_definitions(kione2D PUBLIC SOL_ALL_SAFETIES_ON=1)
 target_precompile_headers(kione2D PRIVATE
     <iostream>
     <memory>

@@ -11,6 +11,7 @@ add_executable(
     core/utils.cpp
     core/imgui_theme.cpp
     core/fnv.cpp
+    core/key_names.cpp
 
     components/camera.cpp
     components/relation.cpp

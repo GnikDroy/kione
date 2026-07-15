@@ -125,6 +125,15 @@ void EditorLayer::begin_frame() {
     ImGuizmo::BeginFrame();
 }
 
+bool EditorLayer::handle_event(const Event* event) {
+    // ImGui must always see the event to keep its state coherent.
+    bool imgui_wants = ImguiLayer::handle_event(event);
+    if (runtime_scene && scripts.handle_event(*runtime_scene, active_assets(), event)) {
+        return true;
+    }
+    return imgui_wants;
+}
+
 void EditorLayer::build_default_layout(unsigned int dockspace_id) {
     ImGui::DockBuilderRemoveNode(dockspace_id);
     ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
