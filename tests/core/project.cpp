@@ -88,6 +88,28 @@ TEST_CASE("Project save round-trips settings and preserves the manifest") {
     fs::remove_all(dir);
 }
 
+TEST_CASE("Asset name collisions across types fail the load, naming both assets") {
+    namespace fs = std::filesystem;
+    auto dir = fs::temp_directory_path() / "k2_project_collision_test";
+    fs::create_directories(dir);
+
+    {
+        std::ofstream file { dir / "game.k2project" };
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+                "assets:\n"
+                "  Script:\n    explosion: file:///scripts/explosion.lua\n"
+                "  Animation:\n    explosion: file:///animations/explosion.k2anim\n";
+    }
+
+    auto loaded = k2::Project::load(dir / "game.k2project");
+    REQUIRE_FALSE(loaded.has_value());
+    REQUIRE(loaded.error().contains("explosion"));
+    REQUIRE(loaded.error().contains("Script"));
+    REQUIRE(loaded.error().contains("Animation"));
+
+    fs::remove_all(dir);
+}
+
 TEST_CASE("Project rejects malformed files") {
     namespace fs = std::filesystem;
     auto dir = fs::temp_directory_path() / "k2_project_bad_test";

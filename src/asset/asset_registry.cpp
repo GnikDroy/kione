@@ -85,7 +85,22 @@ AssetBundle AssetRegistryLoader::merge(const Asset& base_asset) {
             child_asset.url = compute_new_path(child_asset, child_name, base_path);
         }
 
-        registry[fnv1a(full_name)] = { full_name, child_asset };
+        auto [it, inserted] = registry.try_emplace(fnv1a(full_name), full_name, child_asset);
+        if (!inserted) {
+            const auto& [existing_name, existing] = it->second;
+            // A bundle's self-entry registers it under its qualified name.
+            if (existing_name == full_name && existing.url == child_asset.url && existing.type == child_asset.type) {
+                continue;
+            }
+            if (existing_name == full_name) {
+                throw std::runtime_error(std::format(
+                    "Asset name collision: '{}' is declared as both {} ({}) and {} ({})", full_name,
+                    existing.get_type_strv(), existing.url, child_asset.get_type_strv(), child_asset.url));
+            }
+            throw std::runtime_error(std::format(
+                "Asset id hash collision between '{}' ({}) and '{}' ({})", existing_name, existing.url, full_name,
+                child_asset.url));
+        }
     }
     return bundle;
 }

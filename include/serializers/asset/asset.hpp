@@ -1,4 +1,6 @@
 #pragma once
+#include <format>
+#include <stdexcept>
 #include <yaml-cpp/yaml.h>
 
 #include "asset/asset.hpp"
@@ -33,9 +35,13 @@ template <> struct convert<k2::AssetBundle> {
 
             for (auto asset_it = asset_map_it.begin(); asset_it != asset_map_it.end(); asset_it++) {
                 auto&& name = asset_it->first.as<std::string>();
-                auto&& url = asset_it->second.as<std::string>();
-                registry.assets[name].type = type;
-                registry.assets[name].url = std::move(url);
+                k2::Asset asset { .url = asset_it->second.as<std::string>(), .type = type };
+                auto [existing, inserted] = registry.assets.try_emplace(name, asset);
+                if (!inserted) {
+                    throw std::runtime_error(std::format(
+                        "Asset name collision: '{}' is declared as both {} ({}) and {} ({})", name,
+                        existing->second.get_type_strv(), existing->second.url, asset.get_type_strv(), asset.url));
+                }
             }
         }
         return true;
