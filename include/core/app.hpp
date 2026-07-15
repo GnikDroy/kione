@@ -22,6 +22,8 @@ public:
 
     Window window;
 
+    float max_dt = 0.25f;
+
 protected:
     std::vector<std::unique_ptr<Layer>> layers;
     glm::vec4 clear_color { 0.2f, 0.2f, 0.2f, 1.0f };

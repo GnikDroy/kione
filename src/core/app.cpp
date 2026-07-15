@@ -1,5 +1,6 @@
 #include "core/app.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <ranges>
 
@@ -25,7 +26,7 @@ void App::run() {
         dispatch_events();
 
         auto current_frame = steady_clock::now();
-        auto dt = duration<float>(current_frame - last_frame).count();
+        auto dt = std::min(duration<float>(current_frame - last_frame).count(), max_dt);
         last_frame = current_frame;
 
         for (auto& layer : layers) {
