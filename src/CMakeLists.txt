@@ -8,6 +8,7 @@ add_library(
     asset/scheme.cpp
     core/animation_system.cpp
     core/app.cpp
+    core/entity_ops.cpp
     core/imgui_layer.cpp
     core/imgui_theme.cpp
     core/layer.cpp

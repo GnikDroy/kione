@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "core/logger.hpp"
+#include "core/script/host.hpp"
 #include "core/script/key_names.hpp"
 #include "core/script/lua_entity.hpp"
 #include "core/window.hpp"
@@ -50,7 +51,7 @@ void bind_constants(sol::state& lua) {
             "window_maximize", "window_focus" });
 }
 
-void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled) {
+void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled, ScriptHost& host) {
     lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(), "x",
         &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
     lua.new_usertype<glm::vec4>("vec4", sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>(), "x",
@@ -112,15 +113,21 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled)
         },
         "stop", [](AnimationComponent& animation) { animation.playing = false; });
 
-    lua.new_usertype<LuaEntity>("Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "animation",
-        &LuaEntity::animation, "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light,
-        "ambient_light", &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "tag", &LuaEntity::tag,
-        "valid", &LuaEntity::valid);
+    lua.new_usertype<LuaEntity>(
+        "Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "animation", &LuaEntity::animation,
+        "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "ambient_light",
+        &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "tag", &LuaEntity::tag, "valid",
+        &LuaEntity::valid, "id", &LuaEntity::id, "clone", [&host](const LuaEntity& self) { return host.clone(self); },
+        "destroy", [&host](const LuaEntity& self) { host.destroy(self); }, sol::meta_function::equal_to,
+        &LuaEntity::operator==);
 
     bind_constants(lua);
 
     auto k2_table = lua.create_named_table("k2");
     k2_table["log"] = [](const std::string& message) { Log::app().info(message); };
+    k2_table["find"] = [&host](std::string_view tag) { return host.find(tag); };
+    k2_table["find_all"] = [&host](std::string_view tag) { return host.find_all(tag); };
+    k2_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
 
     auto input = lua.create_named_table("Input");
     input["is_key_down"] = [&window, &input_enabled](const std::string& key) {

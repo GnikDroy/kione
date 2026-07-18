@@ -1,31 +1,57 @@
 #include "core/script_system.hpp"
 
+#include <cstdint>
 #include <format>
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <sol/sol.hpp>
 
 #include "asset/scheme.hpp"
+#include "components/relation.hpp"
 #include "components/script.hpp"
+#include "components/transform.hpp"
+#include "core/entity_ops.hpp"
 #include "core/logger.hpp"
 #include "core/scene.hpp"
 #include "core/script/bindings.hpp"
 #include "core/script/event_translation.hpp"
+#include "core/script/host.hpp"
 #include "core/script/lua_entity.hpp"
 
 namespace k2 {
 
-struct ScriptSystem::Impl {
+struct ScriptSystem::Impl : ScriptHost {
     sol::state lua;
     std::unordered_map<entt::entity, sol::environment> instances;
     std::unordered_map<ResourceID, std::string> sources;
     entt::registry* attached {};
     bool input_enabled { true };
 
+    entt::registry* current_registry {};
+    const AssetRegistry* current_assets {};
+
+    std::shared_ptr<std::uint64_t> epoch = std::make_shared<std::uint64_t>(0);
+
+    enum class CommandKind : std::uint8_t { AttachScript, Destroy };
+    struct Command {
+        CommandKind kind;
+        entt::entity entity;
+        AssetHandle script; // AttachScript only
+    };
+    std::vector<Command> pending;
+
+    static constexpr std::size_t command_cap = 10000;
+
     explicit Impl(Window& window) {
         lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
-        bind_script_api(lua, window, input_enabled);
+        bind_script_api(lua, window, input_enabled, *this);
+    }
+
+    LuaEntity make_handle(entt::entity entity) {
+        return LuaEntity { .entity = entity, .registry = current_registry, .epoch_token = epoch, .stamp = *epoch };
     }
 
     const std::string& source_for(const AssetHandle& handle, const AssetRegistry& assets) {
@@ -68,8 +94,7 @@ struct ScriptSystem::Impl {
         return result.template get<sol::optional<bool>>().value_or(false);
     }
 
-    sol::environment& instance(
-        entt::registry& registry, entt::entity entity, const ScriptComponent& script, const AssetRegistry& assets) {
+    sol::environment& instance(entt::entity entity, const ScriptComponent& script, const AssetRegistry& assets) {
         if (auto it = instances.find(entity); it != instances.end()) {
             return it->second;
         }
@@ -85,13 +110,15 @@ struct ScriptSystem::Impl {
         }
 
         auto& stored = instances.emplace(entity, std::move(env)).first->second;
-        call_hook(stored, "on_create", script.script, LuaEntity { .entity = entity, .registry = &registry });
+        call_hook(stored, "on_create", script.script, make_handle(entity));
         return stored;
     }
 
     void ensure_attached(entt::registry& registry) {
         if (attached != &registry) {
             instances.clear();
+            pending.clear();
+            ++*epoch; // invalidate handles held from a prior scene
             registry.on_destroy<ScriptComponent>().connect<&Impl::on_script_destroyed>(*this);
             attached = &registry;
         }
@@ -100,8 +127,108 @@ struct ScriptSystem::Impl {
     void on_script_destroyed(entt::registry& registry, entt::entity entity) {
         if (auto it = instances.find(entity); it != instances.end()) {
             auto& script = registry.get<ScriptComponent>(entity);
-            call_hook(it->second, "on_destroy", script.script, LuaEntity { .entity = entity, .registry = &registry });
+            call_hook(it->second, "on_destroy", script.script, make_handle(entity));
             instances.erase(it);
+        }
+    }
+
+    // ScriptComponent pool is not mutated mid-iteration.
+    void flush_commands() {
+        std::size_t processed = 0;
+        while (processed < pending.size()) {
+            if (processed >= command_cap) {
+                Log::core().error("Script command queue exceeded cap; dropping remaining spawn/destroy requests");
+                break;
+            }
+            auto command = pending[processed++];
+            switch (command.kind) {
+            case CommandKind::AttachScript: {
+                if (!current_registry->valid(command.entity)) {
+                    break; // destroyed before its script attached
+                }
+                auto& script = current_registry->emplace<ScriptComponent>(command.entity, command.script);
+                instance(command.entity, script, *current_assets);
+                break;
+            }
+            case CommandKind::Destroy: {
+                if (!current_registry->valid(command.entity)) {
+                    break;
+                }
+                RelationComponent::detach(*current_registry, command.entity);
+                std::vector<entt::entity> doomed { command.entity };
+                for (auto& child : RelationComponent::get_children(*current_registry, command.entity, true)) {
+                    doomed.push_back(child.first);
+                }
+                current_registry->destroy(doomed.begin(), doomed.end());
+                break;
+            }
+            }
+        }
+        pending.clear();
+    }
+
+    sol::object find(std::string_view tag) override {
+        require_registry("k2.find");
+        auto entity = find_by_tag(*current_registry, tag);
+        if (entity == entt::null) {
+            return sol::lua_nil;
+        }
+        return sol::make_object(lua, make_handle(entity));
+    }
+
+    sol::table find_all(std::string_view tag) override {
+        require_registry("k2.find_all");
+        auto table = lua.create_table();
+        for (auto entity : find_all_by_tag(*current_registry, tag)) {
+            table.add(make_handle(entity));
+        }
+        return table;
+    }
+
+    LuaEntity spawn(std::string_view tag, float x, float y) override {
+        require_registry("k2.spawn");
+        auto tmpl = find_by_tag(*current_registry, tag);
+        if (tmpl == entt::null) {
+            throw std::runtime_error(std::format("k2.spawn: no entity tagged '{}' to clone", tag));
+        }
+        return spawn_from(tmpl, x, y);
+    }
+
+    LuaEntity clone(const LuaEntity& source) override {
+        require_registry("entity:clone");
+        if (!source.valid()) {
+            throw std::runtime_error("entity:clone called on an invalid entity");
+        }
+        auto entity = clone_entity(*current_registry, source.entity);
+        defer_script_from(source.entity, entity);
+        return make_handle(entity);
+    }
+
+    void destroy(const LuaEntity& target) override {
+        if (!current_registry || !target.valid()) {
+            return;
+        }
+        pending.push_back({ .kind = CommandKind::Destroy, .entity = target.entity, .script = {} });
+    }
+
+    void require_registry(const char* who) const {
+        if (!current_registry) {
+            throw std::runtime_error(std::format("{} called outside a script hook", who));
+        }
+    }
+
+    LuaEntity spawn_from(entt::entity tmpl, float x, float y) {
+        auto entity = clone_entity(*current_registry, tmpl);
+        auto& transform = current_registry->get_or_emplace<TransformComponent>(entity);
+        transform.translation.x = x;
+        transform.translation.y = y;
+        defer_script_from(tmpl, entity);
+        return make_handle(entity);
+    }
+
+    void defer_script_from(entt::entity tmpl, entt::entity entity) {
+        if (const auto* script = current_registry->try_get<ScriptComponent>(tmpl)) {
+            pending.push_back({ .kind = CommandKind::AttachScript, .entity = entity, .script = script->script });
         }
     }
 };
@@ -116,27 +243,38 @@ void ScriptSystem::set_input_enabled(bool enabled) { impl->input_enabled = enabl
 void ScriptSystem::clear_cache() {
     impl->sources.clear();
     impl->instances.clear();
+    impl->pending.clear();
+    ++*impl->epoch;
 }
 
 void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
     impl->ensure_attached(registry);
+    impl->current_registry = &registry;
+    impl->current_assets = &assets;
 
     for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
-        auto& env = impl->instance(registry, entity, script, assets);
-        impl->call_hook(env, "on_update", script.script, LuaEntity { .entity = entity, .registry = &registry }, dt);
+        auto& env = impl->instance(entity, script, assets);
+        impl->call_hook(env, "on_update", script.script, impl->make_handle(entity), dt);
     }
+    impl->flush_commands();
+    impl->current_registry = nullptr;
+    impl->current_assets = nullptr;
 }
 
 void ScriptSystem::fixed_update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
     impl->ensure_attached(registry);
+    impl->current_registry = &registry;
+    impl->current_assets = &assets;
 
     for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
-        auto& env = impl->instance(registry, entity, script, assets);
-        impl->call_hook(
-            env, "on_fixed_update", script.script, LuaEntity { .entity = entity, .registry = &registry }, dt);
+        auto& env = impl->instance(entity, script, assets);
+        impl->call_hook(env, "on_fixed_update", script.script, impl->make_handle(entity), dt);
     }
+    impl->flush_commands();
+    impl->current_registry = nullptr;
+    impl->current_assets = nullptr;
 }
 
 bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const Event* event) {
@@ -146,13 +284,17 @@ bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const
     }
     auto& registry = scene.registry;
     impl->ensure_attached(registry);
+    impl->current_registry = &registry;
+    impl->current_assets = &assets;
 
     bool consumed = false;
     for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
-        auto& env = impl->instance(registry, entity, script, assets);
-        consumed |= impl->call_hook(
-            env, "on_event", script.script, LuaEntity { .entity = entity, .registry = &registry }, translated->table);
+        auto& env = impl->instance(entity, script, assets);
+        consumed |= impl->call_hook(env, "on_event", script.script, impl->make_handle(entity), translated->table);
     }
+    impl->flush_commands();
+    impl->current_registry = nullptr;
+    impl->current_assets = nullptr;
     return consumed;
 }
 
