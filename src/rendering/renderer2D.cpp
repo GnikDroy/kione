@@ -147,6 +147,7 @@ void Renderer2D::draw(const TransformComponent& transform, const SpriteComponent
         .z = transform.translation.z,
         .transform = transform.get_matrix(),
         .vertices = build_sprite_quad(sprite),
+        .unlit = sprite.unlit,
     });
 }
 
@@ -241,6 +242,7 @@ void Renderer2D::draw(Scene& scene) {
                 .z = world[3][2],
                 .transform = world,
                 .vertices = build_sprite_quad(sprite),
+                .unlit = sprite.unlit,
             });
         });
 }
@@ -360,15 +362,31 @@ void Renderer2D::render() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     batch_target = &albedo_buffer;
+    bool any_unlit = false;
     for (const auto& quad : sprite_quads) {
+        if (quad.unlit) {
+            any_unlit = true;
+            continue;
+        }
         draw(quad.vertices, indices, quad.transform);
     }
-    sprite_quads.clear();
     flush_batches(albedo_buffer);
     batch_target = &frame_buffer;
 
     light_pass();
     composite_pass();
+
+    // Drawn after the composite so they skip the light multiply.
+    // Unlit sprites always sit on top of lit sprites regardless of z.
+    if (any_unlit) {
+        for (const auto& quad : sprite_quads) {
+            if (quad.unlit) {
+                draw(quad.vertices, indices, quad.transform);
+            }
+        }
+        flush_batches(frame_buffer);
+    }
+    sprite_quads.clear();
 
     has_lights = false;
 }

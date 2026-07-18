@@ -40,6 +40,7 @@ private:
         float z;
         glm::mat4 transform;
         std::array<Vertex, 4> vertices;
+        bool unlit;
     };
 
     struct PointLightDraw {

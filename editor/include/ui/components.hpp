@@ -113,6 +113,8 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
         ResourceInputWidget("##Texture", sprite.texture, editor_layer.active_assets(), k2::Asset::Type::Image);
         PropertyLabel("UV Rect");
         RectField("##UvRect", sprite.uv_rect, { 0.0f, 0.0f, 1.0f, 1.0f });
+        PropertyLabel("Unlit");
+        ImGui::Checkbox("##Unlit", &sprite.unlit);
         EndPropertyTable();
     }
 }

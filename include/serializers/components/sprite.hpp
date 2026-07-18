@@ -10,6 +10,7 @@ template <> struct convert<k2::SpriteComponent> {
         node["Texture"] = sprite.texture;
         node["Color"] = sprite.color;
         node["UvRect"] = sprite.uv_rect;
+        node["Unlit"] = sprite.unlit;
         return node;
     }
 
@@ -20,6 +21,7 @@ template <> struct convert<k2::SpriteComponent> {
         sprite.texture = node["Texture"].as<k2::AssetHandle>();
         sprite.color = node["Color"].as<glm::vec4>();
         sprite.uv_rect = node["UvRect"].as<k2::Rect<float>>();
+        sprite.unlit = node["Unlit"].as<bool>(false);
         return true;
     }
 };

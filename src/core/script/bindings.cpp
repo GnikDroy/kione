@@ -101,7 +101,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             [](SpriteComponent& sprite, const Rectf& value) { sprite.uv_rect = value; }),
         "texture",
         sol::property([](SpriteComponent& sprite) { return sprite.texture.name; },
-            [](SpriteComponent& sprite, const std::string& name) { sprite.texture.set(name); }));
+            [](SpriteComponent& sprite, const std::string& name) { sprite.texture.set(name); }),
+        "unlit", &SpriteComponent::unlit);
 
     auto color_property = []<class Light>() {
         return sol::property([](Light& light) -> glm::vec3& { return light.color; },
