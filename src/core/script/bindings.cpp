@@ -41,6 +41,28 @@ namespace {
 
 }
 
+std::unordered_set<std::string> table_string_keys(const sol::table& table) {
+    std::unordered_set<std::string> keys;
+    for (const auto& [key, value] : table) {
+        if (key.is<std::string>()) {
+            keys.insert(key.as<std::string>());
+        }
+    }
+    return keys;
+}
+
+void reset_table_to_baseline(sol::table table, const std::unordered_set<std::string>& baseline) {
+    std::vector<std::string> extra;
+    for (const auto& [key, value] : table) {
+        if (key.is<std::string>() && !baseline.contains(key.as<std::string>())) {
+            extra.push_back(key.as<std::string>());
+        }
+    }
+    for (const auto& key : extra) {
+        table[key] = sol::lua_nil;
+    }
+}
+
 void bind_constants(sol::state& lua) {
     set_strict_constants(lua, "Key", key_names_all());
     set_strict_constants(lua, "MouseButton", { "left", "right", "middle" });

@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <sol/sol.hpp>
@@ -45,9 +46,19 @@ struct ScriptSystem::Impl : ScriptHost {
 
     static constexpr std::size_t command_cap = 10000;
 
+    std::unordered_set<std::string> baseline_globals;
+    std::unordered_set<std::string> baseline_k2;
+
     explicit Impl(Window& window) {
         lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
         bind_script_api(lua, window, input_enabled, *this);
+        baseline_globals = table_string_keys(lua.globals());
+        baseline_k2 = table_string_keys(lua["k2"]);
+    }
+
+    void reset_globals() {
+        reset_table_to_baseline(lua.globals(), baseline_globals);
+        reset_table_to_baseline(lua["k2"], baseline_k2); // e.g. k2.game
     }
 
     LuaEntity make_handle(entt::entity entity) {
@@ -244,6 +255,7 @@ void ScriptSystem::clear_cache() {
     impl->sources.clear();
     impl->instances.clear();
     impl->pending.clear();
+    impl->reset_globals();
     ++*impl->epoch;
 }
 
