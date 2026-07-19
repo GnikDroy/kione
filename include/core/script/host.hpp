@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <tuple>
 
 #include <sol/sol.hpp>
 
@@ -16,6 +17,8 @@ struct ScriptHost {
     virtual LuaEntity spawn(std::string_view tag, float x, float y) = 0;
     virtual LuaEntity clone(const LuaEntity& source) = 0;
     virtual void destroy(const LuaEntity& target) = 0;
+    virtual std::tuple<float, float> screen_to_world(float x, float y) = 0;
+    virtual std::tuple<float, float> world_to_screen(float x, float y) = 0;
 };
 
 }

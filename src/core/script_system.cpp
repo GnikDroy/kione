@@ -11,6 +11,7 @@
 #include <sol/sol.hpp>
 
 #include "asset/scheme.hpp"
+#include "components/camera.hpp"
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/transform.hpp"
@@ -215,6 +216,29 @@ struct ScriptSystem::Impl : ScriptHost {
         copy_lua_component(source.entity, entity);
         defer_script_from(source.entity, entity);
         return make_handle(entity);
+    }
+
+    SceneView* scene_view() {
+        auto* view = current_registry != nullptr ? current_registry->ctx().find<SceneView>() : nullptr;
+        return (view != nullptr && view->viewport.w > 0.0f && view->viewport.h > 0.0f) ? view : nullptr;
+    }
+
+    std::tuple<float, float> screen_to_world(float x, float y) override {
+        auto* view = scene_view();
+        if (view == nullptr) {
+            return { x, y };
+        }
+        auto world = view->camera.screen_to_world({ x, y }, view->viewport);
+        return { world.x, world.y };
+    }
+
+    std::tuple<float, float> world_to_screen(float x, float y) override {
+        auto* view = scene_view();
+        if (view == nullptr) {
+            return { x, y };
+        }
+        auto screen = view->camera.world_to_screen({ x, y }, view->viewport);
+        return { screen.x, screen.y };
     }
 
     void destroy(const LuaEntity& target) override {

@@ -227,6 +227,10 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
 
     if (editor_layer.is_playing()) {
         editor_layer.scripts.set_input_enabled(ImGui::IsWindowFocused());
+        scene.registry.ctx().insert_or_assign(k2::SceneView {
+            .camera = renderer2D.camera,
+            .viewport = { .x = rect_min.x, .y = rect_min.y, .w = width, .h = height },
+        });
     }
 }
 }

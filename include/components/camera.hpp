@@ -59,10 +59,28 @@ struct Camera {
     }
 
     glm::mat4 get_view_projection() { return get_projection() * get_view(); }
+
+    glm::vec2 screen_to_world(glm::vec2 screen, const Rect<float>& viewport) {
+        glm::vec2 ndc { (screen.x - viewport.x) / viewport.w * 2.0f - 1.0f,
+            1.0f - (screen.y - viewport.y) / viewport.h * 2.0f };
+        auto world = glm::inverse(get_view_projection()) * glm::vec4 { ndc, 0.0f, 1.0f };
+        return glm::vec2 { world } / world.w;
+    }
+
+    glm::vec2 world_to_screen(glm::vec2 world, const Rect<float>& viewport) {
+        auto clip = get_view_projection() * glm::vec4 { world, 0.0f, 1.0f };
+        auto ndc = glm::vec2 { clip } / clip.w;
+        return { viewport.x + (ndc.x + 1.0f) * 0.5f * viewport.w, viewport.y + (1.0f - ndc.y) * 0.5f * viewport.h };
+    }
 };
 
-template <class EntityType>
-const Camera* find_main_camera(const entt::basic_registry<EntityType>& registry) {
+// The view a scene is currently rendered with, published into the registry ctx each frame 
+struct SceneView {
+    Camera camera {};
+    Rect<float> viewport {};
+};
+
+template <class EntityType> const Camera* find_main_camera(const entt::basic_registry<EntityType>& registry) {
     for (auto entity : registry.template view<Camera, MainCamera>()) {
         return &registry.template get<Camera>(entity);
     }

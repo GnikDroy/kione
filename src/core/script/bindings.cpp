@@ -186,6 +186,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     k2_table["find"] = [&host](std::string_view tag) { return host.find(tag); };
     k2_table["find_all"] = [&host](std::string_view tag) { return host.find_all(tag); };
     k2_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
+    k2_table["screen_to_world"] = [&host](float x, float y) { return host.screen_to_world(x, y); };
+    k2_table["world_to_screen"] = [&host](float x, float y) { return host.world_to_screen(x, y); };
 
     auto input = lua.create_named_table("Input");
     input["is_key_down"] = [&window, &input_enabled](const std::string& key) {

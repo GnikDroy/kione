@@ -47,22 +47,34 @@ public:
                 .near_clip = 2000.f,
             } },
         });
+        publish_scene_view();
     }
 
     SceneLayer(const SceneLayer&) = delete;
 
     SceneLayer& operator=(const SceneLayer&) = delete;
 
-    void fixed_update(float dt) override { scripts.fixed_update(scene, project.assets, dt); }
+    void fixed_update(float dt) override {
+        publish_scene_view();
+        scripts.fixed_update(scene, project.assets, dt);
+    }
 
     void update(float dt) override {
+        publish_scene_view();
         scripts.update(scene, project.assets, dt);
         k2::AnimationSystem::update(scene, dt);
     }
 
-    void render() override {
+    void publish_scene_view() {
         const auto* main_camera = k2::find_main_camera(scene.registry);
-        renderer2D.camera = main_camera ? *main_camera : scene.registry.ctx().get<k2::Camera>();
+        scene.registry.ctx().insert_or_assign(k2::SceneView {
+            .camera = main_camera ? *main_camera : scene.registry.ctx().get<k2::Camera>(),
+            .viewport = { .x = 0.0f, .y = 0.0f, .w = float(window.get_width()), .h = float(window.get_height()) },
+        });
+    }
+
+    void render() override {
+        renderer2D.camera = scene.registry.ctx().get<k2::SceneView>().camera;
         renderer2D.draw(scene);
         renderer2D.render();
     }

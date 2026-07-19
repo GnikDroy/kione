@@ -40,6 +40,46 @@ TEST_CASE("orthographic camera maps its bounds to clip space", "[camera]") {
     REQUIRE(opposite.y == Approx(-1.0f));
 }
 
+TEST_CASE("screen_to_world / world_to_screen round-trip through a viewport rect", "[camera]") {
+    k2::Camera camera {
+        .position { 0.0f, 0.0f, 1000.0f },
+        .target { 0.0f, 0.0f, 0.0f },
+        .up { 0.0f, 1.0f, 0.0f },
+        .projection_traits { k2::Camera::OrthographicTraits {
+            .left = -640.0f,
+            .right = 640.0f,
+            .top = 360.0f,
+            .bottom = -360.0f,
+            .far_clip = 0.0f,
+            .near_clip = 2000.0f,
+        } },
+    };
+    k2::Rect<float> window { .x = 0.0f, .y = 0.0f, .w = 1280.0f, .h = 720.0f };
+
+    auto center = camera.screen_to_world({ 640.0f, 360.0f }, window);
+    REQUIRE(center.x == Approx(0.0f).margin(1e-3));
+    REQUIRE(center.y == Approx(0.0f).margin(1e-3));
+
+    // screen origin is top-left, y-down; world y is up
+    auto top_left = camera.screen_to_world({ 0.0f, 0.0f }, window);
+    REQUIRE(top_left.x == Approx(-640.0f));
+    REQUIRE(top_left.y == Approx(360.0f));
+
+    // an editor-style viewport image offset inside the window
+    k2::Rect<float> offset_view { .x = 100.0f, .y = 50.0f, .w = 640.0f, .h = 360.0f };
+    auto offset_center = camera.screen_to_world({ 100.0f + 320.0f, 50.0f + 180.0f }, offset_view);
+    REQUIRE(offset_center.x == Approx(0.0f).margin(1e-3));
+    REQUIRE(offset_center.y == Approx(0.0f).margin(1e-3));
+
+    auto screen = camera.world_to_screen({ -640.0f, 360.0f }, offset_view);
+    REQUIRE(screen.x == Approx(100.0f));
+    REQUIRE(screen.y == Approx(50.0f));
+
+    auto round_trip = camera.screen_to_world(camera.world_to_screen({ 123.0f, -217.0f }, window), window);
+    REQUIRE(round_trip.x == Approx(123.0f));
+    REQUIRE(round_trip.y == Approx(-217.0f));
+}
+
 TEST_CASE("orthographic depth range covers world z in [-1000, 1000]", "[camera]") {
     // The engine's convention: camera at z=1000 with near=2000/far=0 sees
     // world z from -1000 (near limit) to 1000 (far limit).
