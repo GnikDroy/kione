@@ -118,16 +118,16 @@ inline void RotationField(const char* id, glm::quat& quaternion) {
     quaternion = glm::quat(glm::radians(euler));
 }
 
-inline void ResourceInputWidget(
-    const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry, Asset::Type type) {
-    bool dangling = !handle.name.empty() && asset_registry.count(handle.id) == 0;
+inline void ResourceInputWidget(const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry,
+    Asset::Type type, bool can_be_none = true) {
+    bool dangling = handle.name.empty() ? !can_be_none : asset_registry.count(handle.id) == 0;
     if (dangling) {
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 
     const char* preview = handle.name.empty() ? "<none>" : handle.name.c_str();
     if (ImGui::BeginCombo(label.c_str(), preview)) {
-        if (ImGui::Selectable("<none>", handle.name.empty())) {
+        if (can_be_none && ImGui::Selectable("<none>", handle.name.empty())) {
             handle.set("");
         }
 

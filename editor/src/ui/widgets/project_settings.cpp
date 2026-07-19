@@ -14,7 +14,7 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
     if (loaded_file != project.file) {
         loaded_file = project.file;
         name = project.name;
-        main_scene = std::filesystem::relative(project.main_scene, project.root).generic_string();
+        main_scene.set(project.main_scene);
     }
 
     if (BeginPropertyTable("ProjectSettings")) {
@@ -25,14 +25,14 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
         PropertyLabel("Name");
         ImGui::InputText("##Name", &name);
         PropertyLabel("Main Scene");
-        ImGui::InputText("##MainScene", &main_scene);
+        ResourceInputWidget("##MainScene", main_scene, editor_layer.active_assets(), Asset::Type::Scene, false);
         EndPropertyTable();
     }
 
     ImGui::Spacing();
     if (ImGui::Button(ICON_FA_SAVE "  Save")) {
         project.name = name;
-        project.main_scene = project.root / main_scene;
+        project.main_scene = main_scene.name;
         if (auto saved = project.save()) {
             Log::core().info(std::format("Saved project: {}", project.file.string()));
         } else {
