@@ -16,6 +16,7 @@ add_executable(
     core/script_globals.cpp
     core/entity_ops.cpp
     core/lua_entity.cpp
+    core/font.cpp
 
     components/camera.cpp
     components/relation.cpp
@@ -41,6 +42,9 @@ target_precompile_headers(K2_tests PRIVATE
     <concepts>
     <format>
 )
+
+target_compile_definitions(K2_tests PRIVATE
+    K2_TEST_FONT="${PROJECT_SOURCE_DIR}/sandbox2D/res/fonts/NotoSans-Regular.ttf")
 
 target_link_libraries(K2_tests
     kione2D::kione2D

@@ -8,6 +8,7 @@
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
+#include "components/text.hpp"
 #include "components/transform.hpp"
 
 #include "ui/common.hpp"
@@ -115,6 +116,22 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
         RectField("##UvRect", sprite.uv_rect, { 0.0f, 0.0f, 1.0f, 1.0f });
         PropertyLabel("Unlit");
         ImGui::Checkbox("##Unlit", &sprite.unlit);
+        EndPropertyTable();
+    }
+}
+
+template <> void ComponentWidget<k2::TextComponent>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& text = reg.get<k2::TextComponent>(e);
+    auto& editor_layer = reg.ctx().get<EditorLayer&>();
+    if (BeginPropertyTable("Text")) {
+        PropertyLabel("Text");
+        ImGui::InputTextMultiline("##Text", &text.text, { 0.0f, ImGui::GetTextLineHeight() * 3.0f });
+        PropertyLabel("Font");
+        ResourceInputWidget("##Font", text.font, editor_layer.active_assets(), k2::Asset::Type::Font);
+        PropertyLabel("Size");
+        ImGui::DragFloat("##Size", &text.size, 0.5f, 1.0f, 512.0f);
+        PropertyLabel("Color");
+        ImGui::ColorEdit4("##Color", glm::value_ptr(text.color));
         EndPropertyTable();
     }
 }

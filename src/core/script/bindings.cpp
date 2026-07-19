@@ -2,15 +2,18 @@
 
 #include <format>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include <glm/glm.hpp>
 
 #include "core/logger.hpp"
+#include "core/resources.hpp"
 #include "core/script/host.hpp"
 #include "core/script/key_names.hpp"
 #include "core/script/lua_entity.hpp"
 #include "core/window.hpp"
+#include "rendering/font.hpp"
 
 namespace k2 {
 namespace {
@@ -124,6 +127,13 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         sol::property([](SpriteLight& light) { return light.texture.name; },
             [](SpriteLight& light, const std::string& name) { light.texture.set(name); }));
 
+    lua.new_usertype<TextComponent>("Text", "text", &TextComponent::text, "size", &TextComponent::size, "color",
+        sol::property([](TextComponent& text) -> glm::vec4& { return text.color; },
+            [](TextComponent& text, const glm::vec4& value) { text.color = value; }),
+        "font",
+        sol::property([](TextComponent& text) { return text.font.name; },
+            [](TextComponent& text, const std::string& name) { text.font.set(name); }));
+
     lua.new_usertype<AnimationComponent>(
         "Animation", "playing", &AnimationComponent::playing, "speed", &AnimationComponent::speed, "finished",
         sol::property([](AnimationComponent& animation) { return animation.finished; }), "clip",
@@ -137,7 +147,21 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         "stop", [](AnimationComponent& animation) { animation.playing = false; });
 
     lua.new_usertype<LuaEntity>(
-        "Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "animation", &LuaEntity::animation,
+        "Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "text", &LuaEntity::text,
+        "text_size",
+        [](const LuaEntity& self) -> std::tuple<float, float> {
+            auto* text = self.text();
+            if (text == nullptr || !self.registry->ctx().contains<ResourceManager&>()) {
+                return { 0.0f, 0.0f };
+            }
+            auto* font = self.registry->ctx().get<ResourceManager&>().try_get<Font>(text->font.id);
+            if (font == nullptr) {
+                return { 0.0f, 0.0f };
+            }
+            auto metrics = font->measure(text->text, text->size);
+            return { metrics.width, metrics.height };
+        },
+        "animation", &LuaEntity::animation,
         "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "ambient_light",
         &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "tag", &LuaEntity::tag, "valid",
         &LuaEntity::valid, "id", &LuaEntity::id, "clone", [&host](const LuaEntity& self) { return host.clone(self); },

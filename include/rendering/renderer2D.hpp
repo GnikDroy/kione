@@ -18,6 +18,8 @@
 
 namespace k2 {
 struct Scene;
+struct Font;
+struct TextComponent;
 
 class Renderer2D {
 public:
@@ -62,8 +64,10 @@ private:
     Program default_shader;
     Program light_shader;
     Program composite_shader;
+    Program text_shader;
 
     std::vector<SpriteQuad> sprite_quads {};
+    std::vector<SpriteQuad> text_quads {};
     std::unordered_map<std::uint32_t, std::vector<Renderer2D::VertexShaderInput>> vertices_buffer {};
     std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> indices_buffer {};
     std::unordered_map<ResourceID, std::uint32_t> texture_unit_map {};
@@ -81,6 +85,7 @@ private:
     FrameBuffer albedo_buffer;
     FrameBuffer light_buffer;
     const FrameBuffer* batch_target = &frame_buffer;
+    Program* batch_shader = &default_shader;
     Texture2D fallback_texture = Texture2D::create_white_texture<uint8_t>();
     // Picked up from the scene's registry context in draw(Scene), or set explicitly
     // via set_resources() when drawing without a scene.
@@ -120,6 +125,8 @@ public:
 
 private:
     static std::array<Vertex, 4> build_sprite_quad(const SpriteComponent& sprite);
+    void layout_text(const TextComponent& text, const Font& font, const glm::mat4& world);
+    void draw_text_pass();
 
     void collect_lights(Scene& scene);
     void ensure_light_targets(std::size_t width, std::size_t height);
@@ -127,5 +134,6 @@ private:
     void composite_pass();
     void flush();
     void flush_batches(const FrameBuffer& target);
+    void flush_batches(const FrameBuffer& target, Program& shader);
 };
 }

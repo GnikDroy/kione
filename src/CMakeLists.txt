@@ -26,6 +26,7 @@ add_library(
     platform/desktop/mouse.cpp
     platform/desktop/clipboard.cpp
     rendering/debug.cpp
+    rendering/font.cpp
     rendering/frame_buffer.cpp
     rendering/image.cpp
     rendering/mesh.cpp

@@ -7,6 +7,7 @@
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
+#include "components/text.hpp"
 #include "components/transform.hpp"
 
 TEST_CASE("clone_entity copies the closed component set") {
@@ -17,6 +18,7 @@ TEST_CASE("clone_entity copies the closed component set") {
     transform.translation = { 3.0f, 4.0f, 5.0f };
     registry.emplace<k2::SpriteComponent>(src);
     registry.emplace<k2::PointLight>(src).intensity = 2.5f;
+    registry.emplace<k2::TextComponent>(src).text = "+1g";
 
     auto clone = k2::clone_entity(registry, src);
 
@@ -26,6 +28,7 @@ TEST_CASE("clone_entity copies the closed component set") {
     REQUIRE(registry.get<k2::TransformComponent>(clone).translation == glm::vec3 { 3.0f, 4.0f, 5.0f });
     REQUIRE(registry.all_of<k2::SpriteComponent>(clone));
     REQUIRE(registry.get<k2::PointLight>(clone).intensity == 2.5f);
+    REQUIRE(registry.get<k2::TextComponent>(clone).text == "+1g");
 }
 
 TEST_CASE("clone_entity excludes Relation and Script") {

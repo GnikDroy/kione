@@ -11,6 +11,7 @@
 #include "serializers/components/script.hpp" // IWYU pragma: keep
 #include "serializers/components/sprite.hpp" // IWYU pragma: keep
 #include "serializers/components/tag.hpp" // IWYU pragma: keep
+#include "serializers/components/text.hpp" // IWYU pragma: keep
 #include "serializers/components/transform.hpp" // IWYU pragma: keep
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
 #include "serializers/utils.hpp" // IWYU pragma: keep
@@ -44,6 +45,7 @@ template <> struct convert<k2::Scene> {
             serialize.template operator()<k2::Camera>(entity_node, "Camera", entity);
             serialize.template operator()<k2::MainCamera>(entity_node, "MainCamera", entity);
             serialize.template operator()<k2::SpriteComponent>(entity_node, "SpriteComponent", entity);
+            serialize.template operator()<k2::TextComponent>(entity_node, "TextComponent", entity);
             serialize.template operator()<k2::AnimationComponent>(entity_node, "AnimationComponent", entity);
             serialize.template operator()<k2::ScriptComponent>(entity_node, "ScriptComponent", entity);
             serialize.template operator()<k2::AmbientLight>(entity_node, "AmbientLight", entity);

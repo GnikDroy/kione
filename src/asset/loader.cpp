@@ -1,6 +1,7 @@
 #include "asset/loader.hpp"
 
 #include <iterator>
+#include <span>
 #include <stdexcept>
 #include <string>
 
@@ -64,6 +65,14 @@ template <> SpriteAnimation AssetLoader::get<SpriteAnimation>(const Asset& asset
     return YAML::Load(*stream).as<SpriteAnimation>();
 }
 
+template <> BakedFont AssetLoader::get<BakedFont>(const Asset& asset) {
+    if (asset.type != Asset::Type::Font) {
+        throw std::invalid_argument("Invalid Asset Type!");
+    }
+    auto raw = AssetScheme::get_raw(asset);
+    return BakedFont { std::as_bytes(std::span { raw }) };
+}
+
 template <> std::expected<Image, std::string> AssetLoader::try_get<Image>(const Asset& asset) noexcept {
     try {
         return get<Image>(asset);
@@ -76,6 +85,14 @@ template <>
 std::expected<SpriteAnimation, std::string> AssetLoader::try_get<SpriteAnimation>(const Asset& asset) noexcept {
     try {
         return get<SpriteAnimation>(asset);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
+template <> std::expected<BakedFont, std::string> AssetLoader::try_get<BakedFont>(const Asset& asset) noexcept {
+    try {
+        return get<BakedFont>(asset);
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
     }

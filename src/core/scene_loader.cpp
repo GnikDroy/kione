@@ -1,6 +1,7 @@
 #include "core/scene_loader.hpp"
 
 #include <format>
+#include <span>
 #include <stdexcept>
 #include <type_traits>
 #include <unordered_map>
@@ -11,6 +12,7 @@
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
+#include "components/text.hpp"
 #include "core/logger.hpp"
 #include "rendering/sprite_animation.hpp"
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
@@ -49,6 +51,29 @@ static void load_textures(ResourceManager& resources, const AssetRegistry& asset
         const auto& [name, asset] = pair;
         if (asset.type == Asset::Type::Image) {
             load_texture(AssetHandle { name }, resources, assets);
+        }
+    }
+}
+
+static void load_fonts(ResourceManager& resources, const AssetRegistry& assets) {
+    for (const auto& [id, pair] : assets) {
+        const auto& [name, asset] = pair;
+        if (asset.type == Asset::Type::Font) {
+            auto baked = AssetLoader::try_get<BakedFont>(asset);
+            if (!baked) {
+                Log::core().error(std::format("Failed to load font '{}': {}", name, baked.error()));
+                continue;
+            }
+            resources.set(name,
+                Texture2D { std::size_t(baked->width), std::size_t(baked->height),
+                    std::span<const std::uint8_t> { baked->pixels }, GL_R8, false });
+            resources.set(name,
+                Font { .atlas = ResourceManager::resolve(name),
+                    .glyphs = std::move(baked->glyphs),
+                    .ascent = baked->ascent,
+                    .descent = baked->descent,
+                    .line_gap = baked->line_gap,
+                    .bake_px = baked->bake_px });
         }
     }
 }
@@ -135,6 +160,7 @@ std::expected<Scene, std::string> SceneLoader::load(
         deserialize.template operator()<Camera>(entity_node, "Camera", entity);
         deserialize.template operator()<MainCamera>(entity_node, "MainCamera", entity);
         deserialize.template operator()<SpriteComponent>(entity_node, "SpriteComponent", entity);
+        deserialize.template operator()<TextComponent>(entity_node, "TextComponent", entity);
         deserialize.template operator()<AnimationComponent>(entity_node, "AnimationComponent", entity);
         deserialize.template operator()<ScriptComponent>(entity_node, "ScriptComponent", entity);
         deserialize.template operator()<AmbientLight>(entity_node, "AmbientLight", entity);
@@ -145,6 +171,7 @@ std::expected<Scene, std::string> SceneLoader::load(
 
     load_textures(resources, assets);
     load_animation_clips(registry, resources, assets);
+    load_fonts(resources, assets);
     return scene;
 } catch (const std::exception& e) {
     return std::unexpected(e.what());

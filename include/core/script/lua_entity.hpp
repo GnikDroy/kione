@@ -10,6 +10,7 @@
 #include "components/light.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
+#include "components/text.hpp"
 #include "components/transform.hpp"
 
 namespace k2 {
@@ -30,6 +31,9 @@ struct LuaEntity {
     }
     [[nodiscard]] SpriteComponent* sprite() const {
         return valid() ? registry->try_get<SpriteComponent>(entity) : nullptr;
+    }
+    [[nodiscard]] TextComponent* text() const {
+        return valid() ? registry->try_get<TextComponent>(entity) : nullptr;
     }
     [[nodiscard]] AnimationComponent* animation() const {
         return valid() ? registry->try_get<AnimationComponent>(entity) : nullptr;

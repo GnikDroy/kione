@@ -7,6 +7,7 @@
 #include "components/light.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
+#include "components/text.hpp"
 #include "components/transform.hpp"
 
 namespace k2 {
@@ -31,6 +32,7 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     copy_component<Camera>(registry, src, dst);
     copy_component<MainCamera>(registry, src, dst);
     copy_component<SpriteComponent>(registry, src, dst);
+    copy_component<TextComponent>(registry, src, dst);
     copy_component<AnimationComponent>(registry, src, dst);
     copy_component<AmbientLight>(registry, src, dst);
     copy_component<PointLight>(registry, src, dst);

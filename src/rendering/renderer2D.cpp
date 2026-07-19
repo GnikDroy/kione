@@ -8,8 +8,10 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "components/light.hpp"
+#include "components/text.hpp"
 #include "core/logger.hpp"
 #include "core/scene.hpp"
+#include "rendering/font.hpp"
 
 namespace k2 {
 
@@ -37,7 +39,8 @@ static Program load_program(const char* vertex, const char* fragment) {
 Renderer2D::Renderer2D()
     : default_shader { load_program("res/shaders/2D_vs.glsl", "res/shaders/2D_fs.glsl") }
     , light_shader { load_program("res/shaders/light_vs.glsl", "res/shaders/light_fs.glsl") }
-    , composite_shader { load_program("res/shaders/composite_vs.glsl", "res/shaders/composite_fs.glsl") } {
+    , composite_shader { load_program("res/shaders/composite_vs.glsl", "res/shaders/composite_fs.glsl") }
+    , text_shader { load_program("res/shaders/text_vs.glsl", "res/shaders/text_fs.glsl") } {
     vbo = VertexBuffer { max_vertices * sizeof(VertexShaderInput) };
     ebo = IndexBuffer { max_vertices * sizeof(std::uint32_t) };
     vao.apply({ {
@@ -119,7 +122,7 @@ void Renderer2D::draw(std::span<const Renderer2D::Vertex> vertices, std::span<co
 
     if (total_textures > max_textures || vertices_vec.size() + vertices.size() > max_vertices
         || indices_vec.size() + indices.size() > max_vertices) {
-        flush_batches(*batch_target);
+        flush_batches(*batch_target, *batch_shader);
     }
 
     // Assign the new textures, texture unit coordinates
@@ -180,6 +183,18 @@ std::array<Renderer2D::Vertex, 4> Renderer2D::build_sprite_quad(const SpriteComp
     };
 }
 
+static glm::mat4 unscaled_world(entt::registry& registry, entt::entity entity) {
+    auto world = TransformComponent::world(registry, entity);
+    glm::mat4 basis { 1.0f };
+    for (int column = 0; column < 3; column++) {
+        auto axis = glm::vec3(world[column]);
+        auto length = glm::length(axis);
+        basis[column] = length > 0.0f ? glm::vec4(axis / length, 0.0f) : world[column];
+    }
+    basis[3] = world[3];
+    return basis;
+}
+
 void Renderer2D::collect_lights(Scene& scene) {
     ambient_light = {};
     point_lights.clear();
@@ -194,28 +209,16 @@ void Renderer2D::collect_lights(Scene& scene) {
         has_lights = true;
     });
 
-    // Lights take position and rotation from the world transform; the
-    // entity's scale must not multiply the light radius.
-    auto light_basis = [&](entt::entity entity) {
-        auto world = TransformComponent::world(registry, entity);
-        glm::mat4 basis { 1.0f };
-        for (int column = 0; column < 3; column++) {
-            auto axis = glm::vec3(world[column]);
-            auto length = glm::length(axis);
-            basis[column] = length > 0.0f ? glm::vec4(axis / length, 0.0f) : world[column];
-        }
-        basis[3] = world[3];
-        return basis;
-    };
-
     registry.view<TransformComponent, PointLight>().each([&](auto entity, const auto&, const PointLight& light) {
-        auto model = light_basis(entity) * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
+        auto model
+            = unscaled_world(registry, entity) * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
         point_lights.push_back({ model, light.color * light.intensity });
         has_lights = true;
     });
 
     registry.view<TransformComponent, SpotLight>().each([&](auto entity, const auto&, const SpotLight& light) {
-        auto model = light_basis(entity) * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
+        auto model
+            = unscaled_world(registry, entity) * glm::scale(glm::mat4(1.0f), { light.radius, light.radius, 1.0f });
         spot_lights.push_back({ model, light.color * light.intensity,
             std::cos(std::min(light.inner_angle, light.outer_angle)), std::cos(light.outer_angle) });
         has_lights = true;
@@ -245,6 +248,68 @@ void Renderer2D::draw(Scene& scene) {
                 .unlit = sprite.unlit,
             });
         });
+
+    scene.registry.view<k2::TransformComponent, k2::TextComponent>().each(
+        [&](auto entity, const auto&, const TextComponent& text) {
+            const auto* font = resources != nullptr ? resources->try_get<Font>(text.font.id) : nullptr;
+            if (font == nullptr) {
+                return;
+            }
+            layout_text(text, *font, unscaled_world(scene.registry, entity));
+        });
+}
+
+void Renderer2D::layout_text(const TextComponent& text, const Font& font, const glm::mat4& world) {
+    float scale = font.bake_px > 0.0f ? text.size / font.bake_px : 0.0f;
+    float line_advance = (font.ascent - font.descent + font.line_gap) * scale;
+
+    // The block is centered on the origin
+    auto metrics = font.measure(text.text, text.size);
+    std::size_t line = 0;
+    float pen_x = -metrics.line_widths[line] / 2.0f;
+    float pen_y = metrics.height / 2.0f - font.ascent * scale;
+
+    for (char c : text.text) {
+        if (c == '\n') {
+            line++;
+            pen_x = -metrics.line_widths[line] / 2.0f;
+            pen_y -= line_advance;
+            continue;
+        }
+        auto it = font.glyphs.find(c);
+        if (it == font.glyphs.end()) {
+            continue;
+        }
+        const auto& glyph = it->second;
+        if (glyph.size.x > 0.0f && glyph.size.y > 0.0f) {
+            float left = pen_x + glyph.bearing.x * scale;
+            float right = left + glyph.size.x * scale;
+            float top = pen_y - glyph.bearing.y * scale;
+            float bottom = top - glyph.size.y * scale;
+            const auto& uv = glyph.atlas_uv;
+
+            std::array<Vertex, 4> vertices { {
+                { .position = { right, top, 0.0f },
+                    .color = text.color,
+                    .texture_coordinate = { uv.x + uv.w, uv.y },
+                    .texture = font.atlas },
+                { .position = { left, bottom, 0.0f },
+                    .color = text.color,
+                    .texture_coordinate = { uv.x, uv.y + uv.h },
+                    .texture = font.atlas },
+                { .position = { left, top, 0.0f },
+                    .color = text.color,
+                    .texture_coordinate = { uv.x, uv.y },
+                    .texture = font.atlas },
+                { .position = { right, bottom, 0.0f },
+                    .color = text.color,
+                    .texture_coordinate = { uv.x + uv.w, uv.y + uv.h },
+                    .texture = font.atlas },
+            } };
+            text_quads.push_back({ .z = world[3][2], .transform = world, .vertices = vertices, .unlit = true });
+        }
+        pen_x += glyph.advance * scale;
+    }
 }
 
 void Renderer2D::ensure_light_targets(std::size_t width, std::size_t height) {
@@ -341,6 +406,7 @@ void Renderer2D::render() {
         }
         sprite_quads.clear();
         flush_batches(frame_buffer);
+        draw_text_pass();
         return;
     }
 
@@ -388,12 +454,31 @@ void Renderer2D::render() {
     }
     sprite_quads.clear();
 
+    draw_text_pass();
     has_lights = false;
 }
 
-void Renderer2D::flush() { flush_batches(*batch_target); }
+void Renderer2D::draw_text_pass() {
+    if (text_quads.empty()) {
+        return;
+    }
+    const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
+    std::ranges::stable_sort(text_quads, {}, &SpriteQuad::z);
+    batch_target = &frame_buffer;
+    batch_shader = &text_shader;
+    for (const auto& quad : text_quads) {
+        draw(quad.vertices, indices, quad.transform);
+    }
+    flush_batches(frame_buffer, text_shader);
+    batch_shader = &default_shader;
+    text_quads.clear();
+}
 
-void Renderer2D::flush_batches(const FrameBuffer& target) {
+void Renderer2D::flush() { flush_batches(*batch_target, *batch_shader); }
+
+void Renderer2D::flush_batches(const FrameBuffer& target) { flush_batches(target, default_shader); }
+
+void Renderer2D::flush_batches(const FrameBuffer& target, Program& shader) {
     std::array<GLint, 4> saved_viewport {};
     if (!target.is_swap_chain_target()) {
         glGetIntegerv(GL_VIEWPORT, saved_viewport.data());
@@ -414,7 +499,7 @@ void Renderer2D::flush_batches(const FrameBuffer& target) {
         auto& indices = indices_buffer[draw_mode];
 
         std::vector<std::int32_t> tex_unit_vec(texture_unit_map.size());
-        std::iota(tex_unit_vec.begin(), tex_unit_vec.end(), 0);
+        std::ranges::iota(tex_unit_vec, 0);
 
         // Units always get a binding: skipping missing textures would leave stale
         // bindings from earlier flushes visible.
@@ -423,7 +508,7 @@ void Renderer2D::flush_batches(const FrameBuffer& target) {
             (texture != nullptr ? *texture : fallback_texture).bind(texture_unit_index);
         }
 
-        default_shader.use()
+        shader.use()
             .set_uniform("texture_list", std::span { tex_unit_vec.data(), tex_unit_vec.size() })
             .set_uniform("model", glm::mat4(1.0f))
             .set_uniform("view", camera.get_view())
