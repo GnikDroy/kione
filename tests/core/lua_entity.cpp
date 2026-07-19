@@ -18,11 +18,13 @@ TEST_CASE("A live handle resolves components") {
     auto entity = registry.create();
     registry.emplace<k2::TransformComponent>(entity);
     registry.emplace<k2::SpriteComponent>(entity);
+    registry.emplace<k2::Camera>(entity);
 
     auto handle = handle_for(registry, entity, epoch);
     REQUIRE(handle.valid());
     REQUIRE(handle.transform() != nullptr);
     REQUIRE(handle.sprite() != nullptr);
+    REQUIRE(handle.camera() != nullptr);
     REQUIRE(handle.point_light() == nullptr); // absent component
     REQUIRE(handle.id() == entt::to_integral(entity));
 }

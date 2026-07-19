@@ -7,6 +7,7 @@
 #include <entt/entt.hpp>
 
 #include "components/animation.hpp"
+#include "components/camera.hpp"
 #include "components/light.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
@@ -49,6 +50,9 @@ struct LuaEntity {
     }
     [[nodiscard]] SpriteLight* sprite_light() const {
         return valid() ? registry->try_get<SpriteLight>(entity) : nullptr;
+    }
+    [[nodiscard]] Camera* camera() const {
+        return valid() ? registry->try_get<Camera>(entity) : nullptr;
     }
     [[nodiscard]] std::string tag() const {
         if (!valid()) {

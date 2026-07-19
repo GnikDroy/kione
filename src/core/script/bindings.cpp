@@ -97,6 +97,19 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
 
     lua.new_usertype<Rectf>("Rect", "x", &Rectf::x, "y", &Rectf::y, "w", &Rectf::w, "h", &Rectf::h);
 
+    lua.new_usertype<Camera>("Camera", "position",
+        sol::property([](Camera& camera) -> glm::vec3& { return camera.position; },
+            [](Camera& camera, const glm::vec3& value) { camera.position = value; }),
+        "target",
+        sol::property([](Camera& camera) -> glm::vec3& { return camera.target; },
+            [](Camera& camera, const glm::vec3& value) { camera.target = value; }),
+        "look_at", [](Camera& camera, float x, float y) {
+            camera.position.x = x;
+            camera.position.y = y;
+            camera.target.x = x;
+            camera.target.y = y;
+        });
+
     lua.new_usertype<SpriteComponent>("Sprite", "color",
         sol::property([](SpriteComponent& sprite) -> glm::vec4& { return sprite.color; },
             [](SpriteComponent& sprite, const glm::vec4& value) { sprite.color = value; }),
@@ -171,7 +184,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             }
             return lua_component(lua, *self.registry, self.entity);
         },
-        "tag",
+        "camera", &LuaEntity::camera, "tag",
         sol::property([](const LuaEntity& self) { return self.tag(); },
             [](const LuaEntity& self, const std::string& value) { self.set_tag(value); }),
         "valid",

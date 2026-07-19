@@ -54,15 +54,12 @@ public:
 
     SceneLayer& operator=(const SceneLayer&) = delete;
 
-    void fixed_update(float dt) override {
-        publish_scene_view();
-        scripts.fixed_update(scene, project.assets, dt);
-    }
+    void fixed_update(float dt) override { scripts.fixed_update(scene, project.assets, dt); }
 
     void update(float dt) override {
-        publish_scene_view();
         scripts.update(scene, project.assets, dt);
         k2::AnimationSystem::update(scene, dt);
+        publish_scene_view();
     }
 
     void publish_scene_view() {
