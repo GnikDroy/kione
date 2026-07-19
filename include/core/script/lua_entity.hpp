@@ -7,6 +7,7 @@
 #include <entt/entt.hpp>
 
 #include "components/animation.hpp"
+#include "components/audio.hpp"
 #include "components/camera.hpp"
 #include "components/light.hpp"
 #include "components/sprite.hpp"
@@ -53,6 +54,9 @@ struct LuaEntity {
     }
     [[nodiscard]] Camera* camera() const {
         return valid() ? registry->try_get<Camera>(entity) : nullptr;
+    }
+    [[nodiscard]] AudioSourceComponent* audio_source() const {
+        return valid() ? registry->try_get<AudioSourceComponent>(entity) : nullptr;
     }
     [[nodiscard]] std::string tag() const {
         if (!valid()) {

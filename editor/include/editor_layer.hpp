@@ -3,6 +3,7 @@
 #include "core/project.hpp"
 #include "core/resources.hpp"
 #include "core/scene.hpp"
+#include "core/audio.hpp"
 #include "core/script_system.hpp"
 
 #include <expected>
@@ -23,8 +24,10 @@
 namespace k2 {
 class EditorLayer : public k2::ImguiLayer {
 public:
-    // Declared before the scenes: registries can hold LuaComponents referencing the
-    // script system's lua state, so they must be destroyed first.
+    // Voices reference clip PCM owned by resources, so audio dies first; scripts are
+    // declared before the scenes because registries can hold LuaComponents referencing
+    // the script system's lua state.
+    AudioSystem audio;
     ScriptSystem scripts;
     Scene scene;
     std::optional<Scene> runtime_scene;

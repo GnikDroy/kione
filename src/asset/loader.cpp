@@ -73,6 +73,14 @@ template <> BakedFont AssetLoader::get<BakedFont>(const Asset& asset) {
     return BakedFont { std::as_bytes(std::span { raw }) };
 }
 
+template <> AudioClip AssetLoader::get<AudioClip>(const Asset& asset) {
+    if (asset.type != Asset::Type::Audio) {
+        throw std::invalid_argument("Invalid Asset Type!");
+    }
+    auto raw = AssetScheme::get_raw(asset);
+    return AudioClip { std::as_bytes(std::span { raw }) };
+}
+
 template <> std::expected<Image, std::string> AssetLoader::try_get<Image>(const Asset& asset) noexcept {
     try {
         return get<Image>(asset);
@@ -93,6 +101,14 @@ std::expected<SpriteAnimation, std::string> AssetLoader::try_get<SpriteAnimation
 template <> std::expected<BakedFont, std::string> AssetLoader::try_get<BakedFont>(const Asset& asset) noexcept {
     try {
         return get<BakedFont>(asset);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
+template <> std::expected<AudioClip, std::string> AssetLoader::try_get<AudioClip>(const Asset& asset) noexcept {
+    try {
+        return get<AudioClip>(asset);
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
     }

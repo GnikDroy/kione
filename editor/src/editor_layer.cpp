@@ -110,12 +110,14 @@ void EditorLayer::play() {
         return;
     }
     copy->registry.ctx().emplace<EditorLayer&>(*this);
+    copy->registry.ctx().emplace<AudioSystem&>(audio);
     runtime_scene = std::move(*copy);
     scripts.clear_cache();
     entity_selector.get_widget().reset_selection();
 }
 
 void EditorLayer::stop() {
+    audio.stop_all();
     runtime_scene.reset();
     entity_selector.get_widget().reset_selection();
 }
@@ -166,6 +168,7 @@ void EditorLayer::update(float dt) {
     if (runtime_scene) {
         scripts.update(*runtime_scene, active_assets(), dt);
         AnimationSystem::update(*runtime_scene, dt);
+        audio.update(*runtime_scene);
     }
     auto dockspace_id = ImGui::DockSpaceOverViewport();
     if (layout_pending) {

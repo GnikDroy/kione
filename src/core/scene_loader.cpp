@@ -12,6 +12,7 @@
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
+#include "components/audio.hpp"
 #include "components/text.hpp"
 #include "core/logger.hpp"
 #include "rendering/sprite_animation.hpp"
@@ -74,6 +75,20 @@ static void load_fonts(ResourceManager& resources, const AssetRegistry& assets) 
                     .descent = baked->descent,
                     .line_gap = baked->line_gap,
                     .bake_px = baked->bake_px });
+        }
+    }
+}
+
+static void load_audio_clips(ResourceManager& resources, const AssetRegistry& assets) {
+    for (const auto& [id, pair] : assets) {
+        const auto& [name, asset] = pair;
+        if (asset.type == Asset::Type::Audio) {
+            auto clip = AssetLoader::try_get<AudioClip>(asset);
+            if (!clip) {
+                Log::core().error(std::format("Failed to load audio clip '{}': {}", name, clip.error()));
+                continue;
+            }
+            resources.set(name, std::move(*clip));
         }
     }
 }
@@ -161,6 +176,7 @@ std::expected<Scene, std::string> SceneLoader::load(
         deserialize.template operator()<MainCamera>(entity_node, "MainCamera", entity);
         deserialize.template operator()<SpriteComponent>(entity_node, "SpriteComponent", entity);
         deserialize.template operator()<TextComponent>(entity_node, "TextComponent", entity);
+        deserialize.template operator()<AudioSourceComponent>(entity_node, "AudioSourceComponent", entity);
         deserialize.template operator()<AnimationComponent>(entity_node, "AnimationComponent", entity);
         deserialize.template operator()<ScriptComponent>(entity_node, "ScriptComponent", entity);
         deserialize.template operator()<AmbientLight>(entity_node, "AmbientLight", entity);
@@ -172,6 +188,7 @@ std::expected<Scene, std::string> SceneLoader::load(
     load_textures(resources, assets);
     load_animation_clips(registry, resources, assets);
     load_fonts(resources, assets);
+    load_audio_clips(resources, assets);
     return scene;
 } catch (const std::exception& e) {
     return std::unexpected(e.what());

@@ -148,6 +148,11 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         sol::property([](TextComponent& text) { return text.font.name; },
             [](TextComponent& text, const std::string& name) { text.font.set(name); }));
 
+    lua.new_usertype<AudioSourceComponent>("AudioSource", "volume", &AudioSourceComponent::volume, "pitch",
+        &AudioSourceComponent::pitch, "looping", &AudioSourceComponent::looping, "clip",
+        sol::property([](AudioSourceComponent& source) { return source.clip.name; },
+            [](AudioSourceComponent& source, const std::string& name) { source.clip.set(name); }));
+
     lua.new_usertype<AnimationComponent>(
         "Animation", "playing", &AnimationComponent::playing, "speed", &AnimationComponent::speed, "finished",
         sol::property([](AnimationComponent& animation) { return animation.finished; }), "clip",
@@ -175,7 +180,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             auto metrics = font->measure(text->text, text->size);
             return { metrics.width, metrics.height };
         },
-        "animation", &LuaEntity::animation,
+        "animation", &LuaEntity::animation, "audio_source", &LuaEntity::audio_source,
         "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "ambient_light",
         &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "data",
         [&lua](const LuaEntity& self) -> sol::object {
@@ -202,6 +207,9 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     k2_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
     k2_table["screen_to_world"] = [&host](float x, float y) { return host.screen_to_world(x, y); };
     k2_table["world_to_screen"] = [&host](float x, float y) { return host.world_to_screen(x, y); };
+    k2_table["play_sound"] = [&host](std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) {
+        host.play_sound(name, volume, pitch);
+    };
 
     auto input = lua.create_named_table("Input");
     input["is_key_down"] = [&window, &input_enabled](const std::string& key) {

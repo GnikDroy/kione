@@ -8,6 +8,7 @@
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
+#include "components/audio.hpp"
 #include "components/text.hpp"
 #include "components/transform.hpp"
 
@@ -132,6 +133,24 @@ template <> void ComponentWidget<k2::TextComponent>(entt::registry& reg, entt::r
         ImGui::DragFloat("##Size", &text.size, 0.5f, 1.0f, 512.0f);
         PropertyLabel("Color");
         ImGui::ColorEdit4("##Color", glm::value_ptr(text.color));
+        EndPropertyTable();
+    }
+}
+
+template <> void ComponentWidget<k2::AudioSourceComponent>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& source = reg.get<k2::AudioSourceComponent>(e);
+    auto& editor_layer = reg.ctx().get<EditorLayer&>();
+    if (BeginPropertyTable("Audio Source")) {
+        PropertyLabel("Clip");
+        ResourceInputWidget("##Clip", source.clip, editor_layer.active_assets(), k2::Asset::Type::Audio);
+        PropertyLabel("Volume");
+        ImGui::DragFloat("##Volume", &source.volume, 0.01f, 0.0f, 4.0f);
+        PropertyLabel("Pitch");
+        ImGui::DragFloat("##Pitch", &source.pitch, 0.01f, 0.1f, 4.0f);
+        PropertyLabel("Looping");
+        ImGui::Checkbox("##Looping", &source.looping);
+        PropertyLabel("Play On Create");
+        ImGui::Checkbox("##PlayOnCreate", &source.play_on_create);
         EndPropertyTable();
     }
 }

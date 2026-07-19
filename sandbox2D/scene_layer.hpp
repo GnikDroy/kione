@@ -23,6 +23,8 @@ class SceneLayer : public k2::Layer {
 
     k2::Project project;
     k2::ResourceManager resources {};
+    // Voices reference clip PCM owned by resources, so audio dies first.
+    k2::AudioSystem audio {};
     // Declared before the scenes: registries can hold LuaComponents referencing the
     // script system's lua state, so they must be destroyed first.
     k2::ScriptSystem scripts { window };
@@ -47,6 +49,7 @@ public:
                 .near_clip = 2000.f,
             } },
         });
+        scene.registry.ctx().emplace<k2::AudioSystem&>(audio);
         publish_scene_view();
     }
 
@@ -59,6 +62,7 @@ public:
     void update(float dt) override {
         scripts.update(scene, project.assets, dt);
         k2::AnimationSystem::update(scene, dt);
+        audio.update(scene);
         publish_scene_view();
     }
 

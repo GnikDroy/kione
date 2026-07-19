@@ -2,6 +2,7 @@ add_executable(
     K2_tests
 
     core/animation.cpp
+    core/audio.cpp
     core/project.cpp
     core/resource_container.cpp
     core/resource_manager.cpp

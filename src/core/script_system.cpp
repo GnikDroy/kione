@@ -15,8 +15,10 @@
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/transform.hpp"
+#include "core/audio.hpp"
 #include "core/entity_ops.hpp"
 #include "core/logger.hpp"
+#include "core/resources.hpp"
 #include "core/scene.hpp"
 #include "core/script/bindings.hpp"
 #include "core/script/event_translation.hpp"
@@ -252,6 +254,20 @@ struct ScriptSystem::Impl : ScriptHost {
         }
         auto screen = view->camera.world_to_screen({ x, y }, view->viewport);
         return { screen.x, screen.y };
+    }
+
+    void play_sound(std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) override {
+        require_registry("k2.play_sound");
+        if (!current_registry->ctx().contains<AudioSystem&>()
+            || !current_registry->ctx().contains<ResourceManager&>()) {
+            return;
+        }
+        auto& resources = current_registry->ctx().get<ResourceManager&>();
+        const auto* clip = resources.try_get<AudioClip>(ResourceManager::resolve(name));
+        if (clip == nullptr) {
+            throw std::runtime_error(std::format("k2.play_sound: unknown clip '{}'", name));
+        }
+        current_registry->ctx().get<AudioSystem&>().play(*clip, volume.value_or(1.0f), pitch.value_or(1.0f));
     }
 
     void destroy(const LuaEntity& target) override {

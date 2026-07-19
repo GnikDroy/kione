@@ -20,6 +20,7 @@ struct ScriptHost {
     virtual void destroy(const LuaEntity& target) = 0;
     virtual std::tuple<float, float> screen_to_world(float x, float y) = 0;
     virtual std::tuple<float, float> world_to_screen(float x, float y) = 0;
+    virtual void play_sound(std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) = 0;
 };
 
 }

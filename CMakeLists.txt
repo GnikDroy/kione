@@ -241,6 +241,25 @@ function(stb_build)
 endfunction()
 stb_build()
 
+# Setup miniaudio
+function(miniaudio_build)
+    FetchContent_Declare(
+        miniaudio
+        GIT_REPOSITORY https://github.com/mackron/miniaudio
+        GIT_TAG        0.11.21
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
+    )
+    FetchContent_GetProperties(miniaudio)
+    if(NOT miniaudio_POPULATED)
+        FetchContent_Populate(miniaudio)
+    endif()
+    add_library(miniaudio INTERFACE)
+    add_library(miniaudio::miniaudio ALIAS miniaudio)
+    target_include_directories(miniaudio INTERFACE ${miniaudio_SOURCE_DIR})
+endfunction()
+miniaudio_build()
+
 # Setup lua
 function(lua_build)
     FetchContent_Declare(

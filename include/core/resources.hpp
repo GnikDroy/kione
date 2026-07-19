@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/audio.hpp"
 #include "core/resource_manager.hpp"
 #include "rendering/font.hpp"
 #include "rendering/image.hpp"
@@ -8,5 +9,5 @@
 #include "rendering/texture.hpp"
 
 namespace k2 {
-using ResourceManager = BasicResourceManager<Shader, Image, Texture2D, TextureCube, SpriteAnimation, Font>;
+using ResourceManager = BasicResourceManager<Shader, Image, Texture2D, TextureCube, SpriteAnimation, Font, AudioClip>;
 }

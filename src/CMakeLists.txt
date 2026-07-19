@@ -8,6 +8,7 @@ add_library(
     asset/scheme.cpp
     core/animation_system.cpp
     core/app.cpp
+    core/audio.cpp
     core/entity_ops.cpp
     core/imgui_layer.cpp
     core/imgui_theme.cpp
@@ -78,6 +79,7 @@ target_link_libraries(kione2D
     nfd
 
     stb::stb
+    miniaudio::miniaudio
     tinyobjloader
     lua::lua
     sol2::sol2
