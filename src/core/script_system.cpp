@@ -54,7 +54,8 @@ struct ScriptSystem::Impl : ScriptHost {
     std::unordered_set<std::string> baseline_k2;
 
     explicit Impl(Window& window) {
-        lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
+        lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table, sol::lib::io,
+            sol::lib::os, sol::lib::coroutine);
         bind_script_api(lua, window, input_enabled, *this);
         baseline_globals = table_string_keys(lua.globals());
         baseline_k2 = table_string_keys(lua["k2"]);
