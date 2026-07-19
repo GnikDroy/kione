@@ -198,6 +198,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     k2_table["log"] = [](const std::string& message) { Log::app().info(message); };
     k2_table["find"] = [&host](std::string_view tag) { return host.find(tag); };
     k2_table["find_all"] = [&host](std::string_view tag) { return host.find_all(tag); };
+    k2_table["entities"] = [&host](sol::variadic_args component_names) { return host.entities(component_names); };
     k2_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
     k2_table["screen_to_world"] = [&host](float x, float y) { return host.screen_to_world(x, y); };
     k2_table["world_to_screen"] = [&host](float x, float y) { return host.world_to_screen(x, y); };

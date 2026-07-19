@@ -47,6 +47,26 @@ TEST_CASE("clone_entity excludes Relation and Script") {
     REQUIRE_FALSE(registry.all_of<k2::RelationComponent>(clone)); // a clone is a root
 }
 
+TEST_CASE("find_with_components filters by named components") {
+    entt::registry registry;
+    auto lit_sprite = registry.create();
+    registry.emplace<k2::SpriteComponent>(lit_sprite);
+    registry.emplace<k2::PointLight>(lit_sprite);
+    auto bare_sprite = registry.create();
+    registry.emplace<k2::SpriteComponent>(bare_sprite);
+    [[maybe_unused]] auto empty = registry.create(); // component-less, still counts as an entity
+
+    REQUIRE(k2::find_with_components(registry, {}).size() == 3); // no filter: every entity
+    REQUIRE(k2::find_with_components(registry, std::vector<std::string> { "Sprite" }).size() == 2);
+
+    auto lit = k2::find_with_components(registry, std::vector<std::string> { "Sprite", "PointLight" });
+    REQUIRE(lit.size() == 1);
+    REQUIRE(lit.front() == lit_sprite);
+
+    REQUIRE(k2::find_with_components(registry, std::vector<std::string> { "Camera" }).empty());
+    REQUIRE_THROWS(k2::find_with_components(registry, std::vector<std::string> { "Sprit" })); // typo fails loudly
+}
+
 TEST_CASE("find_by_tag / find_all_by_tag match on tag") {
     entt::registry registry;
     auto a = registry.create();

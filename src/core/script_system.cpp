@@ -198,6 +198,19 @@ struct ScriptSystem::Impl : ScriptHost {
         return table;
     }
 
+    sol::table entities(sol::variadic_args component_names) override {
+        require_registry("k2.entities");
+        std::vector<std::string> names;
+        for (auto name : component_names) {
+            names.push_back(name.get<std::string>());
+        }
+        auto table = lua.create_table();
+        for (auto entity : find_with_components(*current_registry, names)) {
+            table.add(make_handle(entity));
+        }
+        return table;
+    }
+
     LuaEntity spawn(std::string_view tag, float x, float y) override {
         require_registry("k2.spawn");
         auto tmpl = find_by_tag(*current_registry, tag);
