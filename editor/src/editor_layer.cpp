@@ -90,6 +90,42 @@ std::expected<void, std::string> EditorLayer::open_scene(std::string_view name) 
     return {};
 }
 
+std::expected<void, std::string> EditorLayer::create_scene(const std::filesystem::path& path) {
+    if (!project.has_value()) {
+        return std::unexpected("No project is open.");
+    }
+    auto scene_file = path;
+    if (scene_file.extension() != ".k2scene") {
+        scene_file += ".k2scene";
+    }
+    auto relative = std::filesystem::relative(std::filesystem::absolute(scene_file), project->root);
+    if (relative.empty() || relative.generic_string().starts_with("..")) {
+        return std::unexpected("A scene must live inside the project root.");
+    }
+    auto name = scene_file.stem().string();
+    if (project->assets.find(ResourceManager::resolve(name)) != project->assets.end()) {
+        return std::unexpected(std::format("An asset named '{}' already exists.", name));
+    }
+
+    std::ofstream scene_out { scene_file };
+    scene_out << YAML::Node { Scene {} } << "\n";
+    if (!scene_out) {
+        return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
+    }
+
+    if (!project->assets_node.IsDefined() || project->assets_node.IsNull()) {
+        project->assets_node = YAML::Node { YAML::NodeType::Map };
+    }
+    project->assets_node["Scene"][name] = std::format("file:///{}", relative.generic_string());
+    if (auto saved = project->save(); !saved) {
+        return saved;
+    }
+    if (auto reloaded = project->reload_assets(); !reloaded) {
+        return reloaded;
+    }
+    return open_scene(name);
+}
+
 std::expected<void, std::string> EditorLayer::create_project(const std::filesystem::path& path) {
     auto project_file = path;
     if (project_file.extension() != ".k2project") {

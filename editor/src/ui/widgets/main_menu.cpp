@@ -82,6 +82,21 @@ static void save_scene_as(EditorLayer& editor_layer) {
     }
 }
 
+static void new_scene_dialog(EditorLayer& editor_layer) {
+    std::array filters = { nfdfilteritem_t { "Scene files", "k2scene" } };
+    [[maybe_unused]] auto lock = NFD::Guard();
+    NFD::UniquePathU8 path;
+    auto default_path = editor_layer.project->root.string();
+    if (NFD::SaveDialog(path, filters.data(), nfdfiltersize_t(filters.size()), default_path.c_str()) != NFD_OKAY) {
+        return;
+    }
+    if (auto created = editor_layer.create_scene(std::filesystem::path { path.get() })) {
+        Log::core().info(std::format("Created scene: {}", std::string_view { path.get() }));
+    } else {
+        Log::core().error(std::format("Failed to create scene: {}", created.error()));
+    }
+}
+
 static void toggle_play(EditorLayer& editor_layer) {
     editor_layer.is_playing() ? editor_layer.stop() : editor_layer.play();
 }
@@ -117,6 +132,10 @@ static void render_scene_menu(EditorLayer& editor_layer) {
         }
         if (ImGui::MenuItem(ICON_FA_STOP "  Stop", "CTRL+P", false, playing)) {
             editor_layer.stop();
+        }
+        if (ImGui::MenuItem(ICON_FA_PLUS "  New Scene", nullptr, false,
+                editor_layer.project.has_value() && !playing)) {
+            new_scene_dialog(editor_layer);
         }
         if (ImGui::BeginMenu(ICON_FA_MAP "  Open Scene", editor_layer.project.has_value() && !playing)) {
             std::vector<std::string> scene_names;

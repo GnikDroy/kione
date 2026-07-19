@@ -1,9 +1,9 @@
 #include "asset/asset_registry.hpp"
+#include "core/audio.hpp"
 #include "core/imgui_layer.hpp"
 #include "core/project.hpp"
 #include "core/resources.hpp"
 #include "core/scene.hpp"
-#include "core/audio.hpp"
 #include "core/script_system.hpp"
 
 #include <expected>
@@ -66,6 +66,8 @@ public:
     [[nodiscard]] std::expected<void, std::string> open_project(const std::filesystem::path& path);
 
     [[nodiscard]] std::expected<void, std::string> open_scene(std::string_view name);
+
+    [[nodiscard]] std::expected<void, std::string> create_scene(const std::filesystem::path& path);
 
     [[nodiscard]] std::expected<void, std::string> create_project(const std::filesystem::path& path);
 
