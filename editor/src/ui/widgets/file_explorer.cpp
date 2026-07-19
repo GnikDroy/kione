@@ -59,8 +59,7 @@ void FileExplorerWidget::cache_entries() {
         std::error_code ec;
         auto it = fs::directory_iterator { current_directory, ec };
         if (ec) {
-            Log::core().warn(
-                std::format("Cannot list directory '{}': {}", current_directory.string(), ec.message()));
+            Log::core().warn(std::format("Cannot list directory '{}': {}", current_directory.string(), ec.message()));
             current_directory = cached_entries.first;
             return;
         }
@@ -82,9 +81,8 @@ void FileExplorerWidget::cache_entries() {
             }
             auto a_name = a.path().filename().string();
             auto b_name = b.path().filename().string();
-            return std::ranges::lexicographical_compare(a_name, b_name, [](unsigned char x, unsigned char y) {
-                return std::tolower(x) < std::tolower(y);
-            });
+            return std::ranges::lexicographical_compare(
+                a_name, b_name, [](unsigned char x, unsigned char y) { return std::tolower(x) < std::tolower(y); });
         });
     }
 }
@@ -227,6 +225,10 @@ void FileExplorerWidget::render_directory(EditorLayer& editor_layer, const std::
             } else if (entry.path().extension() == ".k2project") {
                 if (auto opened = editor_layer.open_project(entry.path()); !opened) {
                     Log::core().error(std::format("Failed to open project: {}", opened.error()));
+                }
+            } else if (entry.path().extension() == ".k2scene" && !editor_layer.is_playing()) {
+                if (auto opened = editor_layer.open_scene_file(entry.path()); !opened) {
+                    Log::core().error(std::format("Failed to open scene: {}", opened.error()));
                 }
             }
         }

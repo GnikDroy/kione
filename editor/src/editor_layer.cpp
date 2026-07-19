@@ -90,6 +90,23 @@ std::expected<void, std::string> EditorLayer::open_scene(std::string_view name) 
     return {};
 }
 
+std::expected<void, std::string> EditorLayer::open_scene_file(const std::filesystem::path& path) {
+    std::error_code ec;
+    auto target = std::filesystem::weakly_canonical(path, ec);
+    for (const auto& [id, pair] : active_assets()) {
+        const auto& [name, asset] = pair;
+        if (asset.type != Asset::Type::Scene) {
+            continue;
+        }
+        auto asset_path = std::filesystem::weakly_canonical(
+            std::filesystem::path { std::string { asset.get_url_divisions().path } }, ec);
+        if (asset_path == target) {
+            return open_scene(name);
+        }
+    }
+    return std::unexpected(std::format("'{}' is not a Scene asset of the open project", path.filename().string()));
+}
+
 std::expected<void, std::string> EditorLayer::create_scene(const std::filesystem::path& path) {
     if (!project.has_value()) {
         return std::unexpected("No project is open.");

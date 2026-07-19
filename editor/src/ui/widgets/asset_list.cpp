@@ -33,8 +33,8 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
         return std::tie(a->second.type, a->first) < std::tie(b->second.type, b->first);
     });
 
-    constexpr auto flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY
-        | ImGuiTableFlags_BordersInnerV;
+    constexpr auto flags
+        = ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerV;
     if (ImGui::BeginTable("##assets", 3, flags)) {
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 1.0f);
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 90.0f);
@@ -49,7 +49,14 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
             }
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
-            ImGui::TextUnformatted(asset_name.c_str());
+            if (ImGui::Selectable(asset_name.c_str(), false,
+                    ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)
+                && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && asset.type == Asset::Type::Scene
+                && !editor_layer.is_playing()) {
+                if (auto opened = editor_layer.open_scene(asset_name); !opened) {
+                    Log::core().error(std::format("Failed to open scene '{}': {}", asset_name, opened.error()));
+                }
+            }
             ImGui::TableNextColumn();
             ImGui::TextUnformatted(std::string { asset.get_type_strv() }.c_str());
             ImGui::TableNextColumn();
