@@ -44,10 +44,10 @@ static void save_scene(EditorLayer& editor_layer) {
         return;
     }
     try {
-        auto it = editor_layer.project->assets.find(ResourceManager::resolve(editor_layer.project->main_scene));
+        auto it = editor_layer.project->assets.find(ResourceManager::resolve(editor_layer.current_scene));
         if (it == editor_layer.project->assets.end() || it->second.second.type != Asset::Type::Scene) {
             Log::core().error(
-                std::format("Project has no scene asset '{}' to save to", editor_layer.project->main_scene));
+                std::format("Project has no scene asset '{}' to save to", editor_layer.current_scene));
             return;
         }
         auto path = std::string { it->second.second.get_url_divisions().path };
@@ -117,6 +117,23 @@ static void render_scene_menu(EditorLayer& editor_layer) {
         }
         if (ImGui::MenuItem(ICON_FA_STOP "  Stop", "CTRL+P", false, playing)) {
             editor_layer.stop();
+        }
+        if (ImGui::BeginMenu(ICON_FA_MAP "  Open Scene", editor_layer.project.has_value() && !playing)) {
+            std::vector<std::string> scene_names;
+            for (const auto& [id, pair] : editor_layer.active_assets()) {
+                if (pair.second.type == Asset::Type::Scene) {
+                    scene_names.push_back(pair.first);
+                }
+            }
+            std::ranges::sort(scene_names);
+            for (const auto& name : scene_names) {
+                if (ImGui::MenuItem(name.c_str(), nullptr, name == editor_layer.current_scene)) {
+                    if (auto opened = editor_layer.open_scene(name); !opened) {
+                        Log::core().error(std::format("Failed to open scene '{}': {}", name, opened.error()));
+                    }
+                }
+            }
+            ImGui::EndMenu();
         }
         ImGui::Separator();
 

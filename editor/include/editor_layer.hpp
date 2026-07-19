@@ -30,6 +30,7 @@ public:
     AudioSystem audio;
     ScriptSystem scripts;
     Scene scene;
+    std::string current_scene;
     std::optional<Scene> runtime_scene;
 
     AssetRegistry assets
@@ -63,6 +64,8 @@ private:
 
 public:
     [[nodiscard]] std::expected<void, std::string> open_project(const std::filesystem::path& path);
+
+    [[nodiscard]] std::expected<void, std::string> open_scene(std::string_view name);
 
     [[nodiscard]] std::expected<void, std::string> create_project(const std::filesystem::path& path);
 

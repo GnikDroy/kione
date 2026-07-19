@@ -72,8 +72,21 @@ std::expected<void, std::string> EditorLayer::open_project(const std::filesystem
     }
     new_scene->registry.ctx().emplace<EditorLayer&>(*this);
     scene = std::move(*new_scene);
+    current_scene = new_project->main_scene;
     entity_selector.get_widget().reset_selection();
     project = std::move(*new_project);
+    return {};
+}
+
+std::expected<void, std::string> EditorLayer::open_scene(std::string_view name) {
+    auto new_scene = SceneLoader::load(name, resources, active_assets());
+    if (!new_scene) {
+        return std::unexpected(new_scene.error());
+    }
+    new_scene->registry.ctx().emplace<EditorLayer&>(*this);
+    scene = std::move(*new_scene);
+    current_scene = name;
+    entity_selector.get_widget().reset_selection();
     return {};
 }
 
