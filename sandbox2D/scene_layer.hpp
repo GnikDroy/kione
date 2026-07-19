@@ -23,9 +23,11 @@ class SceneLayer : public k2::Layer {
 
     k2::Project project;
     k2::ResourceManager resources {};
+    // Declared before the scenes: registries can hold LuaComponents referencing the
+    // script system's lua state, so they must be destroyed first.
+    k2::ScriptSystem scripts { window };
     k2::Scene scene = value_or_abort(k2::SceneLoader::load(project.main_scene, resources, project.assets));
     k2::Renderer2D renderer2D {};
-    k2::ScriptSystem scripts { window };
 
 public:
     explicit SceneLayer(k2::Window& window, const std::string& project_path)

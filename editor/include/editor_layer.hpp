@@ -23,12 +23,16 @@
 namespace k2 {
 class EditorLayer : public k2::ImguiLayer {
 public:
+    // Declared before the scenes: registries can hold LuaComponents referencing the
+    // script system's lua state, so they must be destroyed first.
+    ScriptSystem scripts;
     Scene scene;
     std::optional<Scene> runtime_scene;
-    AssetRegistry assets = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml", .type = Asset::Type::AssetBundle });
+
+    AssetRegistry assets
+        = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml", .type = Asset::Type::AssetBundle });
     std::optional<Project> project;
     ResourceManager resources;
-    ScriptSystem scripts;
 
     k2::editor::MainMenuWidget main_menu_widget;
     k2::editor::ComponentInspectorWindow<entt::entity> component_inspector { ICON_FA_WRENCH "  Inspector" };
@@ -55,7 +59,6 @@ private:
     bool layout_pending = !std::filesystem::exists("imgui.ini");
 
 public:
-
     [[nodiscard]] std::expected<void, std::string> open_project(const std::filesystem::path& path);
 
     [[nodiscard]] std::expected<void, std::string> create_project(const std::filesystem::path& path);

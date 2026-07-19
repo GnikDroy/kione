@@ -18,6 +18,7 @@ add_library(
     core/script/bindings.cpp
     core/script/event_translation.cpp
     core/script/key_names.cpp
+    core/script/lua_component.cpp
     core/script_system.cpp
     events/event.cpp
     platform/desktop/window.cpp

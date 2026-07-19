@@ -16,6 +16,7 @@ add_executable(
     core/script_globals.cpp
     core/entity_ops.cpp
     core/lua_entity.cpp
+    core/lua_component.cpp
     core/font.cpp
 
     components/camera.cpp

@@ -20,6 +20,7 @@
 #include "core/script/bindings.hpp"
 #include "core/script/event_translation.hpp"
 #include "core/script/host.hpp"
+#include "core/script/lua_component.hpp"
 #include "core/script/lua_entity.hpp"
 
 namespace k2 {
@@ -211,6 +212,7 @@ struct ScriptSystem::Impl : ScriptHost {
             throw std::runtime_error("entity:clone called on an invalid entity");
         }
         auto entity = clone_entity(*current_registry, source.entity);
+        copy_lua_component(source.entity, entity);
         defer_script_from(source.entity, entity);
         return make_handle(entity);
     }
@@ -230,11 +232,19 @@ struct ScriptSystem::Impl : ScriptHost {
 
     LuaEntity spawn_from(entt::entity tmpl, float x, float y) {
         auto entity = clone_entity(*current_registry, tmpl);
+        copy_lua_component(tmpl, entity);
         auto& transform = current_registry->get_or_emplace<TransformComponent>(entity);
         transform.translation.x = x;
         transform.translation.y = y;
         defer_script_from(tmpl, entity);
         return make_handle(entity);
+    }
+
+    void copy_lua_component(entt::entity src, entt::entity dst) {
+        const auto* component = current_registry->try_get<LuaComponent>(src);
+        if (component != nullptr && component->valid()) {
+            current_registry->emplace<LuaComponent>(dst, deep_copy_table(*component));
+        }
     }
 
     void defer_script_from(entt::entity tmpl, entt::entity entity) {

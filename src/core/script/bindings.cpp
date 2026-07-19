@@ -10,6 +10,7 @@
 #include "core/logger.hpp"
 #include "core/resources.hpp"
 #include "core/script/host.hpp"
+#include "core/script/lua_component.hpp"
 #include "core/script/key_names.hpp"
 #include "core/script/lua_entity.hpp"
 #include "core/window.hpp"
@@ -163,7 +164,14 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         },
         "animation", &LuaEntity::animation,
         "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "ambient_light",
-        &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "tag",
+        &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "data",
+        [&lua](const LuaEntity& self) -> sol::object {
+            if (!self.valid()) {
+                return sol::lua_nil;
+            }
+            return lua_component(lua, *self.registry, self.entity);
+        },
+        "tag",
         sol::property([](const LuaEntity& self) { return self.tag(); },
             [](const LuaEntity& self, const std::string& value) { self.set_tag(value); }),
         "valid",
