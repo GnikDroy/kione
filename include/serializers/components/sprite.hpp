@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+
 #include "components/sprite.hpp"
 #include "serializers/asset/asset_handle.hpp"
 #include <yaml-cpp/yaml.h>
@@ -10,7 +12,15 @@ template <> struct convert<k2::SpriteComponent> {
         node["Texture"] = sprite.texture;
         node["Color"] = sprite.color;
         node["UvRect"] = sprite.uv_rect;
-        node["Unlit"] = sprite.unlit;
+        if (sprite.unlit) {
+            node["Unlit"] = sprite.unlit;
+        }
+        if (sprite.blend == k2::BlendMode::Additive) {
+            node["Blend"] = "Additive";
+        }
+        if (sprite.intensity != 1.0f) {
+            node["Intensity"] = sprite.intensity;
+        }
         return node;
     }
 
@@ -22,6 +32,15 @@ template <> struct convert<k2::SpriteComponent> {
         sprite.color = node["Color"].as<glm::vec4>();
         sprite.uv_rect = node["UvRect"].as<k2::Rect<float>>();
         sprite.unlit = node["Unlit"].as<bool>(false);
+        const auto& blend = node["Blend"].as<std::string>("Alpha");
+        if (blend == "Additive") {
+            sprite.blend = k2::BlendMode::Additive;
+        } else if (blend == "Alpha") {
+            sprite.blend = k2::BlendMode::Alpha;
+        } else {
+            return false;
+        }
+        sprite.intensity = node["Intensity"].as<float>(1.0f);
         return true;
     }
 };

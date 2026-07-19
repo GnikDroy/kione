@@ -119,7 +119,19 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         "texture",
         sol::property([](SpriteComponent& sprite) { return sprite.texture.name; },
             [](SpriteComponent& sprite, const std::string& name) { sprite.texture.set(name); }),
-        "unlit", &SpriteComponent::unlit);
+        "unlit", &SpriteComponent::unlit, "blend",
+        sol::property(
+            [](SpriteComponent& sprite) { return sprite.blend == BlendMode::Additive ? "additive" : "alpha"; },
+            [](SpriteComponent& sprite, std::string_view value) {
+                if (value == "alpha") {
+                    sprite.blend = BlendMode::Alpha;
+                } else if (value == "additive") {
+                    sprite.blend = BlendMode::Additive;
+                } else {
+                    throw std::runtime_error(std::format("Unknown blend mode '{}'", value));
+                }
+            }),
+        "intensity", &SpriteComponent::intensity);
 
     auto color_property = []<class Light>() {
         return sol::property([](Light& light) -> glm::vec3& { return light.color; },

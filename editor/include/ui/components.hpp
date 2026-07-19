@@ -117,6 +117,14 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
         RectField("##UvRect", sprite.uv_rect, { 0.0f, 0.0f, 1.0f, 1.0f });
         PropertyLabel("Unlit");
         ImGui::Checkbox("##Unlit", &sprite.unlit);
+        PropertyLabel("Blend");
+        constexpr std::array blend_names { "Alpha", "Additive" };
+        int blend = int(sprite.blend);
+        if (ImGui::Combo("##Blend", &blend, blend_names.data(), int(blend_names.size()))) {
+            sprite.blend = k2::BlendMode(blend);
+        }
+        PropertyLabel("Intensity");
+        ImGui::DragFloat("##Intensity", &sprite.intensity, 0.02f, 0.0f, 8.0f);
         EndPropertyTable();
     }
 }

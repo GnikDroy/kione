@@ -151,32 +151,34 @@ void Renderer2D::draw(const TransformComponent& transform, const SpriteComponent
         .transform = transform.get_matrix(),
         .vertices = build_sprite_quad(sprite),
         .unlit = sprite.unlit,
+        .blend = sprite.blend,
     });
 }
 
 std::array<Renderer2D::Vertex, 4> Renderer2D::build_sprite_quad(const SpriteComponent& sprite) {
+    auto color = glm::vec4 { glm::vec3 { sprite.color } * sprite.intensity, sprite.color.a };
     return {
         Vertex {
             .position = { 0.5f, -0.5f, 0.0f },
-            .color = sprite.color,
+            .color = color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
         Vertex {
             .position = { -0.5f, 0.5f, 0.0f },
-            .color = sprite.color,
+            .color = color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y + sprite.uv_rect.h },
             .texture = sprite.texture.id,
         },
         Vertex {
             .position = { -0.5f, -0.5f, 0.0f },
-            .color = sprite.color,
+            .color = color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
         Vertex {
             .position = { 0.5f, 0.5f, 0.0f },
-            .color = sprite.color,
+            .color = color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y + sprite.uv_rect.h },
             .texture = sprite.texture.id,
         },
@@ -246,6 +248,7 @@ void Renderer2D::draw(Scene& scene) {
                 .transform = world,
                 .vertices = build_sprite_quad(sprite),
                 .unlit = sprite.unlit,
+                .blend = sprite.blend,
             });
         });
 
@@ -402,10 +405,13 @@ void Renderer2D::render() {
 
     if (!has_lights) {
         for (const auto& quad : sprite_quads) {
-            draw(quad.vertices, indices, quad.transform);
+            if (quad.blend == BlendMode::Alpha) {
+                draw(quad.vertices, indices, quad.transform);
+            }
         }
-        sprite_quads.clear();
         flush_batches(frame_buffer);
+        draw_additive_pass();
+        sprite_quads.clear();
         draw_text_pass();
         return;
     }
@@ -430,6 +436,9 @@ void Renderer2D::render() {
     batch_target = &albedo_buffer;
     bool any_unlit = false;
     for (const auto& quad : sprite_quads) {
+        if (quad.blend == BlendMode::Additive) {
+            continue;
+        }
         if (quad.unlit) {
             any_unlit = true;
             continue;
@@ -446,16 +455,36 @@ void Renderer2D::render() {
     // Unlit sprites always sit on top of lit sprites regardless of z.
     if (any_unlit) {
         for (const auto& quad : sprite_quads) {
-            if (quad.unlit) {
+            if (quad.unlit && quad.blend == BlendMode::Alpha) {
                 draw(quad.vertices, indices, quad.transform);
             }
         }
         flush_batches(frame_buffer);
     }
+    draw_additive_pass();
     sprite_quads.clear();
 
     draw_text_pass();
     has_lights = false;
+}
+
+void Renderer2D::draw_additive_pass() {
+    bool any
+        = std::ranges::any_of(sprite_quads, [](const SpriteQuad& quad) { return quad.blend == BlendMode::Additive; });
+    if (!any) {
+        return;
+    }
+    const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
+    batch_target = &frame_buffer;
+    blend_src = GL_SRC_ALPHA;
+    blend_dst = GL_ONE;
+    for (const auto& quad : sprite_quads) {
+        if (quad.blend == BlendMode::Additive) {
+            draw(quad.vertices, indices, quad.transform);
+        }
+    }
+    flush_batches(frame_buffer);
+    blend_dst = GL_ONE_MINUS_SRC_ALPHA;
 }
 
 void Renderer2D::draw_text_pass() {
@@ -493,7 +522,7 @@ void Renderer2D::flush_batches(const FrameBuffer& target, Program& shader) {
     auto blend_was_enabled = glIsEnabled(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(blend_src, blend_dst);
 
     for (const auto& [draw_mode, vertices] : vertices_buffer) {
         auto& indices = indices_buffer[draw_mode];

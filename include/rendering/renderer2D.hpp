@@ -43,6 +43,7 @@ private:
         glm::mat4 transform;
         std::array<Vertex, 4> vertices;
         bool unlit;
+        BlendMode blend;
     };
 
     struct PointLightDraw {
@@ -86,6 +87,8 @@ private:
     FrameBuffer light_buffer;
     const FrameBuffer* batch_target = &frame_buffer;
     Program* batch_shader = &default_shader;
+    std::uint32_t blend_src = GL_SRC_ALPHA;
+    std::uint32_t blend_dst = GL_ONE_MINUS_SRC_ALPHA;
     Texture2D fallback_texture = Texture2D::create_white_texture<uint8_t>();
     // Picked up from the scene's registry context in draw(Scene), or set explicitly
     // via set_resources() when drawing without a scene.
@@ -127,6 +130,7 @@ private:
     static std::array<Vertex, 4> build_sprite_quad(const SpriteComponent& sprite);
     void layout_text(const TextComponent& text, const Font& font, const glm::mat4& world);
     void draw_text_pass();
+    void draw_additive_pass();
 
     void collect_lights(Scene& scene);
     void ensure_light_targets(std::size_t width, std::size_t height);
