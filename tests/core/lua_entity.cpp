@@ -27,6 +27,23 @@ TEST_CASE("A live handle resolves components") {
     REQUIRE(handle.id() == entt::to_integral(entity));
 }
 
+TEST_CASE("tag is readable and writable through a live handle") {
+    entt::registry registry;
+    auto epoch = std::make_shared<std::uint64_t>(1);
+    auto entity = registry.create();
+    registry.emplace<k2::TagComponent>(entity, "fx");
+    auto handle = handle_for(registry, entity, epoch);
+
+    REQUIRE(handle.tag() == "fx");
+    handle.set_tag("fx_spawned");
+    REQUIRE(handle.tag() == "fx_spawned");
+    REQUIRE(registry.get<k2::TagComponent>(entity).tag == "fx_spawned");
+
+    registry.destroy(entity);
+    handle.set_tag("zombie"); // invalid handle: a silent no-op, like the other accessors
+    REQUIRE(handle.tag().empty());
+}
+
 TEST_CASE("A destroyed entity's handle is invalid and yields nil accessors") {
     entt::registry registry;
     auto epoch = std::make_shared<std::uint64_t>(1);

@@ -57,6 +57,11 @@ struct LuaEntity {
         auto* tag_component = registry->try_get<TagComponent>(entity);
         return tag_component ? tag_component->tag : std::string {};
     }
+    void set_tag(const std::string& value) const {
+        if (valid()) {
+            registry->get_or_emplace<TagComponent>(entity).tag = value;
+        }
+    }
 
     [[nodiscard]] std::uint64_t id() const { return entt::to_integral(entity); }
 
