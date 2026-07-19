@@ -27,6 +27,7 @@ add_library(
     platform/desktop/keyboard.cpp
     platform/desktop/mouse.cpp
     platform/desktop/clipboard.cpp
+    rendering/batcher2D.cpp
     rendering/debug.cpp
     rendering/font.cpp
     rendering/frame_buffer.cpp
@@ -35,6 +36,7 @@ add_library(
     rendering/model.cpp
     rendering/renderer2D.cpp
     rendering/shader.cpp
+    rendering/shapes.cpp
     rendering/texture.cpp
     stb_image.cpp
 )

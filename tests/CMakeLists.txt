@@ -23,6 +23,8 @@ add_executable(
     components/camera.cpp
     components/relation.cpp
 
+    rendering/shapes.cpp
+
     serializers/components.cpp
 
     asset/assets.cpp

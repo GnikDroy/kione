@@ -6,6 +6,7 @@
 #include <sol/sol.hpp>
 
 #include "core/script/lua_entity.hpp"
+#include "rendering/draw_list.hpp"
 
 namespace k2 {
 
@@ -21,6 +22,7 @@ struct ScriptHost {
     virtual std::tuple<float, float> screen_to_world(float x, float y) = 0;
     virtual std::tuple<float, float> world_to_screen(float x, float y) = 0;
     virtual void play_sound(std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) = 0;
+    virtual void submit_draw(DrawCommand command) = 0;
 };
 
 }

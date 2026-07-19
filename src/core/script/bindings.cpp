@@ -19,6 +19,29 @@
 namespace k2 {
 namespace {
 
+    DrawCommand parse_draw_options(sol::optional<sol::table> options, DrawCommand command) {
+        if (!options) {
+            return command;
+        }
+        auto& table = *options;
+        if (auto color = table.get<sol::optional<sol::object>>("color")) {
+            if (color->is<glm::vec4>()) {
+                command.color = color->as<glm::vec4>();
+            } else if (color->is<sol::table>()) {
+                auto channels = color->as<sol::table>();
+                command.color = { channels.get_or(1, 1.0f), channels.get_or(2, 1.0f), channels.get_or(3, 1.0f),
+                    channels.get_or(4, 1.0f) };
+            }
+        }
+        command.z = table.get_or("z", command.z);
+        command.width = table.get_or("width", table.get_or("thickness", table.get_or("size", command.width)));
+        command.filled = table.get_or("filled", command.filled);
+        command.unlit = table.get_or("unlit", command.unlit);
+        command.closed = table.get_or("closed", command.closed);
+        command.segments = table.get_or("segments", command.segments);
+        return command;
+    }
+
     // A read-only Lua table: so every read of an unknown key, and every write raise an error.
     void set_strict_constants(sol::state& lua, const std::string& name, const std::vector<std::string>& values) {
         auto backing = lua.create_table();
@@ -221,6 +244,29 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     k2_table["world_to_screen"] = [&host](float x, float y) { return host.world_to_screen(x, y); };
     k2_table["play_sound"] = [&host](std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) {
         host.play_sound(name, volume, pitch);
+    };
+    k2_table["draw_line"] = [&host](float x1, float y1, float x2, float y2, sol::optional<sol::table> options) {
+        host.submit_draw(parse_draw_options(
+            options, DrawCommand { .kind = DrawCommand::Kind::Line, .a = { x1, y1 }, .b = { x2, y2 } }));
+    };
+    k2_table["draw_rect"] = [&host](float x, float y, float w, float h, sol::optional<sol::table> options) {
+        host.submit_draw(parse_draw_options(
+            options, DrawCommand { .kind = DrawCommand::Kind::Rect, .a = { x, y }, .b = { w, h } }));
+    };
+    k2_table["draw_circle"] = [&host](float x, float y, float radius, sol::optional<sol::table> options) {
+        host.submit_draw(parse_draw_options(options,
+            DrawCommand { .kind = DrawCommand::Kind::Circle, .a = { x, y }, .radius = radius, .width = 2.0f }));
+    };
+    k2_table["draw_point"] = [&host](float x, float y, sol::optional<sol::table> options) {
+        host.submit_draw(parse_draw_options(
+            options, DrawCommand { .kind = DrawCommand::Kind::Point, .a = { x, y }, .width = 4.0f }));
+    };
+    k2_table["draw_polygon"] = [&host](sol::table flat_points, sol::optional<sol::table> options) {
+        DrawCommand command { .kind = DrawCommand::Kind::Polygon };
+        for (std::size_t i = 1; i + 1 <= flat_points.size(); i += 2) {
+            command.points.push_back({ flat_points.get<float>(i), flat_points.get<float>(i + 1) });
+        }
+        host.submit_draw(parse_draw_options(options, std::move(command)));
     };
 
     auto input = lua.create_named_table("Input");

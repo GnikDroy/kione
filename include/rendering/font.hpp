@@ -27,6 +27,11 @@ struct TextMetrics {
     float height {};
 };
 
+struct GlyphQuad {
+    Rectf rect {};
+    Rectf uv {};
+};
+
 struct Font {
     ResourceID atlas {};
     std::unordered_map<char, Glyph> glyphs {};
@@ -36,6 +41,8 @@ struct Font {
     float bake_px {};
 
     [[nodiscard]] TextMetrics measure(std::string_view text, float size) const;
+
+    [[nodiscard]] std::vector<GlyphQuad> layout(std::string_view text, float size) const;
 };
 
 struct BakedFont {

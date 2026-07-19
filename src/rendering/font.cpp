@@ -26,6 +26,44 @@ TextMetrics Font::measure(std::string_view text, float size) const {
     return metrics;
 }
 
+std::vector<GlyphQuad> Font::layout(std::string_view text, float size) const {
+    float scale = bake_px > 0.0f ? size / bake_px : 0.0f;
+    float line_advance = (ascent - descent + line_gap) * scale;
+    auto metrics = measure(text, size);
+
+    std::vector<GlyphQuad> quads;
+    std::size_t line = 0;
+    float pen_x = -metrics.line_widths[line] / 2.0f;
+    float pen_y = metrics.height / 2.0f - ascent * scale;
+
+    for (char c : text) {
+        if (c == '\n') {
+            line++;
+            pen_x = -metrics.line_widths[line] / 2.0f;
+            pen_y -= line_advance;
+            continue;
+        }
+        auto it = glyphs.find(c);
+        if (it == glyphs.end()) {
+            continue;
+        }
+        const auto& glyph = it->second;
+        if (glyph.size.x > 0.0f && glyph.size.y > 0.0f) {
+            float left = pen_x + glyph.bearing.x * scale;
+            float top = pen_y - glyph.bearing.y * scale;
+            quads.push_back({
+                .rect = { .x = left,
+                    .y = top - glyph.size.y * scale,
+                    .w = glyph.size.x * scale,
+                    .h = glyph.size.y * scale },
+                .uv = glyph.atlas_uv,
+            });
+        }
+        pen_x += glyph.advance * scale;
+    }
+    return quads;
+}
+
 namespace {
 
     constexpr char first_char = 32;

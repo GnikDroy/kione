@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <numeric>
-#include <unordered_set>
 
 #include <glm/gtx/quaternion.hpp>
 
@@ -14,6 +12,8 @@
 #include "rendering/font.hpp"
 
 namespace k2 {
+
+constexpr std::array<std::uint32_t, 6> quad_indices { 0, 1, 2, 0, 3, 1 };
 
 static Program load_program(const char* vertex, const char* fragment) {
     namespace fs = std::filesystem;
@@ -41,42 +41,6 @@ Renderer2D::Renderer2D()
     , light_shader { load_program("res/shaders/light_vs.glsl", "res/shaders/light_fs.glsl") }
     , composite_shader { load_program("res/shaders/composite_vs.glsl", "res/shaders/composite_fs.glsl") }
     , text_shader { load_program("res/shaders/text_vs.glsl", "res/shaders/text_fs.glsl") } {
-    vbo = VertexBuffer { max_vertices * sizeof(VertexShaderInput) };
-    ebo = IndexBuffer { max_vertices * sizeof(std::uint32_t) };
-    vao.apply({ {
-                    .buffer = vbo.get(),
-                    .attribute_trait {
-                        .location = 0,
-                        .data_type = ShaderDataType::Float3,
-                        .offset = offsetof(VertexShaderInput, position),
-                    },
-                },
-                  {
-                      .buffer = vbo.get(),
-                      .attribute_trait {
-                          .location = 1,
-                          .data_type = ShaderDataType::Float4,
-                          .offset = offsetof(VertexShaderInput, color),
-                      },
-                  },
-                  {
-                      .buffer = vbo.get(),
-                      .attribute_trait {
-                          .location = 2,
-                          .data_type = ShaderDataType::Float2,
-                          .offset = offsetof(VertexShaderInput, texture_coordinate),
-                      },
-                  },
-                  {
-                      .buffer = vbo.get(),
-                      .attribute_trait {
-                          .location = 3,
-                          .data_type = ShaderDataType::Float,
-                          .offset = offsetof(VertexShaderInput, texture),
-                      },
-                  } },
-        sizeof(VertexShaderInput), ebo.get());
-
     const std::array<glm::vec2, 6> quad { { { -1.0f, -1.0f }, { 1.0f, -1.0f }, { 1.0f, 1.0f }, { -1.0f, -1.0f },
         { 1.0f, 1.0f }, { -1.0f, 1.0f } } };
     light_vbo = VertexBuffer { quad.size() * sizeof(glm::vec2) };
@@ -103,80 +67,28 @@ void Renderer2D::clear(std::uint32_t mask) {
 
 void Renderer2D::set_clear_color(float r, float g, float b, float a) { clear_color = { r, g, b, a }; }
 
-/*
- * TODO: shadows?
- */
-void Renderer2D::draw(std::span<const Renderer2D::Vertex> vertices, std::span<const std::uint32_t> indices,
-    const glm::mat4& transform, std::uint32_t draw_mode) {
-    std::unordered_set<ResourceID> textures_new {};
-    for (const auto& vertex : vertices) {
-        textures_new.insert(vertex.texture);
-    }
-    size_t total_textures = texture_unit_map.size();
-    for (auto& i : textures_new) {
-        total_textures += !texture_unit_map.count(i);
-    }
-
-    auto& vertices_vec = vertices_buffer[draw_mode];
-    auto& indices_vec = indices_buffer[draw_mode];
-
-    if (total_textures > max_textures || vertices_vec.size() + vertices.size() > max_vertices
-        || indices_vec.size() + indices.size() > max_vertices) {
-        flush_batches(*batch_target, *batch_shader);
-    }
-
-    // Assign the new textures, texture unit coordinates
-    for (auto& i : textures_new) {
-        if (!texture_unit_map.count(i)) {
-            auto next_index = texture_unit_map.size();
-            texture_unit_map[i] = static_cast<std::uint32_t>(next_index);
-        }
-    }
-
-    for (auto vertex : vertices) {
-        vertex.position = glm::vec3(transform * glm::vec4(vertex.position, 1.0f));
-        vertices_vec.push_back(VertexShaderInput { .position { vertex.position },
-            .color { vertex.color },
-            .texture_coordinate { vertex.texture_coordinate },
-            .texture = float(texture_unit_map[vertex.texture]) });
-    }
-
-    std::ranges::transform(indices, std::back_inserter(indices_vec),
-        [offset = vertices_vec.size() - vertices.size()](auto& i) { return i + std::uint32_t(offset); });
-}
-
-void Renderer2D::draw(const TransformComponent& transform, const SpriteComponent& sprite) {
-    sprite_quads.push_back({
-        .z = transform.translation.z,
-        .transform = transform.get_matrix(),
-        .vertices = build_sprite_quad(sprite),
-        .unlit = sprite.unlit,
-        .blend = sprite.blend,
-    });
-}
-
-std::array<Renderer2D::Vertex, 4> Renderer2D::build_sprite_quad(const SpriteComponent& sprite) {
+std::array<Vertex2D, 4> Renderer2D::build_sprite_quad(const SpriteComponent& sprite) {
     auto color = glm::vec4 { glm::vec3 { sprite.color } * sprite.intensity, sprite.color.a };
     return {
-        Vertex {
+        Vertex2D {
             .position = { 0.5f, -0.5f, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
-        Vertex {
+        Vertex2D {
             .position = { -0.5f, 0.5f, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y + sprite.uv_rect.h },
             .texture = sprite.texture.id,
         },
-        Vertex {
+        Vertex2D {
             .position = { -0.5f, -0.5f, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
-        Vertex {
+        Vertex2D {
             .position = { 0.5f, 0.5f, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y + sprite.uv_rect.h },
@@ -195,6 +107,82 @@ static glm::mat4 unscaled_world(entt::registry& registry, entt::entity entity) {
     }
     basis[3] = world[3];
     return basis;
+}
+
+void Renderer2D::push_primitive(shapes::Mesh mesh, const PrimitiveStyle& style) {
+    if (mesh.positions.empty()) {
+        return;
+    }
+    Drawable drawable { .z = style.z, .unlit = style.unlit };
+    drawable.vertices.reserve(mesh.positions.size());
+    for (auto position : mesh.positions) {
+        drawable.vertices.push_back(Vertex2D { .position = { position.x, position.y, style.z },
+            .color = style.color,
+            .texture_coordinate = { 0.0f, 0.0f },
+            .texture = ResourceID {} });
+    }
+    drawable.indices = std::move(mesh.indices);
+    drawables.push_back(std::move(drawable));
+}
+
+void Renderer2D::draw_line(glm::vec2 a, glm::vec2 b, float width, const PrimitiveStyle& style) {
+    push_primitive(shapes::line_mesh(a, b, width), style);
+}
+
+void Renderer2D::draw_rect(glm::vec2 center, glm::vec2 size, const PrimitiveStyle& style) {
+    push_primitive(shapes::rect_mesh(center, size), style);
+}
+
+void Renderer2D::draw_rect_outline(glm::vec2 center, glm::vec2 size, float thickness, const PrimitiveStyle& style) {
+    push_primitive(shapes::rect_outline_mesh(center, size, thickness), style);
+}
+
+void Renderer2D::draw_circle(glm::vec2 center, float radius, const PrimitiveStyle& style, int segments) {
+    if (segments <= 0) {
+        segments = shapes::circle_segment_count(radius);
+    }
+    push_primitive(shapes::circle_mesh(center, radius, segments), style);
+}
+
+void Renderer2D::draw_circle_outline(
+    glm::vec2 center, float radius, float thickness, const PrimitiveStyle& style, int segments) {
+    if (segments <= 0) {
+        segments = shapes::circle_segment_count(radius);
+    }
+    push_primitive(shapes::circle_outline_mesh(center, radius, thickness, segments), style);
+}
+
+void Renderer2D::draw_point(glm::vec2 position, float size, const PrimitiveStyle& style) {
+    push_primitive(shapes::rect_mesh(position, { size, size }), style);
+}
+
+void Renderer2D::draw_polygon(std::span<const glm::vec2> points, const PrimitiveStyle& style) {
+    push_primitive(shapes::polygon_mesh(points), style);
+}
+
+void Renderer2D::draw_polyline(
+    std::span<const glm::vec2> points, float width, bool closed, const PrimitiveStyle& style) {
+    push_primitive(shapes::polyline_mesh(points, width, closed), style);
+}
+
+void Renderer2D::draw_command(const DrawCommand& command) {
+    PrimitiveStyle style { .color = command.color, .z = command.z, .unlit = command.unlit };
+    switch (command.kind) {
+    case DrawCommand::Kind::Line: draw_line(command.a, command.b, command.width, style); break;
+    case DrawCommand::Kind::Rect:
+        command.filled ? draw_rect(command.a, command.b, style)
+                       : draw_rect_outline(command.a, command.b, command.width, style);
+        break;
+    case DrawCommand::Kind::Circle:
+        command.filled ? draw_circle(command.a, command.radius, style, command.segments)
+                       : draw_circle_outline(command.a, command.radius, command.width, style, command.segments);
+        break;
+    case DrawCommand::Kind::Point: draw_point(command.a, command.width, style); break;
+    case DrawCommand::Kind::Polygon:
+        command.filled ? draw_polygon(command.points, style)
+                       : draw_polyline(command.points, command.width, command.closed, style);
+        break;
+    }
 }
 
 void Renderer2D::collect_lights(Scene& scene) {
@@ -240,16 +228,24 @@ void Renderer2D::draw(Scene& scene) {
 
     collect_lights(scene);
 
+    if (auto* draw_list = scene.registry.ctx().find<DrawList>()) {
+        for (const auto& command : draw_list->commands) {
+            draw_command(command);
+        }
+        draw_list->commands.clear();
+        draw_list->overflowed = false;
+    }
+
     scene.registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
         [&](auto entity, const auto&, const auto& sprite) {
             auto world = TransformComponent::world(scene.registry, entity);
-            sprite_quads.push_back({
-                .z = world[3][2],
+            auto quad = build_sprite_quad(sprite);
+            drawables.push_back(Drawable { .z = world[3][2],
                 .transform = world,
-                .vertices = build_sprite_quad(sprite),
+                .vertices = { quad.begin(), quad.end() },
+                .indices = { quad_indices.begin(), quad_indices.end() },
                 .unlit = sprite.unlit,
-                .blend = sprite.blend,
-            });
+                .blend = sprite.blend });
         });
 
     scene.registry.view<k2::TransformComponent, k2::TextComponent>().each(
@@ -258,44 +254,24 @@ void Renderer2D::draw(Scene& scene) {
             if (font == nullptr) {
                 return;
             }
-            layout_text(text, *font, unscaled_world(scene.registry, entity));
+            collect_text(text, *font, unscaled_world(scene.registry, entity));
         });
 }
 
-void Renderer2D::layout_text(const TextComponent& text, const Font& font, const glm::mat4& world) {
-    float scale = font.bake_px > 0.0f ? text.size / font.bake_px : 0.0f;
-    float line_advance = (font.ascent - font.descent + font.line_gap) * scale;
+void Renderer2D::collect_text(const TextComponent& text, const Font& font, const glm::mat4& world) {
+    for (const auto& quad : font.layout(text.text, text.size)) {
+        float left = quad.rect.x;
+        float right = quad.rect.x + quad.rect.w;
+        float bottom = quad.rect.y;
+        float top = quad.rect.y + quad.rect.h;
+        const auto& uv = quad.uv;
 
-    // The block is centered on the origin
-    auto metrics = font.measure(text.text, text.size);
-    std::size_t line = 0;
-    float pen_x = -metrics.line_widths[line] / 2.0f;
-    float pen_y = metrics.height / 2.0f - font.ascent * scale;
-
-    for (char c : text.text) {
-        if (c == '\n') {
-            line++;
-            pen_x = -metrics.line_widths[line] / 2.0f;
-            pen_y -= line_advance;
-            continue;
-        }
-        auto it = font.glyphs.find(c);
-        if (it == font.glyphs.end()) {
-            continue;
-        }
-        const auto& glyph = it->second;
-        if (glyph.size.x > 0.0f && glyph.size.y > 0.0f) {
-            float left = pen_x + glyph.bearing.x * scale;
-            float right = left + glyph.size.x * scale;
-            float top = pen_y - glyph.bearing.y * scale;
-            float bottom = top - glyph.size.y * scale;
-            const auto& uv = glyph.atlas_uv;
-
-            std::array<Vertex, 4> vertices { {
-                { .position = { right, top, 0.0f },
-                    .color = text.color,
-                    .texture_coordinate = { uv.x + uv.w, uv.y },
-                    .texture = font.atlas },
+        text_drawables.push_back(Drawable { .z = world[3][2],
+            .transform = world,
+            .vertices = { { .position = { right, top, 0.0f },
+                              .color = text.color,
+                              .texture_coordinate = { uv.x + uv.w, uv.y },
+                              .texture = font.atlas },
                 { .position = { left, bottom, 0.0f },
                     .color = text.color,
                     .texture_coordinate = { uv.x, uv.y + uv.h },
@@ -307,11 +283,9 @@ void Renderer2D::layout_text(const TextComponent& text, const Font& font, const 
                 { .position = { right, bottom, 0.0f },
                     .color = text.color,
                     .texture_coordinate = { uv.x + uv.w, uv.y + uv.h },
-                    .texture = font.atlas },
-            } };
-            text_quads.push_back({ .z = world[3][2], .transform = world, .vertices = vertices, .unlit = true });
-        }
-        pen_x += glyph.advance * scale;
+                    .texture = font.atlas } },
+            .indices = { quad_indices.begin(), quad_indices.end() },
+            .unlit = true });
     }
 }
 
@@ -336,6 +310,7 @@ void Renderer2D::light_pass() {
     glClearColor(ambient_light.r, ambient_light.g, ambient_light.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
 
@@ -367,18 +342,11 @@ void Renderer2D::light_pass() {
     }
 
     VertexArray::unbind();
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer2D::composite_pass() {
-    std::array<GLint, 4> saved_viewport {};
-    glGetIntegerv(GL_VIEWPORT, saved_viewport.data());
-    if (!frame_buffer.is_swap_chain_target()) {
-        auto& traits = frame_buffer.get_traits();
-        glViewport(0, 0, (GLsizei)traits.width, (GLsizei)traits.height);
-    }
-
+void Renderer2D::composite_pass(const std::array<GLint, 4>& viewport) {
     glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer.get_id());
+    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
     glDisable(GL_BLEND);
 
     glActiveTexture(GL_TEXTURE0);
@@ -391,186 +359,77 @@ void Renderer2D::composite_pass() {
     empty_vao.bind();
     glDrawArrays(GL_TRIANGLES, 0, 3);
     VertexArray::unbind();
-
-    if (!frame_buffer.is_swap_chain_target()) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-    glViewport(saved_viewport[0], saved_viewport[1], saved_viewport[2], saved_viewport[3]);
 }
 
 void Renderer2D::render() {
-    // Blending is order-dependent: sprites are drawn back to front.
-    std::ranges::stable_sort(sprite_quads, {}, &SpriteQuad::z);
-    const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
+    std::ranges::stable_sort(drawables, {}, &Drawable::z);
+    std::ranges::stable_sort(text_drawables, {}, &Drawable::z);
 
-    if (!has_lights) {
-        for (const auto& quad : sprite_quads) {
-            if (quad.blend == BlendMode::Alpha) {
-                draw(quad.vertices, indices, quad.transform);
+    std::array<GLint, 4> window_viewport {};
+    glGetIntegerv(GL_VIEWPORT, window_viewport.data());
+
+    auto viewport_of = [&](const FrameBuffer& target) -> std::array<GLint, 4> {
+        if (target.is_swap_chain_target()) {
+            return window_viewport;
+        }
+        const auto& traits = target.get_traits();
+        return { 0, 0, GLint(traits.width), GLint(traits.height) };
+    };
+    auto pass_for = [&](const FrameBuffer& target, Program& shader, std::uint32_t blend_dst) {
+        return Batcher2D::Pass { .target = &target,
+            .shader = &shader,
+            .blend_dst = blend_dst,
+            .viewport = viewport_of(target),
+            .camera = &camera,
+            .resources = resources };
+    };
+    auto submit_pass = [&](const Batcher2D::Pass& pass, std::span<const Drawable> items, auto filter) {
+        if (std::ranges::none_of(items, filter)) {
+            return;
+        }
+        batcher.begin(pass);
+        for (const auto& drawable : items) {
+            if (filter(drawable)) {
+                batcher.submit(drawable.vertices, drawable.indices, drawable.transform);
             }
         }
-        flush_batches(frame_buffer);
-        draw_additive_pass();
-        sprite_quads.clear();
-        draw_text_pass();
-        return;
-    }
+        batcher.end();
+    };
+    auto is_alpha = [](const Drawable& drawable) { return drawable.blend == BlendMode::Alpha; };
+    auto is_additive = [](const Drawable& drawable) { return drawable.blend == BlendMode::Additive; };
 
-    std::size_t width, height;
-    if (frame_buffer.is_swap_chain_target()) {
-        std::array<GLint, 4> viewport {};
-        glGetIntegerv(GL_VIEWPORT, viewport.data());
-        width = (std::size_t)viewport[2];
-        height = (std::size_t)viewport[3];
+    if (has_lights) {
+        auto size = viewport_of(frame_buffer);
+        ensure_light_targets(
+            std::max<std::size_t>(std::size_t(size[2]), 1), std::max<std::size_t>(std::size_t(size[3]), 1));
+
+        glBindFramebuffer(GL_FRAMEBUFFER, albedo_buffer.get_id());
+        glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        submit_pass(pass_for(albedo_buffer, default_shader, GL_ONE_MINUS_SRC_ALPHA), drawables,
+            [&](const Drawable& drawable) { return !drawable.unlit && is_alpha(drawable); });
+        light_pass();
+        composite_pass(viewport_of(frame_buffer));
+
+        // Drawn after the composite so they skip the light multiply.
+        // Unlit sits above lit regardless of z.
+        submit_pass(pass_for(frame_buffer, default_shader, GL_ONE_MINUS_SRC_ALPHA), drawables,
+            [&](const Drawable& drawable) { return drawable.unlit && is_alpha(drawable); });
     } else {
-        width = frame_buffer.get_traits().width;
-        height = frame_buffer.get_traits().height;
+        submit_pass(pass_for(frame_buffer, default_shader, GL_ONE_MINUS_SRC_ALPHA), drawables, is_alpha);
     }
-    ensure_light_targets(std::max<std::size_t>(width, 1), std::max<std::size_t>(height, 1));
+    // Emitters are never lit; additive is order-independent within itself.
+    submit_pass(pass_for(frame_buffer, default_shader, GL_ONE), drawables, is_additive);
+    submit_pass(pass_for(frame_buffer, text_shader, GL_ONE_MINUS_SRC_ALPHA), text_drawables,
+        [](const Drawable&) { return true; });
 
-    glBindFramebuffer(GL_FRAMEBUFFER, albedo_buffer.get_id());
-    glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    batch_target = &albedo_buffer;
-    bool any_unlit = false;
-    for (const auto& quad : sprite_quads) {
-        if (quad.blend == BlendMode::Additive) {
-            continue;
-        }
-        if (quad.unlit) {
-            any_unlit = true;
-            continue;
-        }
-        draw(quad.vertices, indices, quad.transform);
-    }
-    flush_batches(albedo_buffer);
-    batch_target = &frame_buffer;
-
-    light_pass();
-    composite_pass();
-
-    // Drawn after the composite so they skip the light multiply.
-    // Unlit sprites always sit on top of lit sprites regardless of z.
-    if (any_unlit) {
-        for (const auto& quad : sprite_quads) {
-            if (quad.unlit && quad.blend == BlendMode::Alpha) {
-                draw(quad.vertices, indices, quad.transform);
-            }
-        }
-        flush_batches(frame_buffer);
-    }
-    draw_additive_pass();
-    sprite_quads.clear();
-
-    draw_text_pass();
+    drawables.clear();
+    text_drawables.clear();
     has_lights = false;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(window_viewport[0], window_viewport[1], window_viewport[2], window_viewport[3]);
 }
 
-void Renderer2D::draw_additive_pass() {
-    bool any
-        = std::ranges::any_of(sprite_quads, [](const SpriteQuad& quad) { return quad.blend == BlendMode::Additive; });
-    if (!any) {
-        return;
-    }
-    const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
-    batch_target = &frame_buffer;
-    blend_src = GL_SRC_ALPHA;
-    blend_dst = GL_ONE;
-    for (const auto& quad : sprite_quads) {
-        if (quad.blend == BlendMode::Additive) {
-            draw(quad.vertices, indices, quad.transform);
-        }
-    }
-    flush_batches(frame_buffer);
-    blend_dst = GL_ONE_MINUS_SRC_ALPHA;
-}
-
-void Renderer2D::draw_text_pass() {
-    if (text_quads.empty()) {
-        return;
-    }
-    const std::array<std::uint32_t, 6> indices { 0, 1, 2, 0, 3, 1 };
-    std::ranges::stable_sort(text_quads, {}, &SpriteQuad::z);
-    batch_target = &frame_buffer;
-    batch_shader = &text_shader;
-    for (const auto& quad : text_quads) {
-        draw(quad.vertices, indices, quad.transform);
-    }
-    flush_batches(frame_buffer, text_shader);
-    batch_shader = &default_shader;
-    text_quads.clear();
-}
-
-void Renderer2D::flush() { flush_batches(*batch_target, *batch_shader); }
-
-void Renderer2D::flush_batches(const FrameBuffer& target) { flush_batches(target, default_shader); }
-
-void Renderer2D::flush_batches(const FrameBuffer& target, Program& shader) {
-    std::array<GLint, 4> saved_viewport {};
-    if (!target.is_swap_chain_target()) {
-        glGetIntegerv(GL_VIEWPORT, saved_viewport.data());
-        auto& traits = target.get_traits();
-        glViewport(0, 0, (GLsizei)traits.width, (GLsizei)traits.height);
-    }
-
-    // Depth testing breaks blended sprites: transparent fragments still write
-    // depth, so anything behind them would be rejected. Ordering is the CPU
-    // sort's job.
-    auto depth_was_enabled = glIsEnabled(GL_DEPTH_TEST);
-    auto blend_was_enabled = glIsEnabled(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(blend_src, blend_dst);
-
-    for (const auto& [draw_mode, vertices] : vertices_buffer) {
-        auto& indices = indices_buffer[draw_mode];
-
-        std::vector<std::int32_t> tex_unit_vec(texture_unit_map.size());
-        std::ranges::iota(tex_unit_vec, 0);
-
-        // Units always get a binding: skipping missing textures would leave stale
-        // bindings from earlier flushes visible.
-        for (auto& [texture_id, texture_unit_index] : texture_unit_map) {
-            auto* texture = resources != nullptr ? resources->try_get<Texture2D>(texture_id) : nullptr;
-            (texture != nullptr ? *texture : fallback_texture).bind(texture_unit_index);
-        }
-
-        shader.use()
-            .set_uniform("texture_list", std::span { tex_unit_vec.data(), tex_unit_vec.size() })
-            .set_uniform("model", glm::mat4(1.0f))
-            .set_uniform("view", camera.get_view())
-            .set_uniform("projection", camera.get_projection());
-
-        vao.bind();
-        vbo.set(vertices.data(), sizeof(vertices[0]) * vertices.size());
-        ebo.set(indices.data(), sizeof(indices[0]) * indices.size());
-        glBindFramebuffer(GL_FRAMEBUFFER, target.get_id());
-        glDrawElements(draw_mode, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
-        if (!target.is_swap_chain_target()) {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        }
-        vao.unbind();
-    }
-
-    if (depth_was_enabled) {
-        glEnable(GL_DEPTH_TEST);
-    }
-    if (!blend_was_enabled) {
-        glDisable(GL_BLEND);
-    }
-
-    if (!target.is_swap_chain_target()) {
-        glViewport(saved_viewport[0], saved_viewport[1], saved_viewport[2], saved_viewport[3]);
-    }
-
-    texture_unit_map.clear();
-    for (auto& [draw_mode, vertices] : vertices_buffer) {
-        vertices.clear();
-    }
-    for (auto& [draw_mode, indices] : indices_buffer) {
-        indices.clear();
-    }
-}
 }

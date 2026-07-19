@@ -2,8 +2,12 @@
 
 #include "core/resources.hpp"
 
+#include "rendering/batcher2D.hpp"
 #include "rendering/buffer.hpp"
+#include "rendering/draw_list.hpp"
+#include "rendering/drawable.hpp"
 #include "rendering/frame_buffer.hpp"
+#include "rendering/shapes.hpp"
 #include "rendering/vertex_array.hpp"
 
 #include "components/camera.hpp"
@@ -13,7 +17,6 @@
 #include <array>
 #include <cstdint>
 #include <span>
-#include <unordered_map>
 #include <vector>
 
 namespace k2 {
@@ -21,31 +24,17 @@ struct Scene;
 struct Font;
 struct TextComponent;
 
+struct PrimitiveStyle {
+    glm::vec4 color { 1.0f, 1.0f, 1.0f, 1.0f };
+    float z { 0.0f };
+    bool unlit { true };
+};
+
 class Renderer2D {
 public:
-    struct Vertex {
-        glm::vec3 position;
-        glm::vec4 color;
-        glm::vec2 texture_coordinate;
-        ResourceID texture;
-    };
-    struct VertexShaderInput {
-        glm::vec3 position;
-        glm::vec4 color;
-        glm::vec2 texture_coordinate;
-        float texture;
-    };
     Camera camera;
 
 private:
-    struct SpriteQuad {
-        float z;
-        glm::mat4 transform;
-        std::array<Vertex, 4> vertices;
-        bool unlit;
-        BlendMode blend;
-    };
-
     struct PointLightDraw {
         glm::mat4 model;
         glm::vec3 color;
@@ -67,31 +56,17 @@ private:
     Program composite_shader;
     Program text_shader;
 
-    std::vector<SpriteQuad> sprite_quads {};
-    std::vector<SpriteQuad> text_quads {};
-    std::unordered_map<std::uint32_t, std::vector<Renderer2D::VertexShaderInput>> vertices_buffer {};
-    std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> indices_buffer {};
-    std::unordered_map<ResourceID, std::uint32_t> texture_unit_map {};
+    Batcher2D batcher {};
+    std::vector<Drawable> drawables {};
+    std::vector<Drawable> text_drawables {};
 
-    std::size_t max_vertices = 100'000;
-    // GL 4.1 guarantees only 16 fragment texture units;
-    std::uint32_t max_textures = 16;
-    VertexArray vao;
-    VertexBuffer vbo;
-    IndexBuffer ebo;
     VertexArray light_vao;
     VertexBuffer light_vbo;
     VertexArray empty_vao;
     FrameBuffer frame_buffer;
     FrameBuffer albedo_buffer;
     FrameBuffer light_buffer;
-    const FrameBuffer* batch_target = &frame_buffer;
-    Program* batch_shader = &default_shader;
-    std::uint32_t blend_src = GL_SRC_ALPHA;
-    std::uint32_t blend_dst = GL_ONE_MINUS_SRC_ALPHA;
     Texture2D fallback_texture = Texture2D::create_white_texture<uint8_t>();
-    // Picked up from the scene's registry context in draw(Scene), or set explicitly
-    // via set_resources() when drawing without a scene.
     ResourceManager* resources {};
 
     glm::vec4 clear_color { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -111,33 +86,34 @@ public:
 
     FrameBuffer& get_frame_buffer() { return frame_buffer; }
 
-    void set_resources(ResourceManager& resource_manager) { resources = &resource_manager; }
-
     void clear(std::uint32_t mask = GL_COLOR_BUFFER_BIT);
 
     void set_clear_color(float r, float g, float b, float a);
-
-    void draw(std::span<const Renderer2D::Vertex> vertices, std::span<const std::uint32_t> indices,
-        const glm::mat4& transform = glm::mat4(1.0f), std::uint32_t draw_mode = GL_TRIANGLES);
-
-    void draw(const TransformComponent& transform, const SpriteComponent& sprite);
 
     void draw(Scene& scene);
 
     void render();
 
+    void draw_line(glm::vec2 a, glm::vec2 b, float width, const PrimitiveStyle& style = {});
+    void draw_rect(glm::vec2 center, glm::vec2 size, const PrimitiveStyle& style = {});
+    void draw_rect_outline(glm::vec2 center, glm::vec2 size, float thickness, const PrimitiveStyle& style = {});
+    void draw_circle(glm::vec2 center, float radius, const PrimitiveStyle& style = {}, int segments = 0);
+    void draw_circle_outline(
+        glm::vec2 center, float radius, float thickness, const PrimitiveStyle& style = {}, int segments = 0);
+    void draw_point(glm::vec2 position, float size, const PrimitiveStyle& style = {});
+    void draw_polygon(std::span<const glm::vec2> points, const PrimitiveStyle& style = {});
+    void draw_polyline(std::span<const glm::vec2> points, float width, bool closed, const PrimitiveStyle& style = {});
+
 private:
-    static std::array<Vertex, 4> build_sprite_quad(const SpriteComponent& sprite);
-    void layout_text(const TextComponent& text, const Font& font, const glm::mat4& world);
-    void draw_text_pass();
-    void draw_additive_pass();
+    void push_primitive(shapes::Mesh mesh, const PrimitiveStyle& style);
+    void draw_command(const DrawCommand& command);
+
+    static std::array<Vertex2D, 4> build_sprite_quad(const SpriteComponent& sprite);
+    void collect_text(const TextComponent& text, const Font& font, const glm::mat4& world);
 
     void collect_lights(Scene& scene);
     void ensure_light_targets(std::size_t width, std::size_t height);
     void light_pass();
-    void composite_pass();
-    void flush();
-    void flush_batches(const FrameBuffer& target);
-    void flush_batches(const FrameBuffer& target, Program& shader);
+    void composite_pass(const std::array<GLint, 4>& viewport);
 };
 }

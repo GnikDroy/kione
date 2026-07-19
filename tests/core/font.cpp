@@ -64,6 +64,39 @@ TEST_CASE("BakedFont rejects a non-font blob") {
     REQUIRE_THROWS(k2::BakedFont(garbage, 48.0f));
 }
 
+TEST_CASE("Font::layout centers the block and skips non-glyphs") {
+    auto ttf = read_file(K2_TEST_FONT);
+    auto baked = k2::BakedFont { ttf, 48.0f };
+    auto font = k2::Font { .glyphs = baked.glyphs,
+        .ascent = baked.ascent,
+        .descent = baked.descent,
+        .line_gap = baked.line_gap,
+        .bake_px = baked.bake_px };
+
+    // A single glyph at bake size: horizontal placement follows the centered pen exactly.
+    auto single = font.layout("A", 48.0f);
+    REQUIRE(single.size() == 1);
+    const auto& glyph = font.glyphs.at('A');
+    REQUIRE(single[0].rect.x == Catch::Approx(-glyph.advance / 2.0f + glyph.bearing.x));
+    REQUIRE(single[0].rect.w == Catch::Approx(glyph.size.x));
+    REQUIRE(single[0].uv.x == glyph.atlas_uv.x);
+
+    // Spaces and unknown characters produce no quads but spaces still advance the pen.
+    REQUIRE(font.layout("A A", 48.0f).size() == 2);
+    REQUIRE(font.layout("A\x01", 48.0f).size() == 1);
+
+    // A second line sits exactly one line-advance lower.
+    auto two_lines = font.layout("A\nA", 48.0f);
+    REQUIRE(two_lines.size() == 2);
+    auto line_advance = font.ascent - font.descent + font.line_gap;
+    REQUIRE(two_lines[0].rect.y - two_lines[1].rect.y == Catch::Approx(line_advance));
+
+    // Rendering at half size halves the geometry.
+    auto half = font.layout("A", 24.0f);
+    REQUIRE(half[0].rect.w == Catch::Approx(single[0].rect.w / 2.0f));
+    REQUIRE(half[0].rect.h == Catch::Approx(single[0].rect.h / 2.0f));
+}
+
 TEST_CASE("Font::measure computes line widths and block size") {
     auto ttf = read_file(K2_TEST_FONT);
     auto baked = k2::BakedFont { ttf, 48.0f };

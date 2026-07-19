@@ -270,6 +270,19 @@ struct ScriptSystem::Impl : ScriptHost {
         current_registry->ctx().get<AudioSystem&>().play(*clip, volume.value_or(1.0f), pitch.value_or(1.0f));
     }
 
+    void submit_draw(DrawCommand command) override {
+        require_registry("k2.draw");
+        auto& draw_list = current_registry->ctx().emplace<DrawList>();
+        if (draw_list.commands.size() >= command_cap) {
+            if (!draw_list.overflowed) {
+                Log::core().warn("Draw command cap exceeded; dropping further primitives this frame");
+                draw_list.overflowed = true;
+            }
+            return;
+        }
+        draw_list.commands.push_back(std::move(command));
+    }
+
     void destroy(const LuaEntity& target) override {
         if (!current_registry || !target.valid()) {
             return;
