@@ -245,6 +245,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     k2_table["play_sound"] = [&host](std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) {
         host.play_sound(name, volume, pitch);
     };
+    k2_table["load_scene"] = [&host](std::string_view name) { host.load_scene(name); };
     k2_table["draw_line"] = [&host](float x1, float y1, float x2, float y2, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(
             options, DrawCommand { .kind = DrawCommand::Kind::Line, .a = { x1, y1 }, .b = { x2, y2 } }));

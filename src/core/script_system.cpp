@@ -283,6 +283,15 @@ struct ScriptSystem::Impl : ScriptHost {
         draw_list.commands.push_back(std::move(command));
     }
 
+    void load_scene(std::string_view name) override {
+        require_registry("k2.load_scene");
+        auto it = current_assets->find(ResourceManager::resolve(name));
+        if (it == current_assets->end() || it->second.second.type != Asset::Type::Scene) {
+            throw std::runtime_error(std::format("k2.load_scene: unknown scene '{}'", name));
+        }
+        current_registry->ctx().insert_or_assign(SceneRequest { std::string { name } });
+    }
+
     void destroy(const LuaEntity& target) override {
         if (!current_registry || !target.valid()) {
             return;

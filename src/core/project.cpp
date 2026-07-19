@@ -27,7 +27,7 @@ std::expected<Project, std::string> Project::load(const std::filesystem::path& p
         project.file = std::filesystem::absolute(project_file);
         project.root = project.file.parent_path();
         project.name = node["name"].as<std::string>("");
-        project.main_scene = project.root / node["main_scene"].as<std::string>();
+        project.main_scene = node["main_scene"].as<std::string>();
         project.assets_node = node["assets"];
         project.assets = load_registry(project.file);
         return project;

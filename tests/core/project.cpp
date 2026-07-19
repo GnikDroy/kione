@@ -14,7 +14,7 @@ TEST_CASE("Project loads settings and the inline asset manifest") {
 
     {
         std::ofstream file { dir / "game.k2project" };
-        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene\n"
                 "assets:\n  Image:\n    player: file:///textures/player.png\n";
     }
 
@@ -24,7 +24,7 @@ TEST_CASE("Project loads settings and the inline asset manifest") {
     REQUIRE(project.name == "Test");
     REQUIRE(project.file == fs::absolute(dir / "game.k2project"));
     REQUIRE(project.root == fs::absolute(dir));
-    REQUIRE(project.main_scene == dir / "scene.k2scene");
+    REQUIRE(project.main_scene == "scene");
 
     REQUIRE(project.assets.count("player"_fnv1a) == 1);
     auto& [asset_name, asset] = project.assets.at("player"_fnv1a);
@@ -45,7 +45,7 @@ TEST_CASE("Project manifest recurses into referenced bundles") {
     }
     {
         std::ofstream file { dir / "game.k2project" };
-        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene\n"
                 "assets:\n  AssetBundle:\n    characters: file:///bundles/characters.yaml\n";
     }
 
@@ -68,7 +68,7 @@ TEST_CASE("Project save round-trips settings and preserves the manifest") {
 
     {
         std::ofstream file { dir / "game.k2project" };
-        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene\n"
                 "assets:\n  Image:\n    player: file:///textures/player.png\n";
     }
 
@@ -76,13 +76,13 @@ TEST_CASE("Project save round-trips settings and preserves the manifest") {
     REQUIRE(loaded.has_value());
     auto& project = *loaded;
     project.name = "Renamed";
-    project.main_scene = project.root / "other.k2scene";
+    project.main_scene = "other";
     REQUIRE(project.save().has_value());
 
     auto reloaded = k2::Project::load(dir / "game.k2project");
     REQUIRE(reloaded.has_value());
     REQUIRE(reloaded->name == "Renamed");
-    REQUIRE(reloaded->main_scene == dir / "other.k2scene");
+    REQUIRE(reloaded->main_scene == "other");
     REQUIRE(reloaded->assets.count("player"_fnv1a) == 1);
 
     fs::remove_all(dir);
@@ -95,7 +95,7 @@ TEST_CASE("Asset name collisions across types fail the load, naming both assets"
 
     {
         std::ofstream file { dir / "game.k2project" };
-        file << "version: 0.0.1\nname: Test\nmain_scene: scene.k2scene\n"
+        file << "version: 0.0.1\nname: Test\nmain_scene: scene\n"
                 "assets:\n"
                 "  Script:\n    explosion: file:///scripts/explosion.lua\n"
                 "  Animation:\n    explosion: file:///animations/explosion.k2anim\n";

@@ -1,7 +1,9 @@
 version: 0.0.1
 name: Sandbox2D
-main_scene: scene.k2scene
+main_scene: scene
 assets:
+  Scene:
+    scene: file:///scene.k2scene
   Font:
     FontAwesome5: file:///fonts/fa-regular-400.ttf
     NotoSansRegular: file:///fonts/NotoSans-Regular.ttf

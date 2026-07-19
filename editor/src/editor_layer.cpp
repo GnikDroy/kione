@@ -87,13 +87,17 @@ std::expected<void, std::string> EditorLayer::create_project(const std::filesyst
     new_project.file = std::filesystem::absolute(project_file);
     new_project.root = new_project.file.parent_path();
     new_project.name = project_file.stem().string();
-    new_project.main_scene = new_project.root / (new_project.name + ".k2scene");
+    new_project.main_scene = new_project.name;
+    auto scene_file = new_project.root / (new_project.name + ".k2scene");
 
-    std::ofstream scene_out { new_project.main_scene };
+    std::ofstream scene_out { scene_file };
     scene_out << YAML::Node { Scene {} } << "\n";
     if (!scene_out) {
-        return std::unexpected(std::format("Failed to write scene file: {}", new_project.main_scene.string()));
+        return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
     }
+    YAML::Node assets_node { YAML::NodeType::Map };
+    assets_node["Scene"][new_project.name] = std::format("file:///{}.k2scene", new_project.name);
+    new_project.assets_node = assets_node;
     if (auto saved = new_project.save(); !saved) {
         return saved;
     }
@@ -169,6 +173,20 @@ void EditorLayer::update(float dt) {
         scripts.update(*runtime_scene, active_assets(), dt);
         AnimationSystem::update(*runtime_scene, dt);
         audio.update(*runtime_scene);
+        if (const auto* request = runtime_scene->registry.ctx().find<SceneRequest>()) {
+            auto loaded = SceneLoader::load(request->scene, resources, active_assets());
+            if (loaded) {
+                loaded->registry.ctx().emplace<EditorLayer&>(*this);
+                loaded->registry.ctx().emplace<AudioSystem&>(audio);
+                runtime_scene = std::move(*loaded);
+                scripts.clear_cache();
+                audio.stop_all();
+                entity_selector.get_widget().reset_selection();
+            } else {
+                Log::core().error(std::format("Scene switch failed: {}", loaded.error()));
+                runtime_scene->registry.ctx().erase<SceneRequest>();
+            }
+        }
     }
     auto dockspace_id = ImGui::DockSpaceOverViewport();
     if (layout_pending) {

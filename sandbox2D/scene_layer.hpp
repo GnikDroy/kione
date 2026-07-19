@@ -8,8 +8,11 @@
 #include "kione2D.hpp"
 #include "rendering/renderer2D.hpp"
 
+#include <format>
 #include <glm/glm.hpp>
 #include <stdexcept>
+
+#include "core/logger.hpp"
 
 template <class T> T value_or_abort(std::expected<T, std::string> result) {
     if (!result) {
@@ -35,6 +38,25 @@ public:
     explicit SceneLayer(k2::Window& window, const std::string& project_path)
         : window { window }
         , project { value_or_abort(k2::Project::load(project_path)) } {
+        attach_scene_context();
+        publish_scene_view();
+    }
+
+    SceneLayer(const SceneLayer&) = delete;
+
+    SceneLayer& operator=(const SceneLayer&) = delete;
+
+    void fixed_update(float dt) override { scripts.fixed_update(scene, project.assets, dt); }
+
+    void update(float dt) override {
+        scripts.update(scene, project.assets, dt);
+        k2::AnimationSystem::update(scene, dt);
+        audio.update(scene);
+        apply_scene_request();
+        publish_scene_view();
+    }
+
+    void attach_scene_context() {
         scene.registry.ctx().emplace<k2::Camera>(k2::Camera {
             .position { 0, 0, 1000.f },
             .target { 0, 0, 0 },
@@ -50,20 +72,26 @@ public:
             } },
         });
         scene.registry.ctx().emplace<k2::AudioSystem&>(audio);
-        publish_scene_view();
     }
 
-    SceneLayer(const SceneLayer&) = delete;
+    void apply_scene_request() {
+        const auto* request = scene.registry.ctx().find<k2::SceneRequest>();
+        if (request == nullptr) {
+            return;
+        }
+        auto loaded = k2::SceneLoader::load(request->scene, resources, project.assets);
+        if (!loaded) {
+            k2::Log::app().error(std::format("Scene switch failed: {}", loaded.error()));
+            scene.registry.ctx().erase<k2::SceneRequest>();
+            return;
+        }
+        scene = std::move(*loaded);
 
-    SceneLayer& operator=(const SceneLayer&) = delete;
-
-    void fixed_update(float dt) override { scripts.fixed_update(scene, project.assets, dt); }
-
-    void update(float dt) override {
-        scripts.update(scene, project.assets, dt);
-        k2::AnimationSystem::update(scene, dt);
-        audio.update(scene);
-        publish_scene_view();
+        // Reset explicitly!
+        // The registry still lives at the same address. Checks in ScriptSystem/AudioSystem cannot see it.
+        scripts.clear_cache();
+        audio.stop_all();
+        attach_scene_context();
     }
 
     void publish_scene_view() {

@@ -13,7 +13,7 @@ struct Project {
     std::string name;
     std::filesystem::path file;
     std::filesystem::path root;
-    std::filesystem::path main_scene;
+    std::string main_scene;
     YAML::Node assets_node;
     AssetRegistry assets;
 

@@ -44,12 +44,19 @@ static void save_scene(EditorLayer& editor_layer) {
         return;
     }
     try {
-        std::ofstream scene_file_stream { editor_layer.project->main_scene };
+        auto it = editor_layer.project->assets.find(ResourceManager::resolve(editor_layer.project->main_scene));
+        if (it == editor_layer.project->assets.end() || it->second.second.type != Asset::Type::Scene) {
+            Log::core().error(
+                std::format("Project has no scene asset '{}' to save to", editor_layer.project->main_scene));
+            return;
+        }
+        auto path = std::string { it->second.second.get_url_divisions().path };
+        std::ofstream scene_file_stream { path };
         scene_file_stream << YAML::Node(editor_layer.scene);
         if (scene_file_stream) {
-            Log::core().info(std::format("Saved scene: {}", editor_layer.project->main_scene.string()));
+            Log::core().info(std::format("Saved scene: {}", path));
         } else {
-            Log::core().error(std::format("Failed to save scene: {}", editor_layer.project->main_scene.string()));
+            Log::core().error(std::format("Failed to save scene: {}", path));
         }
     } catch (const std::exception& e) {
         Log::core().error(std::format("Failed to save scene: {}", e.what()));

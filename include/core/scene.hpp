@@ -1,7 +1,13 @@
 #pragma once
+#include <string>
+
 #include <entt/entt.hpp>
 
 namespace k2 {
+struct SceneRequest {
+    std::string scene;
+};
+
 struct Scene {
     entt::registry registry;
 

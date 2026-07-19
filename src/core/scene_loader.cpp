@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "asset/loader.hpp"
+#include "asset/scheme.hpp"
 #include "components/animation.hpp"
 #include "components/light.hpp"
 #include "components/relation.hpp"
@@ -21,9 +22,14 @@
 namespace k2 {
 
 std::expected<Scene, std::string> SceneLoader::load(
-    const std::filesystem::path& path, ResourceManager& resources, const AssetRegistry& assets) noexcept {
+    std::string_view name, ResourceManager& resources, const AssetRegistry& assets) noexcept {
     try {
-        return load(YAML::LoadFile(path.string()), resources, assets);
+        auto it = assets.find(ResourceManager::resolve(name));
+        if (it == assets.end() || it->second.second.type != Asset::Type::Scene) {
+            return std::unexpected(std::format("Unknown scene asset '{}'", name));
+        }
+        auto stream = AssetScheme::get_stream(it->second.second);
+        return load(YAML::Load(*stream), resources, assets);
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
     }
