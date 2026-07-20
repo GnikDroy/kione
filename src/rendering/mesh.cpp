@@ -9,8 +9,8 @@ namespace k2 {
 Mesh::Mesh(std::vector<Vertex>&& vertices_, std::vector<Material>&& materials_,
     std::vector<MaterialGroup>&& material_groups_)
     : vertices(std::move(vertices_))
-    , materials(materials_)
-    , material_groups(material_groups_) {
+    , materials(std::move(materials_))
+    , material_groups(std::move(material_groups_)) {
     generate_buffers();
     generate_vertex_array();
 }

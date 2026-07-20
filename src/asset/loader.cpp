@@ -24,7 +24,7 @@ template <> Image AssetLoader::get<Image>(const Asset& asset) {
     if (traits.count("desired_channels")) {
         auto& desired_channels_sv = traits["desired_channels"];
         desired_channels
-            = to_integer<int>(desired_channels_sv.data(), desired_channels_sv.data() + desired_channels_sv.size());
+            = to_number<int>(desired_channels_sv.data(), desired_channels_sv.data() + desired_channels_sv.size());
     }
     auto raw = AssetScheme::get_raw(asset);
     return k2::Image { raw, desired_channels };
@@ -40,7 +40,7 @@ template <> Shader AssetLoader::get<Shader>(const Asset& asset) {
     }
     auto traits = asset.get_traits();
     auto& type_sv = traits["type"];
-    auto type = to_integer<std::uint32_t>(type_sv.data(), type_sv.data() + type_sv.size());
+    auto type = to_number<std::uint32_t>(type_sv.data(), type_sv.data() + type_sv.size());
     auto stream = AssetScheme::get_stream(asset);
 
     std::string source { std::istreambuf_iterator<char>(*stream.get()), std::istreambuf_iterator<char>() };

@@ -52,26 +52,26 @@ TEST_CASE("String View Split") {
 TEST_CASE("StringView to Integer") {
     {
         std::string_view sv { "123" };
-        REQUIRE(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()) == 123);
+        REQUIRE(k2::to_number<std::uint32_t>(sv.data(), sv.data() + sv.size()) == 123);
     }
 
     {
         std::string_view sv { "" };
-        REQUIRE_THROWS_AS(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()), std::invalid_argument);
+        REQUIRE_THROWS_AS(k2::to_number<std::uint32_t>(sv.data(), sv.data() + sv.size()), std::invalid_argument);
     }
 
     {
         std::string_view sv { "abc" };
-        REQUIRE_THROWS_AS(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()), std::invalid_argument);
+        REQUIRE_THROWS_AS(k2::to_number<std::uint32_t>(sv.data(), sv.data() + sv.size()), std::invalid_argument);
     }
 
     {
         std::string_view sv { "12.12" };
-        REQUIRE(k2::to_integer<std::uint32_t>(sv.data(), sv.data() + sv.size()) == 12);
+        REQUIRE(k2::to_number<std::uint32_t>(sv.data(), sv.data() + sv.size()) == 12);
     }
 
     {
         std::string_view sv { "12.12" };
-        REQUIRE(k2::to_integer<float>(sv.data(), sv.data() + sv.size()) == 12.12f);
+        REQUIRE(k2::to_number<float>(sv.data(), sv.data() + sv.size()) == 12.12f);
     }
 }

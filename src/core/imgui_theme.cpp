@@ -1,26 +1,32 @@
 #include "core/imgui_theme.hpp"
 
-#include <sstream>
+#include <charconv>
 #include <stdexcept>
+#include <string_view>
 
 #include "core/fnv.hpp"
 
 namespace k2::Imgui {
 
 ImVec4 HexColorToImVec4(const std::string& hex_color_code) {
-    if (hex_color_code.starts_with('#')) {
-        std::stringstream stream(hex_color_code);
-        stream.ignore(std::streamsize(hex_color_code.length()), '#');
-        std::uint32_t color {};
-        stream << std::hex;
-        stream >> color;
-        if (stream.fail()) {
-            throw std::invalid_argument("Cannot interpret color value. Make sure color is of type #rrggbbaa");
-        }
-        return { float(color >> 24) / 255, float((color >> 16) & 0x00FF) / 255, float((color >> 8) & (0x0000FF)) / 255,
-            float(color & (0x000000FF)) / 255 };
+    if (!hex_color_code.starts_with('#')) {
+        throw std::invalid_argument("Color must start with '#'.");
     }
-    throw std::invalid_argument("Invalid color value.");
+    std::string_view digits { hex_color_code };
+    digits.remove_prefix(1);
+    if (digits.size() != 6 && digits.size() != 8) {
+        throw std::invalid_argument("Color must be of the form #rrggbb or #rrggbbaa.");
+    }
+    std::uint32_t value {};
+    auto [ptr, ec] = std::from_chars(digits.data(), digits.data() + digits.size(), value, 16);
+    if (ec != std::errc {} || ptr != digits.data() + digits.size()) {
+        throw std::invalid_argument("Cannot interpret color value. Make sure color is of type #rrggbb or #rrggbbaa.");
+    }
+    if (digits.size() == 6) {
+        value = (value << 8) | 0xff; // implicit opaque alpha
+    }
+    return { float((value >> 24) & 0xff) / 255.0f, float((value >> 16) & 0xff) / 255.0f,
+        float((value >> 8) & 0xff) / 255.0f, float(value & 0xff) / 255.0f };
 }
 
 ImGuiThemeDark::ImGuiThemeDark() {

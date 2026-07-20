@@ -23,6 +23,7 @@ namespace k2::Log {
         Logger(const std::string& name);
         Logger(const Logger&) = delete;
         Logger& operator=(const Logger&) = delete;
+        ~Logger();
 
         Logger& add_sink(std::any& sink_handle);
 

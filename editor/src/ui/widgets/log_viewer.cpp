@@ -40,7 +40,9 @@ void LogViewer::render(EditorLayer& editor_layer) {
             }
         }();
         if (filter.PassFilter(line.c_str(), line.c_str() + line.size())) {
-            ImGui::TextColored(theme->colors.at(hash), "%s", line.c_str());
+            auto color = theme->colors.find(hash);
+            ImGui::TextColored(color != theme->colors.end() ? color->second : ImGui::GetStyleColorVec4(ImGuiCol_Text),
+                "%s", line.c_str());
         }
     }
     // Follow new output unless the user has scrolled up.

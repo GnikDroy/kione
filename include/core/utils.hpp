@@ -36,13 +36,13 @@ inline std::vector<std::string_view> string_view_split(const std::string_view& s
     return vec;
 }
 
-template <arithmetic T, class... Args> T to_integer(const char* first, const char* last, Args... args) {
+template <arithmetic T, class... Args> T to_number(const char* first, const char* last, Args... args) {
     T t;
     std::from_chars_result res = std::from_chars(first, last, t, args...);
     if (res.ec == std::errc::invalid_argument) {
-        throw std::invalid_argument { "invalid_argument while converting string view to integer." };
+        throw std::invalid_argument { "invalid_argument while parsing number from string." };
     } else if (res.ec == std::errc::result_out_of_range) {
-        throw std::out_of_range { "out_of_range while converting string view to integer." };
+        throw std::out_of_range { "out_of_range while parsing number from string." };
     }
     return t;
 }

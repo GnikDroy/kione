@@ -2,7 +2,6 @@
 
 #include "core/imgui_theme.hpp"
 #include "layer.hpp"
-#include <unordered_set>
 
 struct ImFont;
 
@@ -10,7 +9,7 @@ namespace k2 {
 class Window;
 
 class ImguiLayer : public Layer {
-    static inline std::unordered_set<k2::Window*> initialized_windows {};
+    static inline bool initialized { false };
 
 protected:
     k2::Window* window;

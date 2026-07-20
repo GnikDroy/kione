@@ -7,7 +7,7 @@
 
 namespace k2::Imgui {
 
-// Must be of the form #rrggbbaa #ggbba #bbaa #aa
+// Must be of the form #rrggbb or #rrggbbaa.
 ImVec4 HexColorToImVec4(const std::string& hex_color_code);
 
 struct ImGuiTheme {

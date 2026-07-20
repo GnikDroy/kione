@@ -114,7 +114,7 @@ namespace {
                 index_offset += 3;
             }
 
-            meshes.emplace_back(std::move(vertices), std::move(materials), std::move(material_groups));
+            meshes.emplace_back(std::move(vertices), std::vector { materials }, std::move(material_groups));
         }
         return true;
     }

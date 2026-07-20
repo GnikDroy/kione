@@ -19,55 +19,61 @@ namespace k2 {
 ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme)
     : window(&win)
     , theme(std::move(theme)) {
-    if (initialized_windows.count(window) != 0) {
-        throw std::runtime_error("Imgui layer for this window already exists.");
+    if (initialized) {
+        throw std::runtime_error("Only one ImguiLayer is supported; the engine is single-window by design.");
     }
-    initialized_windows.insert(window);
 
     auto glfw_window = win.impl->window.get();
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    auto& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    try {
+        auto& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-    ImGui::StyleColorsDark();
-    this->theme->apply();
-    static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
+        ImGui::StyleColorsDark();
+        this->theme->apply();
+        static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
 
-    auto font_directory = executable_path().parent_path() / "res/fonts";
-    auto text_font = font_directory / "NotoSans-Regular.ttf";
-    auto fa_font = font_directory / "fontawesome-webfont.ttf";
-    std::error_code ec;
-    if (std::filesystem::is_regular_file(text_font, ec)
-        && io.Fonts->AddFontFromFileTTF(text_font.string().c_str(), 18) != nullptr) {
-        if (std::filesystem::is_regular_file(fa_font, ec)) {
-            ImFontConfig config;
-            config.MergeMode = true;
-            io.Fonts->AddFontFromFileTTF(fa_font.string().c_str(), 18.0f, &config, icon_ranges.data());
+        auto font_directory = executable_path().parent_path() / "res/fonts";
+        auto text_font = font_directory / "NotoSans-Regular.ttf";
+        auto fa_font = font_directory / "fontawesome-webfont.ttf";
+        std::error_code ec;
+        if (std::filesystem::is_regular_file(text_font, ec)
+            && io.Fonts->AddFontFromFileTTF(text_font.string().c_str(), 18) != nullptr) {
+            if (std::filesystem::is_regular_file(fa_font, ec)) {
+                ImFontConfig config;
+                config.MergeMode = true;
+                io.Fonts->AddFontFromFileTTF(fa_font.string().c_str(), 18.0f, &config, icon_ranges.data());
+            } else {
+                Log::core().warn("Failed to load res/fonts/fontawesome-webfont.ttf, icons might look corrupt.");
+            }
         } else {
-            Log::core().warn("Failed to load res/fonts/fontawesome-webfont.ttf, icons might look corrupt.");
+            Log::core().warn("Failed to load res/fonts/NotoSans-Regular.ttf, falling back to the default font.");
+            io.Fonts->AddFontDefault();
         }
-    } else {
-        Log::core().warn("Failed to load res/fonts/NotoSans-Regular.ttf, falling back to the default font.");
-        io.Fonts->AddFontDefault();
-    }
-    if (std::filesystem::is_regular_file(fa_font, ec)) {
-        icon_font = io.Fonts->AddFontFromFileTTF(fa_font.string().c_str(), 52.0f, nullptr, icon_ranges.data());
+        if (std::filesystem::is_regular_file(fa_font, ec)) {
+            icon_font = io.Fonts->AddFontFromFileTTF(fa_font.string().c_str(), 52.0f, nullptr, icon_ranges.data());
+        }
+
+        ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
+        ImGui_ImplOpenGL3_Init();
+    } catch (...) {
+        ImGui::DestroyContext();
+        throw;
     }
 
-    ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
-    ImGui_ImplOpenGL3_Init();
+    initialized = true;
 }
 
 ImguiLayer::~ImguiLayer() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    initialized_windows.erase(window);
+    initialized = false;
 }
 
 bool ImguiLayer::handle_event(const Event* event) {

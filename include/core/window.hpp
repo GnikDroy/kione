@@ -34,8 +34,8 @@ public:
     void poll();
     void swap();
 
-    [[nodiscard]] ::uint32_t get_width() const;
-    [[nodiscard]] ::uint32_t get_height() const;
+    [[nodiscard]] std::uint32_t get_width() const;
+    [[nodiscard]] std::uint32_t get_height() const;
 
     [[nodiscard]] void* get_native_handle() const;
     [[nodiscard]] void* get_native_display() const;

@@ -90,6 +90,8 @@ struct Logger::Impl {
 Logger::Logger(const std::string& name)
     : impl(std::make_unique<Logger::Impl>(name)) { }
 
+Logger::~Logger() = default;
+
 Logger& Logger::add_sink(std::any& sink_handle) {
     impl->register_logger(sink_handle);
     return *this;

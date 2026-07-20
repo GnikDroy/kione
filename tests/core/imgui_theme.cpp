@@ -11,17 +11,21 @@ TEST_CASE("HexColorToImVec4") {
     std::vector<const char*> invalid = {
         "",
         "#",
-        "abc",
-        "aabbccdd",
-        "#rrbbccddee",
-        "#aabbccddee",
+        "abc", // no leading #
+        "aabbccdd", // no leading #
+        "#ff", // only #rrggbb / #rrggbbaa accepted
+        "#ffff",
+        "#fffff",
+        "#aabbccddee", // too long
+        "#gggggg", // non-hex digits
+        "#-fffff", // from_chars rejects the sign
     };
 
     std::vector<std::pair<const char*, ImVec4>> valid = {
         { "#aabbccdd", { 0xaa / 255.f, 0xbb / 255.f, 0xcc / 255.f, 0xdd / 255.f } },
-        { "#ff", { 0, 0, 0, 1 } },
-        { "#ffff", { 0, 0, 1, 1 } },
-        { "#ffffff", { 0, 1, 1, 1 } },
+        { "#ffffff", { 1, 1, 1, 1 } }, // 6-digit gets an opaque alpha
+        { "#000000", { 0, 0, 0, 1 } },
+        { "#ff0000", { 1, 0, 0, 1 } },
         { "#112233fa", { 0x11 / 255.f, 0x22 / 255.f, 0x33 / 255.f, 0xfa / 255.f } },
     };
 
