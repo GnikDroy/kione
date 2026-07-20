@@ -3,6 +3,7 @@
 
 #include "serializers/components/camera.hpp"
 #include "serializers/components/collider.hpp"
+#include "serializers/components/environment.hpp"
 #include "serializers/components/light.hpp"
 #include "serializers/components/relation.hpp"
 #include "serializers/components/script.hpp"
@@ -72,6 +73,19 @@ TEST_CASE("ColliderComponent serializer rejects unknown shapes", "[serializers]"
     auto node = YAML::Load("{Shape: Sphere, Radius: 5}");
     k2::ColliderComponent collider;
     REQUIRE_FALSE(YAML::convert<k2::ColliderComponent>::decode(node, collider));
+}
+
+TEST_CASE("Environment serializer round-trips", "[serializers]") {
+    auto loaded = round_trip(k2::Environment { .bloom = false, .bloom_intensity = 0.5f, .bloom_threshold = 1.5f });
+    REQUIRE(loaded.bloom == false);
+    REQUIRE(loaded.bloom_intensity == 0.5f);
+    REQUIRE(loaded.bloom_threshold == 1.5f);
+
+    // Missing fields decode to defaults.
+    auto defaults = YAML::Load("{}").as<k2::Environment>();
+    REQUIRE(defaults.bloom);
+    REQUIRE(defaults.bloom_intensity == 1.0f);
+    REQUIRE(defaults.bloom_threshold == 1.0f);
 }
 
 TEST_CASE("TagComponent serializer round-trips as a scalar", "[serializers]") {

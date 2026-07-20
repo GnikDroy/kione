@@ -184,6 +184,7 @@ std::expected<Scene, std::string> SceneLoader::load(
         deserialize.template operator()<TextComponent>(entity_node, "TextComponent", entity);
         deserialize.template operator()<AudioSourceComponent>(entity_node, "AudioSourceComponent", entity);
         deserialize.template operator()<ColliderComponent>(entity_node, "ColliderComponent", entity);
+        deserialize.template operator()<Environment>(entity_node, "Environment", entity);
         deserialize.template operator()<AnimationComponent>(entity_node, "AnimationComponent", entity);
         deserialize.template operator()<ScriptComponent>(entity_node, "ScriptComponent", entity);
         deserialize.template operator()<AmbientLight>(entity_node, "AmbientLight", entity);

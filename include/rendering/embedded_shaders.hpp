@@ -6,6 +6,10 @@ namespace k2::embedded_shaders {
 
 extern const std::string_view batch_vs;
 extern const std::string_view batch_fs;
+extern const std::string_view bloom_bright_fs;
+extern const std::string_view bloom_downsample_fs;
+extern const std::string_view bloom_upsample_fs;
+extern const std::string_view present_fs;
 extern const std::string_view light_vs;
 extern const std::string_view light_fs;
 extern const std::string_view composite_vs;

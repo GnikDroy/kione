@@ -75,6 +75,7 @@ template <class EntityType> ComponentInspectorWidget<EntityType>::ComponentInspe
     register_component<k2::AnimationComponent>(ICON_FA_FILM "  Animation");
     register_component<k2::AudioSourceComponent>(ICON_FA_VOLUME_UP "  Audio Source");
     register_component<k2::ColliderComponent>(ICON_FA_BULLSEYE "  Collider");
+    register_component<k2::Environment>(ICON_FA_CLOUD "  Environment");
     register_component<k2::Camera>(ICON_FA_CAMERA "  Camera");
     register_component<k2::MainCamera>(ICON_FA_VIDEO "  Main Camera");
     register_component<k2::ScriptComponent>(ICON_FA_CODE "  Script");

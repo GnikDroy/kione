@@ -11,6 +11,7 @@
 #include "rendering/vertex_array.hpp"
 
 #include "components/camera.hpp"
+#include "components/environment.hpp"
 #include "components/sprite.hpp"
 #include "components/transform.hpp"
 
@@ -55,6 +56,10 @@ private:
     Program light_shader;
     Program composite_shader;
     Program text_shader;
+    Program bright_shader;
+    Program downsample_shader;
+    Program upsample_shader;
+    Program present_shader;
 
     Batcher2D batcher {};
     std::vector<Drawable> drawables {};
@@ -66,11 +71,14 @@ private:
     FrameBuffer frame_buffer;
     FrameBuffer albedo_buffer;
     FrameBuffer light_buffer;
+    FrameBuffer scene_buffer;
+    std::vector<FrameBuffer> bloom_mips;
     Texture2D fallback_texture = Texture2D::create_white_texture<uint8_t>();
     ResourceManager* resources {};
 
     glm::vec4 clear_color { 0.0f, 0.0f, 0.0f, 1.0f };
     glm::vec3 ambient_light {};
+    Environment environment {};
     bool has_lights {};
     std::vector<PointLightDraw> point_lights {};
     std::vector<SpotLightDraw> spot_lights {};
@@ -113,7 +121,10 @@ private:
 
     void collect_lights(Scene& scene);
     void ensure_light_targets(std::size_t width, std::size_t height);
+    void ensure_scene_targets(std::size_t width, std::size_t height);
     void light_pass();
-    void composite_pass(const std::array<GLint, 4>& viewport);
+    void composite_pass();
+    void bloom_pass();
+    void present_pass(const std::array<GLint, 4>& viewport, bool bloom);
 };
 }

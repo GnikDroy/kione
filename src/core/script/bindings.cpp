@@ -286,6 +286,9 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             }),
         "layer", &ColliderComponent::layer, "mask", &ColliderComponent::mask);
 
+    lua.new_usertype<Environment>("Environment", "bloom", &Environment::bloom, "bloom_intensity",
+        &Environment::bloom_intensity, "bloom_threshold", &Environment::bloom_threshold);
+
     lua.new_usertype<LuaEntity>(
         "Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "text", &LuaEntity::text,
         "text_size",
@@ -302,7 +305,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             return { metrics.width, metrics.height };
         },
         "animation", &LuaEntity::animation, "audio_source", &LuaEntity::audio_source,
-        "collider", &LuaEntity::collider, "overlaps",
+        "collider", &LuaEntity::collider, "environment", &LuaEntity::environment, "overlaps",
         [&host](const LuaEntity& self, const LuaEntity& other) { return host.overlaps(self, other); },
         "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "ambient_light",
         &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "data",

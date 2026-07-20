@@ -5,6 +5,7 @@
 #include "components/animation.hpp"
 #include "components/camera.hpp"
 #include "components/collider.hpp"
+#include "components/environment.hpp"
 #include "components/light.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
@@ -194,6 +195,19 @@ template <> void ComponentWidget<k2::ColliderComponent>(entt::registry& reg, ent
         BitMaskField("##Layer", collider.layer);
         PropertyLabel("Mask");
         BitMaskField("##Mask", collider.mask);
+        EndPropertyTable();
+    }
+}
+
+template <> void ComponentWidget<k2::Environment>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& environment = reg.get<k2::Environment>(e);
+    if (BeginPropertyTable("Environment")) {
+        PropertyLabel("Bloom");
+        ImGui::Checkbox("##Bloom", &environment.bloom);
+        PropertyLabel("Bloom Intensity");
+        ImGui::DragFloat("##BloomIntensity", &environment.bloom_intensity, 0.01f, 0.0f, 8.0f);
+        PropertyLabel("Bloom Threshold");
+        ImGui::DragFloat("##BloomThreshold", &environment.bloom_threshold, 0.01f, 0.0f, 8.0f);
         EndPropertyTable();
     }
 }
