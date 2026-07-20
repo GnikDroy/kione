@@ -1,7 +1,7 @@
 local speed = 400
 
 function on_create(entity)
-    k2.log("mover attached to '" .. entity:tag() .. "'")
+    kione.log("mover attached to '" .. entity:tag() .. "'")
 end
 
 function on_update(entity, dt)

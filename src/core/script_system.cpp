@@ -52,19 +52,19 @@ struct ScriptSystem::Impl : ScriptHost {
     static constexpr std::size_t command_cap = 10000;
 
     std::unordered_set<std::string> baseline_globals;
-    std::unordered_set<std::string> baseline_k2;
+    std::unordered_set<std::string> baseline_kione;
 
     explicit Impl(Window& window) {
         lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table, sol::lib::io,
             sol::lib::os, sol::lib::coroutine);
         bind_script_api(lua, window, input_enabled, *this);
         baseline_globals = table_string_keys(lua.globals());
-        baseline_k2 = table_string_keys(lua["k2"]);
+        baseline_kione = table_string_keys(lua["kione"]);
     }
 
     void reset_globals() {
         reset_table_to_baseline(lua.globals(), baseline_globals);
-        reset_table_to_baseline(lua["k2"], baseline_k2); // e.g. k2.game
+        reset_table_to_baseline(lua["kione"], baseline_kione); // e.g. kione.game
     }
 
     LuaEntity make_handle(entt::entity entity) {
@@ -185,7 +185,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     sol::object find(std::string_view tag) override {
-        require_registry("k2.find");
+        require_registry("kione.find");
         auto entity = find_by_tag(*current_registry, tag);
         if (entity == entt::null) {
             return sol::lua_nil;
@@ -194,7 +194,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     sol::table find_all(std::string_view tag) override {
-        require_registry("k2.find_all");
+        require_registry("kione.find_all");
         auto table = lua.create_table();
         for (auto entity : find_all_by_tag(*current_registry, tag)) {
             table.add(make_handle(entity));
@@ -203,7 +203,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     sol::table entities(sol::variadic_args component_names) override {
-        require_registry("k2.entities");
+        require_registry("kione.entities");
         std::vector<std::string> names;
         for (auto name : component_names) {
             names.push_back(name.get<std::string>());
@@ -216,10 +216,10 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     LuaEntity spawn(std::string_view tag, float x, float y) override {
-        require_registry("k2.spawn");
+        require_registry("kione.spawn");
         auto tmpl = find_by_tag(*current_registry, tag);
         if (tmpl == entt::null) {
-            throw std::runtime_error(std::format("k2.spawn: no entity tagged '{}' to clone", tag));
+            throw std::runtime_error(std::format("kione.spawn: no entity tagged '{}' to clone", tag));
         }
         return spawn_from(tmpl, x, y);
     }
@@ -259,7 +259,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     void play_sound(std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) override {
-        require_registry("k2.play_sound");
+        require_registry("kione.play_sound");
         if (!current_registry->ctx().contains<AudioSystem&>()
             || !current_registry->ctx().contains<ResourceManager&>()) {
             return;
@@ -267,13 +267,13 @@ struct ScriptSystem::Impl : ScriptHost {
         auto& resources = current_registry->ctx().get<ResourceManager&>();
         const auto* clip = resources.try_get<AudioClip>(ResourceManager::resolve(name));
         if (clip == nullptr) {
-            throw std::runtime_error(std::format("k2.play_sound: unknown clip '{}'", name));
+            throw std::runtime_error(std::format("kione.play_sound: unknown clip '{}'", name));
         }
         current_registry->ctx().get<AudioSystem&>().play(*clip, volume.value_or(1.0f), pitch.value_or(1.0f));
     }
 
     void submit_draw(DrawCommand command) override {
-        require_registry("k2.draw");
+        require_registry("kione.draw");
         auto& draw_list = current_registry->ctx().emplace<DrawList>();
         if (draw_list.commands.size() >= command_cap) {
             if (!draw_list.overflowed) {
@@ -286,16 +286,16 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     void load_scene(std::string_view name) override {
-        require_registry("k2.load_scene");
+        require_registry("kione.load_scene");
         auto it = current_assets->find(ResourceManager::resolve(name));
         if (it == current_assets->end() || it->second.second.type != Asset::Type::Scene) {
-            throw std::runtime_error(std::format("k2.load_scene: unknown scene '{}'", name));
+            throw std::runtime_error(std::format("kione.load_scene: unknown scene '{}'", name));
         }
         current_registry->ctx().insert_or_assign(SceneRequest { std::string { name } });
     }
 
     sol::table query_circle(float x, float y, float radius, sol::optional<std::uint32_t> mask) override {
-        require_registry("k2.query_circle");
+        require_registry("kione.query_circle");
         auto table = lua.create_table();
         for (auto entity : collision::query_circle(*current_registry, { x, y }, radius, mask.value_or(0xffffffff))) {
             table.add(make_handle(entity));
@@ -304,7 +304,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     sol::table query_aabb(float x, float y, float w, float h, sol::optional<std::uint32_t> mask) override {
-        require_registry("k2.query_aabb");
+        require_registry("kione.query_aabb");
         auto table = lua.create_table();
         for (auto entity :
             collision::query_aabb(*current_registry, { x, y }, { w * 0.5f, h * 0.5f }, mask.value_or(0xffffffff))) {
@@ -314,7 +314,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     sol::table query_point(float x, float y, sol::optional<std::uint32_t> mask) override {
-        require_registry("k2.query_point");
+        require_registry("kione.query_point");
         auto table = lua.create_table();
         for (auto entity : collision::query_point(*current_registry, { x, y }, mask.value_or(0xffffffff))) {
             table.add(make_handle(entity));

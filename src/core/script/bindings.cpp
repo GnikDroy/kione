@@ -327,43 +327,43 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
 
     bind_constants(lua);
 
-    auto k2_table = lua.create_named_table("k2");
-    k2_table["log"] = [](const std::string& message) { Log::app().info(message); };
-    k2_table["find"] = [&host](std::string_view tag) { return host.find(tag); };
-    k2_table["find_all"] = [&host](std::string_view tag) { return host.find_all(tag); };
-    k2_table["entities"] = [&host](sol::variadic_args component_names) { return host.entities(component_names); };
-    k2_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
-    k2_table["screen_to_world"] = [&host](float x, float y) { return host.screen_to_world(x, y); };
-    k2_table["world_to_screen"] = [&host](float x, float y) { return host.world_to_screen(x, y); };
-    k2_table["play_sound"] = [&host](std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) {
+    auto kione_table = lua.create_named_table("kione");
+    kione_table["log"] = [](const std::string& message) { Log::app().info(message); };
+    kione_table["find"] = [&host](std::string_view tag) { return host.find(tag); };
+    kione_table["find_all"] = [&host](std::string_view tag) { return host.find_all(tag); };
+    kione_table["entities"] = [&host](sol::variadic_args component_names) { return host.entities(component_names); };
+    kione_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
+    kione_table["screen_to_world"] = [&host](float x, float y) { return host.screen_to_world(x, y); };
+    kione_table["world_to_screen"] = [&host](float x, float y) { return host.world_to_screen(x, y); };
+    kione_table["play_sound"] = [&host](std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) {
         host.play_sound(name, volume, pitch);
     };
-    k2_table["load_scene"] = [&host](std::string_view name) { host.load_scene(name); };
-    k2_table["query_circle"] = [&host](float x, float y, float radius, sol::optional<std::uint32_t> mask) {
+    kione_table["load_scene"] = [&host](std::string_view name) { host.load_scene(name); };
+    kione_table["query_circle"] = [&host](float x, float y, float radius, sol::optional<std::uint32_t> mask) {
         return host.query_circle(x, y, radius, mask);
     };
-    k2_table["query_aabb"] = [&host](float x, float y, float w, float h, sol::optional<std::uint32_t> mask) {
+    kione_table["query_aabb"] = [&host](float x, float y, float w, float h, sol::optional<std::uint32_t> mask) {
         return host.query_aabb(x, y, w, h, mask);
     };
-    k2_table["query_point"]
+    kione_table["query_point"]
         = [&host](float x, float y, sol::optional<std::uint32_t> mask) { return host.query_point(x, y, mask); };
-    k2_table["draw_line"] = [&host](float x1, float y1, float x2, float y2, sol::optional<sol::table> options) {
+    kione_table["draw_line"] = [&host](float x1, float y1, float x2, float y2, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(
             options, DrawCommand { .kind = DrawCommand::Kind::Line, .a = { x1, y1 }, .b = { x2, y2 } }));
     };
-    k2_table["draw_rect"] = [&host](float x, float y, float w, float h, sol::optional<sol::table> options) {
+    kione_table["draw_rect"] = [&host](float x, float y, float w, float h, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(
             options, DrawCommand { .kind = DrawCommand::Kind::Rect, .a = { x, y }, .b = { w, h } }));
     };
-    k2_table["draw_circle"] = [&host](float x, float y, float radius, sol::optional<sol::table> options) {
+    kione_table["draw_circle"] = [&host](float x, float y, float radius, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(options,
             DrawCommand { .kind = DrawCommand::Kind::Circle, .a = { x, y }, .radius = radius, .width = 2.0f }));
     };
-    k2_table["draw_point"] = [&host](float x, float y, sol::optional<sol::table> options) {
+    kione_table["draw_point"] = [&host](float x, float y, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(
             options, DrawCommand { .kind = DrawCommand::Kind::Point, .a = { x, y }, .width = 4.0f }));
     };
-    k2_table["draw_polygon"] = [&host](sol::table flat_points, sol::optional<sol::table> options) {
+    kione_table["draw_polygon"] = [&host](sol::table flat_points, sol::optional<sol::table> options) {
         DrawCommand command { .kind = DrawCommand::Kind::Polygon };
         for (std::size_t i = 1; i + 1 <= flat_points.size(); i += 2) {
             command.points.push_back({ flat_points.get<float>(i), flat_points.get<float>(i + 1) });

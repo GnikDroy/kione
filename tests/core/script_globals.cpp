@@ -30,14 +30,14 @@ TEST_CASE("reset_table_to_baseline wipes only script-added keys") {
 
 TEST_CASE("reset_table_to_baseline restores a nested engine table") {
     auto lua = make_state();
-    lua.script("k2 = { log = function() end }"); // stands in for the bound k2 table
-    sol::table k2 = lua["k2"];
-    auto baseline = k2::table_string_keys(k2);
+    lua.script("kione = { log = function() end }"); // stands in for the bound kione table
+    sol::table kione = lua["kione"];
+    auto baseline = k2::table_string_keys(kione);
 
-    lua.script("k2.game = { wave = 3 }"); // script hangs state off k2
+    lua.script("kione.game = { wave = 3 }"); // script hangs state off kione
 
-    k2::reset_table_to_baseline(lua["k2"], baseline);
+    k2::reset_table_to_baseline(lua["kione"], baseline);
 
-    REQUIRE(lua["k2"]["game"] == sol::lua_nil);
-    REQUIRE(lua["k2"]["log"].valid()); // engine key kept
+    REQUIRE(lua["kione"]["game"] == sol::lua_nil);
+    REQUIRE(lua["kione"]["log"].valid()); // engine key kept
 }
