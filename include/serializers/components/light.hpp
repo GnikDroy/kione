@@ -5,24 +5,6 @@
 #include <yaml-cpp/yaml.h>
 
 namespace YAML {
-template <> struct convert<k2::AmbientLight> {
-    static Node encode(const k2::AmbientLight& light) {
-        YAML::Node node;
-        node["Color"] = light.color;
-        node["Intensity"] = light.intensity;
-        return node;
-    }
-
-    static bool decode(const Node& node, k2::AmbientLight& light) {
-        if (!node.IsMap()) {
-            return false;
-        }
-        light.color = node["Color"].as<glm::vec3>();
-        light.intensity = node["Intensity"].as<float>();
-        return true;
-    }
-};
-
 template <> struct convert<k2::PointLight> {
     static Node encode(const k2::PointLight& light) {
         YAML::Node node;

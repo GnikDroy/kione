@@ -45,7 +45,6 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     copy_component<AudioSourceComponent>(registry, src, dst);
     copy_component<ColliderComponent>(registry, src, dst);
     copy_component<Environment>(registry, src, dst);
-    copy_component<AmbientLight>(registry, src, dst);
     copy_component<PointLight>(registry, src, dst);
     copy_component<SpotLight>(registry, src, dst);
     copy_component<SpriteLight>(registry, src, dst);
@@ -90,7 +89,6 @@ namespace {
         { "Environment", has_component<Environment> },
         { "PointLight", has_component<PointLight> },
         { "SpotLight", has_component<SpotLight> },
-        { "AmbientLight", has_component<AmbientLight> },
         { "SpriteLight", has_component<SpriteLight> },
         { "Camera", has_component<Camera> },
         { "MainCamera", has_component<MainCamera> },

@@ -33,7 +33,6 @@ void DebugWidget::render(EditorLayer& editor_layer) {
         row("Sprites", registry.view<SpriteComponent>().size());
         row("Scripts", registry.view<ScriptComponent>().size());
         row("Cameras", registry.view<Camera>().size());
-        row("Ambient lights", registry.view<AmbientLight>().size());
         row("Point lights", registry.view<PointLight>().size());
         row("Spot lights", registry.view<SpotLight>().size());
         row("Sprite lights", registry.view<SpriteLight>().size());

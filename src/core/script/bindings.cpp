@@ -168,9 +168,6 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         &SpotLight::intensity, "radius", &SpotLight::radius, "inner_angle", &SpotLight::inner_angle, "outer_angle",
         &SpotLight::outer_angle);
 
-    lua.new_usertype<AmbientLight>("AmbientLight", "color", color_property.template operator()<AmbientLight>(),
-        "intensity", &AmbientLight::intensity);
-
     lua.new_usertype<SpriteLight>("SpriteLight", "color", color_property.template operator()<SpriteLight>(),
         "intensity", &SpriteLight::intensity, "texture",
         sol::property([](SpriteLight& light) { return light.texture.name; },
@@ -286,8 +283,14 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             }),
         "layer", &ColliderComponent::layer, "mask", &ColliderComponent::mask);
 
-    lua.new_usertype<Environment>("Environment", "bloom", &Environment::bloom, "bloom_intensity",
-        &Environment::bloom_intensity, "bloom_threshold", &Environment::bloom_threshold);
+    lua.new_usertype<Environment>("Environment", "ambient_color",
+        sol::property([](Environment& env) -> glm::vec3& { return env.ambient_color; },
+            [](Environment& env, const glm::vec3& value) { env.ambient_color = value; }),
+        "ambient_intensity", &Environment::ambient_intensity, "clear_color",
+        sol::property([](Environment& env) -> glm::vec4& { return env.clear_color; },
+            [](Environment& env, const glm::vec4& value) { env.clear_color = value; }),
+        "bloom", &Environment::bloom, "bloom_intensity", &Environment::bloom_intensity, "bloom_threshold",
+        &Environment::bloom_threshold);
 
     lua.new_usertype<LuaEntity>(
         "Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "text", &LuaEntity::text,
@@ -307,8 +310,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         "animation", &LuaEntity::animation, "audio_source", &LuaEntity::audio_source,
         "collider", &LuaEntity::collider, "environment", &LuaEntity::environment, "overlaps",
         [&host](const LuaEntity& self, const LuaEntity& other) { return host.overlaps(self, other); },
-        "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "ambient_light",
-        &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "data",
+        "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "sprite_light", &LuaEntity::sprite_light, "data",
         [&lua](const LuaEntity& self) -> sol::object {
             if (!self.valid()) {
                 return sol::lua_nil;

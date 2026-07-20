@@ -76,13 +76,23 @@ TEST_CASE("ColliderComponent serializer rejects unknown shapes", "[serializers]"
 }
 
 TEST_CASE("Environment serializer round-trips", "[serializers]") {
-    auto loaded = round_trip(k2::Environment { .bloom = false, .bloom_intensity = 0.5f, .bloom_threshold = 1.5f });
+    auto loaded = round_trip(k2::Environment { .ambient_color { 0.4f, 0.4f, 0.6f },
+        .ambient_intensity = 0.35f,
+        .clear_color { 0.1f, 0.2f, 0.3f, 1.0f },
+        .bloom = false,
+        .bloom_intensity = 0.5f,
+        .bloom_threshold = 1.5f });
+    REQUIRE(loaded.ambient_color == glm::vec3 { 0.4f, 0.4f, 0.6f });
+    REQUIRE(loaded.ambient_intensity == 0.35f);
+    REQUIRE(loaded.clear_color == glm::vec4 { 0.1f, 0.2f, 0.3f, 1.0f });
     REQUIRE(loaded.bloom == false);
     REQUIRE(loaded.bloom_intensity == 0.5f);
     REQUIRE(loaded.bloom_threshold == 1.5f);
 
     // Missing fields decode to defaults.
     auto defaults = YAML::Load("{}").as<k2::Environment>();
+    REQUIRE(defaults.ambient_color == glm::vec3 { 1.0f });
+    REQUIRE(defaults.ambient_intensity == 1.0f);
     REQUIRE(defaults.bloom);
     REQUIRE(defaults.bloom_intensity == 1.0f);
     REQUIRE(defaults.bloom_threshold == 1.0f);
@@ -168,12 +178,6 @@ TEST_CASE("Camera serializer round-trips perspective traits", "[serializers]") {
     REQUIRE(traits != nullptr);
     REQUIRE(traits->fov == Approx(1.2f));
     REQUIRE(traits->aspect_ratio == Approx(1.5f));
-}
-
-TEST_CASE("AmbientLight serializer round-trips", "[serializers]") {
-    auto loaded = round_trip(k2::AmbientLight { .color { 0.4f, 0.4f, 0.6f }, .intensity = 0.35f });
-    REQUIRE(loaded.color == glm::vec3 { 0.4f, 0.4f, 0.6f });
-    REQUIRE(loaded.intensity == Approx(0.35f));
 }
 
 TEST_CASE("PointLight serializer round-trips", "[serializers]") {

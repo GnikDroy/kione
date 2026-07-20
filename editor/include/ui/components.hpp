@@ -202,6 +202,12 @@ template <> void ComponentWidget<k2::ColliderComponent>(entt::registry& reg, ent
 template <> void ComponentWidget<k2::Environment>(entt::registry& reg, entt::registry::entity_type e) {
     auto& environment = reg.get<k2::Environment>(e);
     if (BeginPropertyTable("Environment")) {
+        PropertyLabel("Ambient Color");
+        ImGui::ColorEdit3("##AmbientColor", glm::value_ptr(environment.ambient_color));
+        PropertyLabel("Ambient Intensity");
+        ImGui::DragFloat("##AmbientIntensity", &environment.ambient_intensity, 0.01f, 0.0f, 8.0f);
+        PropertyLabel("Clear Color");
+        ImGui::ColorEdit4("##ClearColor", glm::value_ptr(environment.clear_color));
         PropertyLabel("Bloom");
         ImGui::Checkbox("##Bloom", &environment.bloom);
         PropertyLabel("Bloom Intensity");
@@ -245,17 +251,6 @@ template <> void ComponentWidget<k2::TagComponent>(entt::registry& reg, entt::re
     if (BeginPropertyTable("Tag")) {
         PropertyLabel("Tag");
         ImGui::InputText("##Tag", &tag);
-        EndPropertyTable();
-    }
-}
-
-template <> void ComponentWidget<k2::AmbientLight>(entt::registry& reg, entt::registry::entity_type e) {
-    auto& light = reg.get<k2::AmbientLight>(e);
-    if (BeginPropertyTable("AmbientLight")) {
-        PropertyLabel("Color");
-        ImGui::ColorEdit3("##Color", glm::value_ptr(light.color));
-        PropertyLabel("Intensity");
-        ImGui::DragFloat("##Intensity", &light.intensity, 0.01f, 0.0f, 100.0f);
         EndPropertyTable();
     }
 }

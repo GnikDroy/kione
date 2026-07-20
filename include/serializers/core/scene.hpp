@@ -54,7 +54,6 @@ template <> struct convert<k2::Scene> {
             serialize.template operator()<k2::Environment>(entity_node, "Environment", entity);
             serialize.template operator()<k2::AnimationComponent>(entity_node, "AnimationComponent", entity);
             serialize.template operator()<k2::ScriptComponent>(entity_node, "ScriptComponent", entity);
-            serialize.template operator()<k2::AmbientLight>(entity_node, "AmbientLight", entity);
             serialize.template operator()<k2::PointLight>(entity_node, "PointLight", entity);
             serialize.template operator()<k2::SpotLight>(entity_node, "SpotLight", entity);
             serialize.template operator()<k2::SpriteLight>(entity_node, "SpriteLight", entity);

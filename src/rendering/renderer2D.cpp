@@ -197,13 +197,18 @@ void Renderer2D::collect_lights(Scene& scene) {
 
     auto& registry = scene.registry;
 
+    bool has_environment = false;
     environment = {};
-    registry.view<Environment>().each([&](auto, const Environment& env) { environment = env; });
-
-    registry.view<AmbientLight>().each([&](auto, const AmbientLight& light) {
-        ambient_light += light.color * light.intensity;
-        has_lights = true;
+    registry.view<Environment>().each([&](auto, const Environment& env) {
+        environment = env;
+        has_environment = true;
     });
+
+    ambient_light = environment.ambient_color * environment.ambient_intensity;
+    has_lights = has_environment && ambient_light != glm::vec3 { 0.0f };
+    if (!has_environment) {
+        environment.clear_color = clear_color;
+    }
 
     registry.view<TransformComponent, PointLight>().each([&](auto entity, const auto&, const PointLight& light) {
         auto model
@@ -509,7 +514,8 @@ void Renderer2D::render() {
         ensure_light_targets(scene_width, scene_height);
 
         glBindFramebuffer(GL_FRAMEBUFFER, albedo_buffer.get_id());
-        glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+        glClearColor(
+            environment.clear_color.r, environment.clear_color.g, environment.clear_color.b, environment.clear_color.a);
         glClear(GL_COLOR_BUFFER_BIT);
 
         submit_pass(pass_for(albedo_buffer, default_shader, GL_ONE_MINUS_SRC_ALPHA), drawables,
@@ -523,7 +529,8 @@ void Renderer2D::render() {
             [&](const Drawable& drawable) { return drawable.unlit && is_alpha(drawable); });
     } else {
         glBindFramebuffer(GL_FRAMEBUFFER, scene_buffer.get_id());
-        glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+        glClearColor(
+            environment.clear_color.r, environment.clear_color.g, environment.clear_color.b, environment.clear_color.a);
         glClear(GL_COLOR_BUFFER_BIT);
 
         submit_pass(pass_for(scene_buffer, default_shader, GL_ONE_MINUS_SRC_ALPHA), drawables, is_alpha);

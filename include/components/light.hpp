@@ -5,11 +5,6 @@
 
 namespace k2 {
 
-struct AmbientLight {
-    glm::vec3 color { 1.0f, 1.0f, 1.0f };
-    float intensity { 1.0f };
-};
-
 struct PointLight {
     glm::vec3 color { 1.0f, 1.0f, 1.0f };
     float intensity { 1.0f };

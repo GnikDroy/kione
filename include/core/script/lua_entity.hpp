@@ -48,9 +48,7 @@ struct LuaEntity {
     [[nodiscard]] SpotLight* spot_light() const {
         return valid() ? registry->try_get<SpotLight>(entity) : nullptr;
     }
-    [[nodiscard]] AmbientLight* ambient_light() const {
-        return valid() ? registry->try_get<AmbientLight>(entity) : nullptr;
-    }
+
     [[nodiscard]] SpriteLight* sprite_light() const {
         return valid() ? registry->try_get<SpriteLight>(entity) : nullptr;
     }
