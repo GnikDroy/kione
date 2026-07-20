@@ -4,7 +4,9 @@
 #include "core/utils.hpp"
 #include <array>
 #include <cfloat>
+#include <cmath>
 #include <cstdio>
+#include <span>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -56,29 +58,32 @@ namespace detail {
 
     template <k2::arithmetic T, std::size_t N>
     void MultiAxisField(const char* id, const std::array<Axis, N>& axes, const std::array<T*, N>& values,
-        const std::array<T, N>& resets, float speed) {
+        const std::array<T, N>& resets, float speed, std::span<const int> row_counts) {
         ImGui::PushID(id);
         constexpr auto gap = 4.0f;
-        auto slot = (ImGui::GetContentRegionAvail().x - gap * (N - 1)) / N;
-        for (std::size_t i = 0; i < N; i++) {
-            if (i != 0) {
-                ImGui::SameLine(0.0f, gap);
+        std::size_t i = 0;
+        for (auto row_count : row_counts) {
+            auto slot = (ImGui::GetContentRegionAvail().x - gap * float(row_count - 1)) / float(row_count);
+            for (int column = 0; column < row_count && i < N; ++column, ++i) {
+                if (column != 0) {
+                    ImGui::SameLine(0.0f, gap);
+                }
+                ImGui::PushID(static_cast<int>(i));
+                const auto& color = axes[i].color;
+                ImVec4 hovered { std::min(color.x * 1.2f, 1.0f), std::min(color.y * 1.2f, 1.0f),
+                    std::min(color.z * 1.2f, 1.0f), 1.0f };
+                ImGui::PushStyleColor(ImGuiCol_Button, color);
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hovered);
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+                if (ImGui::Button(axes[i].name)) {
+                    *values[i] = resets[i];
+                }
+                ImGui::PopStyleColor(3);
+                ImGui::SameLine(0.0f, 0.0f);
+                ImGui::SetNextItemWidth(std::max(slot - ImGui::GetItemRectSize().x, 40.0f));
+                ImGuiDrag<T>("##value", values[i], speed);
+                ImGui::PopID();
             }
-            ImGui::PushID(static_cast<int>(i));
-            const auto& color = axes[i].color;
-            ImVec4 hovered { std::min(color.x * 1.2f, 1.0f), std::min(color.y * 1.2f, 1.0f),
-                std::min(color.z * 1.2f, 1.0f), 1.0f };
-            ImGui::PushStyleColor(ImGuiCol_Button, color);
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hovered);
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
-            if (ImGui::Button(axes[i].name)) {
-                *values[i] = resets[i];
-            }
-            ImGui::PopStyleColor(3);
-            ImGui::SameLine(0.0f, 0.0f);
-            ImGui::SetNextItemWidth(std::max(slot - ImGui::GetItemRectSize().x, 40.0f));
-            ImGuiDrag<T>("##value", values[i], speed);
-            ImGui::PopID();
         }
         ImGui::PopID();
     }
@@ -88,21 +93,21 @@ template <class T>
 void Vec2Field(const char* id, glm::vec<2, T, glm::defaultp>& vec, const glm::vec<2, T, glm::defaultp>& reset = {},
     float speed = 0.1f) {
     detail::MultiAxisField<T, 2>(
-        id, { detail::axis_x, detail::axis_y }, { &vec.x, &vec.y }, { reset.x, reset.y }, speed);
+        id, { detail::axis_x, detail::axis_y }, { &vec.x, &vec.y }, { reset.x, reset.y }, speed, std::array { 2 });
 }
 
 template <class T>
 void Vec3Field(const char* id, glm::vec<3, T, glm::defaultp>& vec, const glm::vec<3, T, glm::defaultp>& reset = {},
     float speed = 0.1f) {
     detail::MultiAxisField<T, 3>(id, { detail::axis_x, detail::axis_y, detail::axis_z }, { &vec.x, &vec.y, &vec.z },
-        { reset.x, reset.y, reset.z }, speed);
+        { reset.x, reset.y, reset.z }, speed, std::array { 3 });
 }
 
 template <class T>
 void Vec4Field(const char* id, glm::vec<4, T, glm::defaultp>& vec, const glm::vec<4, T, glm::defaultp>& reset = {},
     float speed = 0.1f) {
     detail::MultiAxisField<T, 4>(id, { detail::axis_x, detail::axis_y, detail::axis_z, detail::axis_w },
-        { &vec.x, &vec.y, &vec.z, &vec.w }, { reset.x, reset.y, reset.z, reset.w }, speed);
+        { &vec.x, &vec.y, &vec.z, &vec.w }, { reset.x, reset.y, reset.z, reset.w }, speed, std::array { 2, 2 });
 }
 
 template <arithmetic T>
@@ -110,7 +115,7 @@ void RectField(const char* id, k2::Rect<T>& rect, const k2::Rect<T>& reset = {},
     detail::MultiAxisField<T, 4>(id,
         { detail::axis_x, detail::axis_y, detail::Axis { .name = "W", .color = detail::axis_z.color },
             detail::Axis { .name = "H", .color = detail::axis_w.color } },
-        { &rect.x, &rect.y, &rect.w, &rect.h }, { reset.x, reset.y, reset.w, reset.h }, speed);
+        { &rect.x, &rect.y, &rect.w, &rect.h }, { reset.x, reset.y, reset.w, reset.h }, speed, std::array { 2, 2 });
 }
 
 inline void RotationField(const char* id, glm::quat& quaternion) {
