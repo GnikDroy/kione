@@ -22,5 +22,13 @@ struct Project {
     [[nodiscard]] std::expected<void, std::string> reload_assets() noexcept;
 
     [[nodiscard]] std::expected<void, std::string> save() const;
+
+    [[nodiscard]] std::expected<void, std::string> add_asset(
+        Asset::Type type, const std::string& name, const std::filesystem::path& file);
+
+    [[nodiscard]] std::expected<void, std::string> rename_asset(
+        const std::string& old_name, const std::string& new_name);
+
+    [[nodiscard]] std::expected<void, std::string> remove_asset(const std::string& name);
 };
 }
