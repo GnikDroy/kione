@@ -6,7 +6,6 @@
 #include "core/keyboard.hpp" // IWYU pragma: export
 #include "core/logger.hpp" // IWYU pragma: export
 #include "core/mouse.hpp" // IWYU pragma: export
-#include "core/vector.hpp" // IWYU pragma: export
 #include "core/window.hpp" // IWYU pragma: export
 
 #include "rendering/buffer.hpp" // IWYU pragma: export
