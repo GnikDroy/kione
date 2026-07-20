@@ -1,7 +1,6 @@
 #include "rendering/renderer2D.hpp"
 
 #include <algorithm>
-#include <filesystem>
 
 #include <glm/gtx/quaternion.hpp>
 
@@ -9,20 +8,20 @@
 #include "components/text.hpp"
 #include "core/logger.hpp"
 #include "core/scene.hpp"
+#include "rendering/embedded_shaders.hpp"
 #include "rendering/font.hpp"
 
 namespace k2 {
 
 constexpr std::array<std::uint32_t, 6> quad_indices { 0, 1, 2, 0, 3, 1 };
 
-static Program load_program(const char* vertex, const char* fragment) {
-    namespace fs = std::filesystem;
-    auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, fs::path(vertex));
+static Program load_program(std::string_view vertex, std::string_view fragment) {
+    auto vertex_shader = k2::Shader(GL_VERTEX_SHADER, std::string { vertex });
     if (!vertex_shader) {
         k2::Log::core().critical(vertex_shader.error_msg().value());
     }
 
-    auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, fs::path(fragment));
+    auto fragment_shader = k2::Shader(GL_FRAGMENT_SHADER, std::string { fragment });
     if (!fragment_shader) {
         k2::Log::core().critical(fragment_shader.error_msg().value());
     }
@@ -37,10 +36,10 @@ static Program load_program(const char* vertex, const char* fragment) {
 }
 
 Renderer2D::Renderer2D()
-    : default_shader { load_program("res/shaders/2D_vs.glsl", "res/shaders/2D_fs.glsl") }
-    , light_shader { load_program("res/shaders/light_vs.glsl", "res/shaders/light_fs.glsl") }
-    , composite_shader { load_program("res/shaders/composite_vs.glsl", "res/shaders/composite_fs.glsl") }
-    , text_shader { load_program("res/shaders/text_vs.glsl", "res/shaders/text_fs.glsl") } {
+    : default_shader { load_program(embedded_shaders::batch_vs, embedded_shaders::batch_fs) }
+    , light_shader { load_program(embedded_shaders::light_vs, embedded_shaders::light_fs) }
+    , composite_shader { load_program(embedded_shaders::composite_vs, embedded_shaders::composite_fs) }
+    , text_shader { load_program(embedded_shaders::text_vs, embedded_shaders::text_fs) } {
     const std::array<glm::vec2, 6> quad { { { -1.0f, -1.0f }, { 1.0f, -1.0f }, { 1.0f, 1.0f }, { -1.0f, -1.0f },
         { 1.0f, 1.0f }, { -1.0f, 1.0f } } };
     light_vbo = VertexBuffer { quad.size() * sizeof(glm::vec2) };

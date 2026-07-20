@@ -1,5 +1,16 @@
 find_package(OpenGL REQUIRED)
 
+set(K2_SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rendering/shaders)
+set(K2_EMBEDDED_SHADERS ${CMAKE_CURRENT_BINARY_DIR}/generated/embedded_shaders.cpp)
+file(GLOB K2_SHADER_FILES CONFIGURE_DEPENDS ${K2_SHADER_DIR}/*.glsl)
+add_custom_command(
+    OUTPUT ${K2_EMBEDDED_SHADERS}
+    COMMAND ${CMAKE_COMMAND} -DSHADER_DIR=${K2_SHADER_DIR} -DOUTPUT=${K2_EMBEDDED_SHADERS}
+            -P ${PROJECT_SOURCE_DIR}/cmake/embed_shaders.cmake
+    DEPENDS ${K2_SHADER_FILES} ${PROJECT_SOURCE_DIR}/cmake/embed_shaders.cmake
+    COMMENT "Embedding engine shaders"
+)
+
 add_library(
     kione2D
     asset/asset.cpp
@@ -28,6 +39,7 @@ add_library(
     platform/desktop/keyboard.cpp
     platform/desktop/mouse.cpp
     platform/desktop/clipboard.cpp
+    platform/desktop/paths.cpp
     rendering/batcher2D.cpp
     rendering/debug.cpp
     rendering/font.cpp
@@ -40,6 +52,7 @@ add_library(
     rendering/shapes.cpp
     rendering/texture.cpp
     stb_image.cpp
+    ${K2_EMBEDDED_SHADERS}
 )
 add_library(kione2D::kione2D ALIAS kione2D)
 

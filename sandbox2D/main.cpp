@@ -2,8 +2,13 @@
 #include "platform/entry_point.hpp"
 
 #include "core/imgui_layer.hpp"
+#include "core/paths.hpp"
 #include "rendering/debug.hpp"
 #include "scene_layer.hpp"
+
+#include <algorithm>
+#include <filesystem>
+#include <format>
 
 class Sandbox2D : public k2::App {
 public:
@@ -21,6 +26,27 @@ public:
     ~Sandbox2D() override { k2::Log::app().info("Sandbox2D application stopped."); }
 };
 
+static std::string discover_project() {
+    auto directory = k2::executable_path().parent_path();
+    std::error_code ec;
+    std::vector<std::filesystem::path> projects;
+    for (const auto& entry : std::filesystem::directory_iterator(directory, ec)) {
+        if (entry.path().extension() == ".k2project") {
+            projects.push_back(entry.path());
+        }
+    }
+    if (projects.size() > 1) {
+        std::ranges::sort(projects);
+        std::string names;
+        for (const auto& project : projects) {
+            names += std::format("\n  {}", project.filename().string());
+        }
+        throw std::runtime_error(
+            std::format("Multiple projects next to the executable; pass one explicitly:{}", names));
+    }
+    return projects.front().string();
+}
+
 auto create_app(std::vector<std::string> args) -> std::unique_ptr<k2::App> {
-    return std::make_unique<Sandbox2D>(args.empty() ? "res/project.k2project" : args.front());
+    return std::make_unique<Sandbox2D>(args.empty() ? discover_project() : args.front());
 }

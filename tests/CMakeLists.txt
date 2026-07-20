@@ -20,6 +20,7 @@ add_executable(
     core/lua_entity.cpp
     core/lua_component.cpp
     core/font.cpp
+    core/paths.cpp
 
     components/camera.cpp
     components/relation.cpp

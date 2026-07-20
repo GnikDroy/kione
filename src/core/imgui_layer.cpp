@@ -1,6 +1,7 @@
 #include "core/imgui_layer.hpp"
 
 #include "core/logger.hpp"
+#include "core/paths.hpp"
 #include "events/event.hpp"
 #include "events/keyboard.hpp"
 #include "events/mouse.hpp"
@@ -36,17 +37,27 @@ ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme
     ImGui::StyleColorsDark();
     this->theme->apply();
     static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_FA, ICON_MAX_FA, 0 };
-    if (io.Fonts->AddFontFromFileTTF("res/fonts/NotoSans-Regular.ttf", 18) != nullptr) {
-        ImFontConfig config;
-        config.MergeMode = true;
-        if (io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 18.0f, &config, icon_ranges.data()) == nullptr) {
+
+    auto font_directory = executable_path().parent_path() / "res/fonts";
+    auto text_font = font_directory / "NotoSans-Regular.ttf";
+    auto fa_font = font_directory / "fontawesome-webfont.ttf";
+    std::error_code ec;
+    if (std::filesystem::is_regular_file(text_font, ec)
+        && io.Fonts->AddFontFromFileTTF(text_font.string().c_str(), 18) != nullptr) {
+        if (std::filesystem::is_regular_file(fa_font, ec)) {
+            ImFontConfig config;
+            config.MergeMode = true;
+            io.Fonts->AddFontFromFileTTF(fa_font.string().c_str(), 18.0f, &config, icon_ranges.data());
+        } else {
             Log::core().warn("Failed to load res/fonts/fontawesome-webfont.ttf, icons might look corrupt.");
         }
     } else {
         Log::core().warn("Failed to load res/fonts/NotoSans-Regular.ttf, falling back to the default font.");
         io.Fonts->AddFontDefault();
     }
-    icon_font = io.Fonts->AddFontFromFileTTF("res/fonts/fontawesome-webfont.ttf", 52.0f, nullptr, icon_ranges.data());
+    if (std::filesystem::is_regular_file(fa_font, ec)) {
+        icon_font = io.Fonts->AddFontFromFileTTF(fa_font.string().c_str(), 52.0f, nullptr, icon_ranges.data());
+    }
 
     ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
     ImGui_ImplOpenGL3_Init();
