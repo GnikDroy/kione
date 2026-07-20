@@ -74,6 +74,7 @@ namespace {
 
 void AssetListWidget::render(EditorLayer& editor_layer) {
     bool actionable = editor_layer.project.has_value() && !editor_layer.is_playing();
+    const auto& assets = editor_layer.active_assets();
 
     ImGui::BeginDisabled(!editor_layer.project.has_value());
     if (ImGui::Button(ICON_FA_SYNC "  Reload")) {
@@ -91,11 +92,10 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
     }
     ImGui::EndDisabled();
     ImGui::SameLine();
-    filter.Draw(ICON_FA_SEARCH " Search", 200.0f);
+    auto shown = std::ranges::count_if(assets, [](const auto& entry) { return !entry.second.first.empty(); });
+    ImGui::TextDisabled("%td assets", shown);
 
-    const auto& assets = editor_layer.active_assets();
-    ImGui::SameLine();
-    ImGui::TextDisabled("%zu assets", assets.size());
+    filter.Draw("##Search", std::min(ImGui::GetContentRegionAvail().x, 400.0f));
 
     std::vector<const std::pair<std::string, Asset>*> rows;
     rows.reserve(assets.size());
@@ -120,6 +120,10 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
 
         for (const auto* row : rows) {
             const auto& [asset_name, asset] = *row;
+            // The project's own root bundle registers itself under an empty name; hide it.
+            if (asset_name.empty()) {
+                continue;
+            }
             if (!filter.PassFilter(asset_name.c_str()) && !filter.PassFilter(asset.url.c_str())) {
                 continue;
             }

@@ -201,14 +201,17 @@ void EditorLayer::build_default_layout(unsigned int dockspace_id) {
     ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.20f, nullptr, &center);
     ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.25f, nullptr, &center);
     ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.30f, nullptr, &center);
+    ImGuiID left_bottom = ImGui::DockBuilderSplitNode(left, ImGuiDir_Down, 0.30f, nullptr, &left);
+    ImGuiID right_bottom = ImGui::DockBuilderSplitNode(right, ImGuiDir_Down, 0.30f, nullptr, &right);
 
     ImGui::DockBuilderDockWindow(entity_selector.title.c_str(), left);
+    ImGui::DockBuilderDockWindow(asset_list.title.c_str(), left_bottom);
     ImGui::DockBuilderDockWindow(component_inspector.title.c_str(), right);
     ImGui::DockBuilderDockWindow(project_settings.title.c_str(), right);
+    ImGui::DockBuilderDockWindow(animation_editor.title.c_str(), right_bottom);
+
     ImGui::DockBuilderDockWindow(log_viewer.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(file_explorer.title.c_str(), bottom);
-    ImGui::DockBuilderDockWindow(asset_list.title.c_str(), bottom);
-    ImGui::DockBuilderDockWindow(animation_editor.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(debug_widget.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(viewport2D.title.c_str(), center);
     ImGui::DockBuilderFinish(dockspace_id);
