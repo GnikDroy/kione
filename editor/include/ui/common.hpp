@@ -4,6 +4,7 @@
 #include "core/utils.hpp"
 #include <array>
 #include <cfloat>
+#include <cstdio>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -116,6 +117,41 @@ inline void RotationField(const char* id, glm::quat& quaternion) {
     auto euler = glm::degrees(glm::eulerAngles(quaternion));
     Vec3Field(id, euler, {}, 0.5f);
     quaternion = glm::quat(glm::radians(euler));
+}
+
+inline void BitMaskField(const char* id, std::uint32_t& bits, int count = 16) {
+    ImGui::PushID(id);
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 2.0f, 2.0f });
+    float size = ImGui::GetFrameHeight() * 0.7f;
+    for (int bit = 0; bit < count; ++bit) {
+        if (bit % 8 != 0) {
+            ImGui::SameLine();
+        }
+        ImGui::PushID(bit);
+        bool set = (bits & (1u << bit)) != 0;
+        auto color = ImGui::GetStyleColorVec4(set ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
+        ImVec4 hovered { std::min(color.x * 1.2f + 0.05f, 1.0f), std::min(color.y * 1.2f + 0.05f, 1.0f),
+            std::min(color.z * 1.2f + 0.05f, 1.0f), color.w };
+        ImGui::PushStyleColor(ImGuiCol_Button, color);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hovered);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+        if (ImGui::Button("##bit", { size, size })) {
+            bits ^= 1u << bit;
+        }
+        ImGui::PopStyleColor(3);
+
+        std::array<char, 3> digits {};
+        std::snprintf(digits.data(), digits.size(), "%d", bit + 1);
+        float font_size = size * 0.9f;
+        auto text_size = ImGui::GetFont()->CalcTextSizeA(font_size, FLT_MAX, 0.0f, digits.data());
+        auto rect_min = ImGui::GetItemRectMin();
+        ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), font_size,
+            { rect_min.x + (size - text_size.x) * 0.5f, rect_min.y + (size - text_size.y) * 0.5f },
+            ImGui::GetColorU32({ 1.0f, 1.0f, 1.0f, 1.0f }), digits.data());
+        ImGui::PopID();
+    }
+    ImGui::PopStyleVar();
+    ImGui::PopID();
 }
 
 inline void ResourceInputWidget(const std::string& label, AssetHandle& handle, const AssetRegistry& asset_registry,

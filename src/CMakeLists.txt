@@ -9,6 +9,7 @@ add_library(
     core/animation_system.cpp
     core/app.cpp
     core/audio.cpp
+    core/collision.cpp
     core/entity_ops.cpp
     core/imgui_layer.cpp
     core/imgui_theme.cpp

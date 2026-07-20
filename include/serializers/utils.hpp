@@ -15,6 +15,25 @@ template <> struct convert<entt::entity> {
     }
 };
 
+template <> struct convert<glm::vec2> {
+    static Node encode(const glm::vec2& vec) {
+        YAML::Node node;
+        node.SetStyle(YAML::EmitterStyle::Flow);
+        node.push_back(vec.x);
+        node.push_back(vec.y);
+        return node;
+    }
+
+    static bool decode(const Node& node, glm::vec2& vec) {
+        if (!node.IsSequence() || node.size() != 2) {
+            return false;
+        }
+        vec.x = node[0].as<float>();
+        vec.y = node[1].as<float>();
+        return true;
+    }
+};
+
 template <> struct convert<glm::vec3> {
     static Node encode(const glm::vec3& vec) {
         YAML::Node node;

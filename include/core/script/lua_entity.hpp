@@ -9,6 +9,7 @@
 #include "components/animation.hpp"
 #include "components/audio.hpp"
 #include "components/camera.hpp"
+#include "components/collider.hpp"
 #include "components/light.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
@@ -57,6 +58,9 @@ struct LuaEntity {
     }
     [[nodiscard]] AudioSourceComponent* audio_source() const {
         return valid() ? registry->try_get<AudioSourceComponent>(entity) : nullptr;
+    }
+    [[nodiscard]] ColliderComponent* collider() const {
+        return valid() ? registry->try_get<ColliderComponent>(entity) : nullptr;
     }
     [[nodiscard]] std::string tag() const {
         if (!valid()) {

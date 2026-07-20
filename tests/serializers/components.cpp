@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "serializers/components/camera.hpp"
+#include "serializers/components/collider.hpp"
 #include "serializers/components/light.hpp"
 #include "serializers/components/relation.hpp"
 #include "serializers/components/script.hpp"
@@ -46,6 +47,31 @@ TEST_CASE("SpriteComponent serializer round-trips", "[serializers]") {
     REQUIRE(loaded.uv_rect.y == sprite.uv_rect.y);
     REQUIRE(loaded.uv_rect.w == sprite.uv_rect.w);
     REQUIRE(loaded.uv_rect.h == sprite.uv_rect.h);
+}
+
+TEST_CASE("ColliderComponent serializer round-trips every shape", "[serializers]") {
+    auto box = round_trip(k2::ColliderComponent { .shape = k2::BoxShape { .size = { 12.0f, 34.0f } } });
+    REQUIRE(std::get<k2::BoxShape>(box.shape).size == glm::vec2 { 12.0f, 34.0f });
+
+    auto circle = round_trip(k2::ColliderComponent { .shape = k2::CircleShape { .radius = 7.5f } });
+    REQUIRE(std::get<k2::CircleShape>(circle.shape).radius == 7.5f);
+
+    auto pill = round_trip(k2::ColliderComponent { .shape = k2::PillShape { .radius = 5.0f, .half_height = 9.0f } });
+    REQUIRE(std::get<k2::PillShape>(pill.shape).radius == 5.0f);
+    REQUIRE(std::get<k2::PillShape>(pill.shape).half_height == 9.0f);
+    REQUIRE(pill.layer == 1);
+    REQUIRE(pill.mask == 0xffffffff);
+
+    auto filtered = round_trip(
+        k2::ColliderComponent { .shape = k2::CircleShape { .radius = 1.0f }, .layer = 2, .mask = 5 });
+    REQUIRE(filtered.layer == 2);
+    REQUIRE(filtered.mask == 5);
+}
+
+TEST_CASE("ColliderComponent serializer rejects unknown shapes", "[serializers]") {
+    auto node = YAML::Load("{Shape: Sphere, Radius: 5}");
+    k2::ColliderComponent collider;
+    REQUIRE_FALSE(YAML::convert<k2::ColliderComponent>::decode(node, collider));
 }
 
 TEST_CASE("TagComponent serializer round-trips as a scalar", "[serializers]") {

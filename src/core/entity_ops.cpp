@@ -8,6 +8,7 @@
 #include "components/animation.hpp"
 #include "components/audio.hpp"
 #include "components/camera.hpp"
+#include "components/collider.hpp"
 #include "components/light.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
@@ -41,6 +42,7 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     copy_component<TextComponent>(registry, src, dst);
     copy_component<AnimationComponent>(registry, src, dst);
     copy_component<AudioSourceComponent>(registry, src, dst);
+    copy_component<ColliderComponent>(registry, src, dst);
     copy_component<AmbientLight>(registry, src, dst);
     copy_component<PointLight>(registry, src, dst);
     copy_component<SpotLight>(registry, src, dst);
@@ -82,6 +84,7 @@ namespace {
         { "Text", has_component<TextComponent> },
         { "Animation", has_component<AnimationComponent> },
         { "AudioSource", has_component<AudioSourceComponent> },
+        { "Collider", has_component<ColliderComponent> },
         { "PointLight", has_component<PointLight> },
         { "SpotLight", has_component<SpotLight> },
         { "AmbientLight", has_component<AmbientLight> },

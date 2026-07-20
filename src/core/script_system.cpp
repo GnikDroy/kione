@@ -16,6 +16,7 @@
 #include "components/script.hpp"
 #include "components/transform.hpp"
 #include "core/audio.hpp"
+#include "core/collision.hpp"
 #include "core/entity_ops.hpp"
 #include "core/logger.hpp"
 #include "core/resources.hpp"
@@ -291,6 +292,42 @@ struct ScriptSystem::Impl : ScriptHost {
             throw std::runtime_error(std::format("k2.load_scene: unknown scene '{}'", name));
         }
         current_registry->ctx().insert_or_assign(SceneRequest { std::string { name } });
+    }
+
+    sol::table query_circle(float x, float y, float radius, sol::optional<std::uint32_t> mask) override {
+        require_registry("k2.query_circle");
+        auto table = lua.create_table();
+        for (auto entity : collision::query_circle(*current_registry, { x, y }, radius, mask.value_or(0xffffffff))) {
+            table.add(make_handle(entity));
+        }
+        return table;
+    }
+
+    sol::table query_aabb(float x, float y, float w, float h, sol::optional<std::uint32_t> mask) override {
+        require_registry("k2.query_aabb");
+        auto table = lua.create_table();
+        for (auto entity :
+            collision::query_aabb(*current_registry, { x, y }, { w * 0.5f, h * 0.5f }, mask.value_or(0xffffffff))) {
+            table.add(make_handle(entity));
+        }
+        return table;
+    }
+
+    sol::table query_point(float x, float y, sol::optional<std::uint32_t> mask) override {
+        require_registry("k2.query_point");
+        auto table = lua.create_table();
+        for (auto entity : collision::query_point(*current_registry, { x, y }, mask.value_or(0xffffffff))) {
+            table.add(make_handle(entity));
+        }
+        return table;
+    }
+
+    bool overlaps(const LuaEntity& a, const LuaEntity& b) override {
+        require_registry("entity:overlaps");
+        if (!a.valid() || !b.valid()) {
+            throw std::runtime_error("entity:overlaps called with an invalid entity");
+        }
+        return collision::overlaps(*current_registry, a.entity, b.entity);
     }
 
     void destroy(const LuaEntity& target) override {

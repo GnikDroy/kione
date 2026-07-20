@@ -24,6 +24,10 @@ struct ScriptHost {
     virtual void play_sound(std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) = 0;
     virtual void submit_draw(DrawCommand command) = 0;
     virtual void load_scene(std::string_view name) = 0;
+    virtual sol::table query_circle(float x, float y, float radius, sol::optional<std::uint32_t> mask) = 0;
+    virtual sol::table query_aabb(float x, float y, float w, float h, sol::optional<std::uint32_t> mask) = 0;
+    virtual sol::table query_point(float x, float y, sol::optional<std::uint32_t> mask) = 0;
+    virtual bool overlaps(const LuaEntity& a, const LuaEntity& b) = 0;
 };
 
 }

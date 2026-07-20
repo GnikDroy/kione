@@ -4,6 +4,7 @@
 
 #include "components/animation.hpp"
 #include "components/camera.hpp"
+#include "components/collider.hpp"
 #include "components/light.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
@@ -159,6 +160,40 @@ template <> void ComponentWidget<k2::AudioSourceComponent>(entt::registry& reg, 
         ImGui::Checkbox("##Looping", &source.looping);
         PropertyLabel("Play On Create");
         ImGui::Checkbox("##PlayOnCreate", &source.play_on_create);
+        EndPropertyTable();
+    }
+}
+
+template <> void ComponentWidget<k2::ColliderComponent>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& collider = reg.get<k2::ColliderComponent>(e);
+    if (BeginPropertyTable("Collider")) {
+        PropertyLabel("Shape");
+        std::array shapes { "Box", "Circle", "Pill" };
+        int index = int(collider.shape.index());
+        if (ImGui::Combo("##Shape", &index, shapes.data(), int(shapes.size()))
+            && index != int(collider.shape.index())) {
+            switch (index) {
+            case 0: collider.shape = k2::BoxShape {}; break;
+            case 1: collider.shape = k2::CircleShape {}; break;
+            default: collider.shape = k2::PillShape {}; break;
+            }
+        }
+        if (auto* box = std::get_if<k2::BoxShape>(&collider.shape)) {
+            PropertyLabel("Size");
+            ImGui::DragFloat2("##Size", glm::value_ptr(box->size), 0.5f, 0.0f, 8192.0f);
+        } else if (auto* circle = std::get_if<k2::CircleShape>(&collider.shape)) {
+            PropertyLabel("Radius");
+            ImGui::DragFloat("##Radius", &circle->radius, 0.5f, 0.0f, 8192.0f);
+        } else if (auto* pill = std::get_if<k2::PillShape>(&collider.shape)) {
+            PropertyLabel("Radius");
+            ImGui::DragFloat("##Radius", &pill->radius, 0.5f, 0.0f, 8192.0f);
+            PropertyLabel("Half Height");
+            ImGui::DragFloat("##HalfHeight", &pill->half_height, 0.5f, 0.0f, 8192.0f);
+        }
+        PropertyLabel("Layer");
+        BitMaskField("##Layer", collider.layer);
+        PropertyLabel("Mask");
+        BitMaskField("##Mask", collider.mask);
         EndPropertyTable();
     }
 }

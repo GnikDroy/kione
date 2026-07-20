@@ -20,6 +20,7 @@ public:
 
 private:
     bool draw_toolbar(EditorLayer&, ImVec2 rect_min);
+    void push_collider_overlay(EditorLayer&);
     void resize_frame_buffer();
     void update_camera();
     void draw_gizmo(EditorLayer&, ImVec2 rect_min);

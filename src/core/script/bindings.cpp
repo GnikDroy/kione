@@ -200,6 +200,92 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         },
         "stop", [](AnimationComponent& animation) { animation.playing = false; });
 
+    lua.new_usertype<ColliderComponent>("Collider", "shape",
+        sol::property(
+            [](ColliderComponent& collider) -> const char* {
+                if (std::holds_alternative<BoxShape>(collider.shape)) {
+                    return "box";
+                }
+                return std::holds_alternative<CircleShape>(collider.shape) ? "circle" : "pill";
+            },
+            [](ColliderComponent& collider, std::string_view value) {
+                if (value == "box") {
+                    collider.shape = BoxShape {};
+                } else if (value == "circle") {
+                    collider.shape = CircleShape {};
+                } else if (value == "pill") {
+                    collider.shape = PillShape {};
+                } else {
+                    throw std::runtime_error(std::format("Unknown collider shape '{}'", value));
+                }
+            }),
+        "radius",
+        sol::property(
+            [](ColliderComponent& collider) -> float {
+                if (auto* circle = std::get_if<CircleShape>(&collider.shape)) {
+                    return circle->radius;
+                }
+                if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                    return pill->radius;
+                }
+                throw std::runtime_error("collider.radius: a box collider has no radius");
+            },
+            [](ColliderComponent& collider, float value) {
+                if (auto* circle = std::get_if<CircleShape>(&collider.shape)) {
+                    circle->radius = value;
+                } else if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                    pill->radius = value;
+                } else {
+                    throw std::runtime_error("collider.radius: a box collider has no radius");
+                }
+            }),
+        "half_height",
+        sol::property(
+            [](ColliderComponent& collider) -> float {
+                if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                    return pill->half_height;
+                }
+                throw std::runtime_error("collider.half_height: only pill colliders have a half_height");
+            },
+            [](ColliderComponent& collider, float value) {
+                if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                    pill->half_height = value;
+                } else {
+                    throw std::runtime_error("collider.half_height: only pill colliders have a half_height");
+                }
+            }),
+        "width",
+        sol::property(
+            [](ColliderComponent& collider) -> float {
+                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                    return box->size.x;
+                }
+                throw std::runtime_error("collider.width: only box colliders have a width");
+            },
+            [](ColliderComponent& collider, float value) {
+                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                    box->size.x = value;
+                } else {
+                    throw std::runtime_error("collider.width: only box colliders have a width");
+                }
+            }),
+        "height",
+        sol::property(
+            [](ColliderComponent& collider) -> float {
+                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                    return box->size.y;
+                }
+                throw std::runtime_error("collider.height: only box colliders have a height");
+            },
+            [](ColliderComponent& collider, float value) {
+                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                    box->size.y = value;
+                } else {
+                    throw std::runtime_error("collider.height: only box colliders have a height");
+                }
+            }),
+        "layer", &ColliderComponent::layer, "mask", &ColliderComponent::mask);
+
     lua.new_usertype<LuaEntity>(
         "Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "text", &LuaEntity::text,
         "text_size",
@@ -216,6 +302,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             return { metrics.width, metrics.height };
         },
         "animation", &LuaEntity::animation, "audio_source", &LuaEntity::audio_source,
+        "collider", &LuaEntity::collider, "overlaps",
+        [&host](const LuaEntity& self, const LuaEntity& other) { return host.overlaps(self, other); },
         "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "ambient_light",
         &LuaEntity::ambient_light, "sprite_light", &LuaEntity::sprite_light, "data",
         [&lua](const LuaEntity& self) -> sol::object {
@@ -246,6 +334,14 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         host.play_sound(name, volume, pitch);
     };
     k2_table["load_scene"] = [&host](std::string_view name) { host.load_scene(name); };
+    k2_table["query_circle"] = [&host](float x, float y, float radius, sol::optional<std::uint32_t> mask) {
+        return host.query_circle(x, y, radius, mask);
+    };
+    k2_table["query_aabb"] = [&host](float x, float y, float w, float h, sol::optional<std::uint32_t> mask) {
+        return host.query_aabb(x, y, w, h, mask);
+    };
+    k2_table["query_point"]
+        = [&host](float x, float y, sol::optional<std::uint32_t> mask) { return host.query_point(x, y, mask); };
     k2_table["draw_line"] = [&host](float x1, float y1, float x2, float y2, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(
             options, DrawCommand { .kind = DrawCommand::Kind::Line, .a = { x1, y1 }, .b = { x2, y2 } }));

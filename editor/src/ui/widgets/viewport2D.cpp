@@ -1,12 +1,17 @@
 #include "ui/widgets/viewport2D.hpp"
+#include "components/collider.hpp"
 #include "components/transform.hpp"
+#include "core/collision.hpp"
 #include "editor_layer.hpp"
+#include "rendering/draw_list.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
 #include <algorithm>
+#include <cmath>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
+#include <variant>
 
 namespace k2::editor {
 Viewport2DWidget::Viewport2DWidget()
@@ -181,6 +186,72 @@ bool Viewport2DWidget::draw_toolbar(EditorLayer& editor_layer, ImVec2 rect_min) 
     return started;
 }
 
+void Viewport2DWidget::push_collider_overlay(EditorLayer& editor_layer) {
+    auto& registry = editor_layer.active_scene().registry;
+    auto view = registry.view<k2::ColliderComponent, k2::TransformComponent>();
+    if (view.begin() == view.end()) {
+        return;
+    }
+
+    auto rotate = [](glm::vec2 vec, float angle) {
+        float cos_a = std::cos(angle);
+        float sin_a = std::sin(angle);
+        return glm::vec2 { cos_a * vec.x - sin_a * vec.y, sin_a * vec.x + cos_a * vec.y };
+    };
+
+    auto& draw_list = registry.ctx().emplace<k2::DrawList>();
+    auto active = editor_layer.entity_selector.get_widget().get_active();
+    constexpr float overlay_z = 950.0f;
+    constexpr float thickness = 1.5f;
+
+    for (auto [entity, collider, transform] : view.each()) {
+        glm::vec4 color { 0.3f, 1.0f, 0.4f, entity == active ? 0.9f : 0.35f };
+        auto world = k2::collision::world_collider(collider, transform);
+
+        if (const auto* circle = std::get_if<k2::CircleShape>(&collider.shape)) {
+            draw_list.commands.push_back({ .kind = k2::DrawCommand::Kind::Circle,
+                .a = world.center,
+                .radius = circle->radius,
+                .width = thickness,
+                .color = color,
+                .z = overlay_z,
+                .filled = false });
+        } else if (const auto* box = std::get_if<k2::BoxShape>(&collider.shape)) {
+            auto half = box->size * 0.5f;
+            draw_list.commands.push_back({ .kind = k2::DrawCommand::Kind::Polygon,
+                .width = thickness,
+                .color = color,
+                .z = overlay_z,
+                .filled = false,
+                .closed = true,
+                .points = { world.center + rotate({ -half.x, -half.y }, world.angle),
+                    world.center + rotate({ half.x, -half.y }, world.angle),
+                    world.center + rotate({ half.x, half.y }, world.angle),
+                    world.center + rotate({ -half.x, half.y }, world.angle) } });
+        } else if (const auto* pill = std::get_if<k2::PillShape>(&collider.shape)) {
+            auto up = rotate({ 0.0f, pill->half_height }, world.angle);
+            auto side = rotate({ pill->radius, 0.0f }, world.angle);
+            for (auto cap : { world.center + up, world.center - up }) {
+                draw_list.commands.push_back({ .kind = k2::DrawCommand::Kind::Circle,
+                    .a = cap,
+                    .radius = pill->radius,
+                    .width = thickness,
+                    .color = color,
+                    .z = overlay_z,
+                    .filled = false });
+            }
+            for (auto sign : { 1.0f, -1.0f }) {
+                draw_list.commands.push_back({ .kind = k2::DrawCommand::Kind::Line,
+                    .a = world.center + up + side * sign,
+                    .b = world.center - up + side * sign,
+                    .width = thickness,
+                    .color = color,
+                    .z = overlay_z });
+            }
+        }
+    }
+}
+
 void Viewport2DWidget::render(EditorLayer& editor_layer) {
     auto& scene = editor_layer.active_scene();
 
@@ -201,6 +272,10 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
         if (const auto* main_camera = k2::find_main_camera(scene.registry)) {
             renderer2D.camera = *main_camera;
         }
+    }
+
+    if (!editor_layer.is_playing()) {
+        push_collider_overlay(editor_layer);
     }
 
     renderer2D.set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
