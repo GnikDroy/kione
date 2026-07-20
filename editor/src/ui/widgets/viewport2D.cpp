@@ -252,6 +252,31 @@ void Viewport2DWidget::push_collider_overlay(EditorLayer& editor_layer) {
     }
 }
 
+void Viewport2DWidget::push_camera_overlay(EditorLayer& editor_layer) {
+    auto& registry = editor_layer.active_scene().registry;
+    auto view = registry.view<k2::Camera, k2::MainCamera>();
+    if (view.begin() == view.end()) {
+        return;
+    }
+
+    auto& draw_list = registry.ctx().emplace<k2::DrawList>();
+    for (auto entity : view) {
+        auto inverse_vp = glm::inverse(view.get<k2::Camera>(entity).get_view_projection());
+        std::vector<glm::vec2> corners;
+        for (auto ndc : { glm::vec2 { -1, -1 }, glm::vec2 { 1, -1 }, glm::vec2 { 1, 1 }, glm::vec2 { -1, 1 } }) {
+            auto world = inverse_vp * glm::vec4 { ndc, 0.0f, 1.0f };
+            corners.push_back(glm::vec2 { world } / world.w);
+        }
+        draw_list.commands.push_back({ .kind = k2::DrawCommand::Kind::Polygon,
+            .width = 2.0f,
+            .color = { 1.0f, 0.75f, 0.25f, 0.9f },
+            .z = 949.0f,
+            .filled = false,
+            .closed = true,
+            .points = std::move(corners) });
+    }
+}
+
 void Viewport2DWidget::render(EditorLayer& editor_layer) {
     auto& scene = editor_layer.active_scene();
 
@@ -276,6 +301,7 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
 
     if (!editor_layer.is_playing()) {
         push_collider_overlay(editor_layer);
+        push_camera_overlay(editor_layer);
     }
 
     renderer2D.set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
