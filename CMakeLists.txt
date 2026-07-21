@@ -356,11 +356,11 @@ if(K2_BUILD_SANDBOX)
     add_subdirectory(sandbox)
 endif()
 
-# Setup sandbox2D build
-set(K2_BUILD_SANDBOX2D ON CACHE BOOL "Enable building sandbox2D")
-if(K2_BUILD_SANDBOX2D)
-    message(STATUS "Building k2 sandbox2D application.")
-    add_subdirectory(sandbox2D)
+# Setup player build
+set(K2_BUILD_PLAYER ON CACHE BOOL "Enable building the player")
+if(K2_BUILD_PLAYER)
+    message(STATUS "Building k2 player application.")
+    add_subdirectory(player)
 endif()
 
 # Setup editor build

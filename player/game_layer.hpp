@@ -21,7 +21,7 @@ template <class T> T value_or_abort(std::expected<T, std::string> result) {
     return std::move(*result);
 }
 
-class SceneLayer : public k2::Layer {
+class GameLayer : public k2::Layer {
     k2::Window& window;
     k2::AssetRegistry assets;
     k2::Runtime runtime { window };
@@ -29,7 +29,7 @@ class SceneLayer : public k2::Layer {
     k2::Renderer2D renderer2D {};
 
 public:
-    explicit SceneLayer(k2::Window& window, const std::string& project_path)
+    explicit GameLayer(k2::Window& window, const std::string& project_path)
         : window { window } {
         auto project = value_or_abort(k2::Project::load(project_path));
         assets = std::move(project.assets);
@@ -38,9 +38,9 @@ public:
         publish_scene_view();
     }
 
-    SceneLayer(const SceneLayer&) = delete;
+    GameLayer(const GameLayer&) = delete;
 
-    SceneLayer& operator=(const SceneLayer&) = delete;
+    GameLayer& operator=(const GameLayer&) = delete;
 
     void fixed_update(float dt) override { runtime.scripts.fixed_update(scene, assets, dt); }
 

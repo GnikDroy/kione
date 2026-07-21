@@ -4,26 +4,26 @@
 #include "core/imgui_layer.hpp"
 #include "core/paths.hpp"
 #include "rendering/debug.hpp"
-#include "scene_layer.hpp"
+#include "game_layer.hpp"
 
 #include <algorithm>
 #include <filesystem>
 #include <format>
 
-class Sandbox2D : public k2::App {
+class Player : public k2::App {
 public:
-    explicit Sandbox2D(const std::string& project_path) {
-        k2::Log::app().info("Sandbox2D application started.");
+    explicit Player(const std::string& project_path) {
+        k2::Log::app().info("Player application started.");
         k2::enable_debug();
 
-        layers.push_back(std::make_unique<SceneLayer>(window, project_path));
+        layers.push_back(std::make_unique<GameLayer>(window, project_path));
         layers.push_back(std::make_unique<k2::ImguiLayer>(window));
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
     }
 
-    ~Sandbox2D() override { k2::Log::app().info("Sandbox2D application stopped."); }
+    ~Player() override { k2::Log::app().info("Player application stopped."); }
 };
 
 static std::string discover_project() {
@@ -48,5 +48,5 @@ static std::string discover_project() {
 }
 
 auto create_app(std::vector<std::string> args) -> std::unique_ptr<k2::App> {
-    return std::make_unique<Sandbox2D>(args.empty() ? discover_project() : args.front());
+    return std::make_unique<Player>(args.empty() ? discover_project() : args.front());
 }

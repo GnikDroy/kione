@@ -1,5 +1,5 @@
 version: 0.0.1
-name: Sandbox2D
+name: Demo
 main_scene: scene
 assets:
   Scene:
