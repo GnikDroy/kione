@@ -9,6 +9,8 @@
 
 namespace k2 {
 
+entt::entity create_entity(entt::registry& registry);
+
 // Copies all components except RelationComponent and ScriptComponent;
 // LuaComponent data is deep-copied.
 entt::entity clone_entity(entt::registry& registry, entt::entity src);

@@ -3,7 +3,6 @@
 #include <cassert>
 #include <functional>
 #include <imgui.h>
-#include <vector>
 
 #include "components/relation.hpp"
 #include "core/entity_ops.hpp"
@@ -14,7 +13,7 @@
 
 namespace k2::editor {
 
-using DeferredOps = std::vector<std::function<void()>>;
+using DeferredOp = std::function<void()>;
 
 // Reparenting changes what local transform is relative to.
 // Rewrite it so we keep world position.
@@ -61,7 +60,7 @@ static bool is_ancestor_or_self(entt::basic_registry<EntityType>& registry, Enti
 
 template <bool AttachBefore, class EntityType>
 static void in_between_drag_drop_target(
-    entt::basic_registry<EntityType>& registry, EntityType entity, DeferredOps& deferred_ops) {
+    entt::basic_registry<EntityType>& registry, EntityType entity, DeferredOp& deferred_op) {
     // Before
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {});
     if constexpr (AttachBefore) {
@@ -73,7 +72,7 @@ static void in_between_drag_drop_target(
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
             auto dragged = *static_cast<EntityType*>(payload->Data);
-            deferred_ops.push_back([&registry, dragged, entity]() {
+            deferred_op = [&registry, dragged, entity]() {
                 if (dragged == entity || is_ancestor_or_self(registry, dragged, entity)) {
                     return;
                 }
@@ -85,7 +84,7 @@ static void in_between_drag_drop_target(
                         RelationComponent::attach_after(registry, dragged, entity);
                     }
                 });
-            });
+            };
         }
         ImGui::EndDragDropTarget();
     }
@@ -93,7 +92,7 @@ static void in_between_drag_drop_target(
 
 template <class EntityType>
 static void entity_drag_drop_target(
-    entt::basic_registry<EntityType>& registry, EntityType entity, TagComponent* tag, DeferredOps& deferred_ops) {
+    entt::basic_registry<EntityType>& registry, EntityType entity, TagComponent* tag, DeferredOp& deferred_op) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2 { 7.0f, 7.0f });
     if (ImGui::BeginDragDropSource()) {
         ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(entity));
@@ -109,7 +108,7 @@ static void entity_drag_drop_target(
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
             auto dragged = *static_cast<EntityType*>(payload->Data);
-            deferred_ops.push_back([&registry, dragged, entity]() {
+            deferred_op = [&registry, dragged, entity]() {
                 if (dragged == entity || is_ancestor_or_self(registry, dragged, entity)) {
                     return;
                 }
@@ -117,7 +116,7 @@ static void entity_drag_drop_target(
                     RelationComponent::detach(registry, dragged);
                     RelationComponent::attach_last(registry, dragged, entity);
                 });
-            });
+            };
         }
         ImGui::EndDragDropTarget();
     }
@@ -125,27 +124,27 @@ static void entity_drag_drop_target(
 
 template <class EntityType>
 static void entity_context_menu(EditorLayer& editor_layer, entt::basic_registry<EntityType>& registry,
-    EntityType entity, DeferredOps& deferred_ops) {
+    EntityType entity, DeferredOp& deferred_op) {
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::MenuItem("Create Child")) {
-            deferred_ops.push_back([&registry, entity]() {
-                auto child = EntitySelector<EntityType>::create_entity(registry);
+            deferred_op = [&registry, entity]() {
+                auto child = create_entity(registry);
                 RelationComponent::attach_last(registry, child, entity);
-            });
+            };
         }
         if (ImGui::MenuItem("Duplicate")) {
-            deferred_ops.push_back([&editor_layer, &registry, entity]() {
+            deferred_op = [&editor_layer, &registry, entity]() {
                 auto clone = duplicate_entity(editor_layer, registry, entity);
                 editor_layer.entity_selector.get_widget().set_active(clone);
-            });
+            };
         }
         if (ImGui::MenuItem("Detach")) {
-            deferred_ops.push_back([&registry, entity]() {
+            deferred_op = [&registry, entity]() {
                 reparent_preserving_world(registry, entity, [&] { RelationComponent::detach(registry, entity); });
-            });
+            };
         }
         if (ImGui::MenuItem("Delete")) {
-            deferred_ops.push_back([&registry, entity]() { k2::destroy_with_children(registry, entity); });
+            deferred_op = [&registry, entity]() { k2::destroy_with_children(registry, entity); };
         }
         ImGui::EndPopup();
     }
@@ -153,7 +152,7 @@ static void entity_context_menu(EditorLayer& editor_layer, entt::basic_registry<
 
 template <class EntityType>
 static void recursive_draw(EditorLayer& editor_layer, EntityType& entity_clicked, const EntityType& active_entity,
-    EntityType entity, entt::basic_registry<EntityType>& registry, bool first_node, DeferredOps& deferred_ops) {
+    EntityType entity, entt::basic_registry<EntityType>& registry, bool first_node, DeferredOp& deferred_op) {
     ImGui::PushID((void*)(std::uintptr_t)entt::to_integral(entity));
 
     auto* relation = registry.template try_get<RelationComponent>(entity);
@@ -167,7 +166,7 @@ static void recursive_draw(EditorLayer& editor_layer, EntityType& entity_clicked
     }
 
     if (first_node) {
-        in_between_drag_drop_target<true>(registry, entity, deferred_ops);
+        in_between_drag_drop_target<true>(registry, entity, deferred_op);
     }
 
     bool node_open {};
@@ -190,9 +189,9 @@ static void recursive_draw(EditorLayer& editor_layer, EntityType& entity_clicked
         editor_layer.viewport2D.get_widget().focus({ world[3][0], world[3][1] });
     }
 
-    entity_drag_drop_target(registry, entity, tag, deferred_ops);
+    entity_drag_drop_target(registry, entity, tag, deferred_op);
 
-    entity_context_menu(editor_layer, registry, entity, deferred_ops);
+    entity_context_menu(editor_layer, registry, entity, deferred_op);
 
     if (node_open) {
         // Recurse here.
@@ -201,13 +200,13 @@ static void recursive_draw(EditorLayer& editor_layer, EntityType& entity_clicked
             for (std::size_t i {}; i < relation->children; i++) {
                 auto& curr_relation = registry.template get<RelationComponent>(curr);
                 recursive_draw(editor_layer, entity_clicked, active_entity, curr, registry,
-                    curr == relation->first, deferred_ops);
+                    curr == relation->first, deferred_op);
                 curr = curr_relation.next;
             }
         }
     }
 
-    in_between_drag_drop_target<false>(registry, entity, deferred_ops);
+    in_between_drag_drop_target<false>(registry, entity, deferred_op);
 
     if (node_open) {
         ImGui::TreePop();
@@ -227,16 +226,16 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
     ImGui::Separator();
 
     EntityType entity_clicked = active_entity;
-    DeferredOps deferred_ops;
+    DeferredOp deferred_op;
     for (auto entity : registry.view<entt::entity>()) {
         auto* relation = registry.try_get<RelationComponent>(entity);
         if (!relation || relation->parent == entt::null) {
-            recursive_draw(editor_layer, entity_clicked, active_entity, entity, registry, false, deferred_ops);
+            recursive_draw(editor_layer, entity_clicked, active_entity, entity, registry, false, deferred_op);
         }
     }
 
-    for (auto& op : deferred_ops) {
-        op();
+    if (deferred_op) {
+        deferred_op();
     }
     active_entity = entity_clicked;
 

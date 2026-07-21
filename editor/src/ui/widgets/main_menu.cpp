@@ -163,10 +163,10 @@ static void render_scene_menu(EditorLayer& editor_layer) {
         bool has_selection = registry.valid(active);
 
         if (ImGui::MenuItem("Create Entity")) {
-            selector.set_active(selector.create_entity(registry));
+            selector.set_active(create_entity(registry));
         }
         if (ImGui::MenuItem("Create Child", nullptr, false, has_selection)) {
-            auto child = selector.create_entity(registry);
+            auto child = create_entity(registry);
             RelationComponent::attach_last(registry, child, active);
             selector.set_active(child);
         }

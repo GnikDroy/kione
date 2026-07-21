@@ -34,6 +34,12 @@ namespace {
 
 }
 
+entt::entity create_entity(entt::registry& registry) {
+    auto entity = registry.create();
+    registry.emplace<TransformComponent>(entity);
+    return entity;
+}
+
 entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     auto dst = registry.create();
     copy_component<TagComponent>(registry, src, dst);
