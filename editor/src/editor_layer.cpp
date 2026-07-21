@@ -13,10 +13,10 @@
 namespace k2 {
 EditorLayer::EditorLayer(k2::Window& window)
     : k2::ImguiLayer(window)
-    , scripts { window } {
+    , runtime { window } {
     scene.registry.ctx().emplace<EditorLayer&>(*this);
-    scene.registry.ctx().emplace<ResourceManager&>(resources);
-    resources.set("white", k2::Texture2D::create_white_texture<uint8_t>());
+    scene.registry.ctx().emplace<ResourceManager&>(runtime.resources);
+    runtime.resources.set("white", k2::Texture2D::create_white_texture<uint8_t>());
 
     for (auto& [id, pair] : assets) {
         auto&& [name, asset] = pair;
@@ -27,8 +27,8 @@ EditorLayer::EditorLayer(k2::Window& window)
         auto&& [name, asset] = pair;
         if (asset.type == Asset::Type::Image) {
             auto image = AssetLoader::get<k2::Image>(asset);
-            resources.set(name, Texture2D { image });
-            resources.set(name, std::move(image));
+            runtime.resources.set(name, Texture2D { image });
+            runtime.resources.set(name, std::move(image));
         }
     }
 }
@@ -36,7 +36,7 @@ EditorLayer::EditorLayer(k2::Window& window)
 void EditorLayer::load_image_resources(const AssetRegistry& asset_registry) {
     for (auto& [id, pair] : asset_registry) {
         auto& [name, asset] = pair;
-        if (asset.type != Asset::Type::Image || resources.contains<Texture2D>(id)) {
+        if (asset.type != Asset::Type::Image || runtime.resources.contains<Texture2D>(id)) {
             continue;
         }
         auto image = AssetLoader::try_get<Image>(asset);
@@ -44,7 +44,7 @@ void EditorLayer::load_image_resources(const AssetRegistry& asset_registry) {
             Log::core().error(std::format("Failed to load image '{}': {}", name, image.error()));
             continue;
         }
-        resources.set(name, Texture2D { *image });
+        runtime.resources.set(name, Texture2D { *image });
     }
 }
 
@@ -66,7 +66,7 @@ std::expected<void, std::string> EditorLayer::open_project(const std::filesystem
     }
     load_image_resources(new_project->assets);
 
-    auto new_scene = SceneLoader::load(new_project->main_scene, resources, new_project->assets);
+    auto new_scene = SceneLoader::load(new_project->main_scene, runtime.resources, new_project->assets);
     if (!new_scene) {
         return std::unexpected(new_scene.error());
     }
@@ -79,7 +79,7 @@ std::expected<void, std::string> EditorLayer::open_project(const std::filesystem
 }
 
 std::expected<void, std::string> EditorLayer::open_scene(std::string_view name) {
-    auto new_scene = SceneLoader::load(name, resources, active_assets());
+    auto new_scene = SceneLoader::load(name, runtime.resources, active_assets());
     if (!new_scene) {
         return std::unexpected(new_scene.error());
     }
@@ -160,20 +160,20 @@ std::expected<void, std::string> EditorLayer::create_project(const std::filesyst
 void EditorLayer::request_exit() { window->events.push(std::make_unique<WindowCloseEvent>()); }
 
 void EditorLayer::play() {
-    auto copy = SceneLoader::load(YAML::Node { scene }, resources, active_assets());
+    auto copy = SceneLoader::load(YAML::Node { scene }, runtime.resources, active_assets());
     if (!copy) {
         Log::core().error(std::format("Failed to start play mode: {}", copy.error()));
         return;
     }
     copy->registry.ctx().emplace<EditorLayer&>(*this);
-    copy->registry.ctx().emplace<AudioSystem&>(audio);
+    copy->registry.ctx().emplace<Runtime&>(runtime);
     runtime_scene = std::move(*copy);
-    scripts.clear_cache();
+    runtime.scripts.reload_sources();
     entity_selector.get_widget().reset_selection();
 }
 
 void EditorLayer::stop() {
-    audio.stop_all();
+    runtime.audio.stop_all();
     runtime_scene.reset();
     entity_selector.get_widget().reset_selection();
 }
@@ -186,7 +186,7 @@ void EditorLayer::begin_frame() {
 bool EditorLayer::handle_event(const Event* event) {
     // ImGui must always see the event to keep its state coherent.
     bool imgui_wants = ImguiLayer::handle_event(event);
-    if (runtime_scene && scripts.handle_event(*runtime_scene, active_assets(), event)) {
+    if (runtime_scene && runtime.scripts.handle_event(*runtime_scene, active_assets(), event)) {
         return true;
     }
     return imgui_wants;
@@ -219,23 +219,22 @@ void EditorLayer::build_default_layout(unsigned int dockspace_id) {
 
 void EditorLayer::fixed_update(float dt) {
     if (runtime_scene) {
-        scripts.fixed_update(*runtime_scene, active_assets(), dt);
+        runtime.scripts.fixed_update(*runtime_scene, active_assets(), dt);
     }
 }
 
 void EditorLayer::update(float dt) {
     if (runtime_scene) {
-        scripts.update(*runtime_scene, active_assets(), dt);
+        runtime.scripts.update(*runtime_scene, active_assets(), dt);
         AnimationSystem::update(*runtime_scene, dt);
-        audio.update(*runtime_scene);
+        runtime.audio.update(*runtime_scene);
         if (const auto* request = runtime_scene->registry.ctx().find<SceneRequest>()) {
-            auto loaded = SceneLoader::load(request->scene, resources, active_assets());
+            auto loaded = SceneLoader::load(request->scene, runtime.resources, active_assets());
             if (loaded) {
                 loaded->registry.ctx().emplace<EditorLayer&>(*this);
-                loaded->registry.ctx().emplace<AudioSystem&>(audio);
+                loaded->registry.ctx().emplace<Runtime&>(runtime);
                 runtime_scene = std::move(*loaded);
-                scripts.clear_cache();
-                audio.stop_all();
+                runtime.audio.stop_all();
                 entity_selector.get_widget().reset_selection();
             } else {
                 Log::core().error(std::format("Scene switch failed: {}", loaded.error()));

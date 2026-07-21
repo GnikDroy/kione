@@ -2,9 +2,9 @@
 
 #include "core/animation_system.hpp"
 #include "core/project.hpp"
+#include "core/runtime.hpp"
 #include "core/scene.hpp"
 #include "core/scene_loader.hpp"
-#include "core/script_system.hpp"
 #include "kione2D.hpp"
 #include "rendering/renderer2D.hpp"
 
@@ -23,21 +23,17 @@ template <class T> T value_or_abort(std::expected<T, std::string> result) {
 
 class SceneLayer : public k2::Layer {
     k2::Window& window;
-
-    k2::Project project;
-    k2::ResourceManager resources {};
-    // Voices reference clip PCM owned by resources, so audio dies first.
-    k2::AudioSystem audio {};
-    // Declared before the scenes: registries can hold LuaComponents referencing the
-    // script system's lua state, so they must be destroyed first.
-    k2::ScriptSystem scripts { window };
-    k2::Scene scene = value_or_abort(k2::SceneLoader::load(project.main_scene, resources, project.assets));
+    k2::AssetRegistry assets;
+    k2::Runtime runtime { window };
+    k2::Scene scene;
     k2::Renderer2D renderer2D {};
 
 public:
     explicit SceneLayer(k2::Window& window, const std::string& project_path)
-        : window { window }
-        , project { value_or_abort(k2::Project::load(project_path)) } {
+        : window { window } {
+        auto project = value_or_abort(k2::Project::load(project_path));
+        assets = std::move(project.assets);
+        scene = value_or_abort(k2::SceneLoader::load(project.main_scene, runtime.resources, assets));
         attach_scene_context();
         publish_scene_view();
     }
@@ -46,12 +42,12 @@ public:
 
     SceneLayer& operator=(const SceneLayer&) = delete;
 
-    void fixed_update(float dt) override { scripts.fixed_update(scene, project.assets, dt); }
+    void fixed_update(float dt) override { runtime.scripts.fixed_update(scene, assets, dt); }
 
     void update(float dt) override {
-        scripts.update(scene, project.assets, dt);
+        runtime.scripts.update(scene, assets, dt);
         k2::AnimationSystem::update(scene, dt);
-        audio.update(scene);
+        runtime.audio.update(scene);
         apply_scene_request();
         publish_scene_view();
     }
@@ -71,7 +67,7 @@ public:
                 .near_clip = 2000.f,
             } },
         });
-        scene.registry.ctx().emplace<k2::AudioSystem&>(audio);
+        scene.registry.ctx().emplace<k2::Runtime&>(runtime);
     }
 
     void apply_scene_request() {
@@ -79,18 +75,14 @@ public:
         if (request == nullptr) {
             return;
         }
-        auto loaded = k2::SceneLoader::load(request->scene, resources, project.assets);
+        auto loaded = k2::SceneLoader::load(request->scene, runtime.resources, assets);
         if (!loaded) {
             k2::Log::app().error(std::format("Scene switch failed: {}", loaded.error()));
             scene.registry.ctx().erase<k2::SceneRequest>();
             return;
         }
         scene = std::move(*loaded);
-
-        // Reset explicitly!
-        // The registry still lives at the same address. Checks in ScriptSystem/AudioSystem cannot see it.
-        scripts.clear_cache();
-        audio.stop_all();
+        runtime.audio.stop_all();
         attach_scene_context();
     }
 
@@ -108,5 +100,7 @@ public:
         renderer2D.render();
     }
 
-    bool handle_event(const k2::Event* event) override { return scripts.handle_event(scene, project.assets, event); }
+    bool handle_event(const k2::Event* event) override {
+        return runtime.scripts.handle_event(scene, assets, event);
+    }
 };

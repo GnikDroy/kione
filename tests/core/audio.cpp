@@ -59,8 +59,8 @@ TEST_CASE("AudioClip decodes a WAV into interleaved f32 PCM") {
 
     REQUIRE(clip.channels == 1);
     REQUIRE(clip.sample_rate == 22050);
-    REQUIRE(clip.frames.size() == 1000);
-    auto peak = *std::ranges::max_element(clip.frames);
+    REQUIRE(clip.frames->size() == 1000);
+    auto peak = *std::ranges::max_element(*clip.frames);
     REQUIRE(peak > 0.5f); // the sine actually made it through
     REQUIRE(peak <= 1.0f);
 }

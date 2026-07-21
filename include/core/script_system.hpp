@@ -28,6 +28,6 @@ public:
 
     void set_input_enabled(bool enabled);
 
-    void clear_cache();
+    void reload_sources();
 };
 }

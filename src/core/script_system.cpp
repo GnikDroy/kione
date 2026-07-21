@@ -20,6 +20,7 @@
 #include "core/entity_ops.hpp"
 #include "core/logger.hpp"
 #include "core/resources.hpp"
+#include "core/runtime.hpp"
 #include "core/scene.hpp"
 #include "core/script/bindings.hpp"
 #include "core/script/event_translation.hpp"
@@ -29,17 +30,20 @@
 
 namespace k2 {
 
+// The lifetime is tied with scene so script instances die with their scene.
+struct ScriptSceneState {
+    std::unordered_map<entt::entity, sol::environment> instances;
+    std::shared_ptr<const bool> token = std::make_shared<const bool>(true);
+};
+
 struct ScriptSystem::Impl : ScriptHost {
     sol::state lua;
-    std::unordered_map<entt::entity, sol::environment> instances;
     std::unordered_map<ResourceID, std::string> sources;
-    entt::registry* attached {};
     bool input_enabled { true };
 
     entt::registry* current_registry {};
     const AssetRegistry* current_assets {};
-
-    std::shared_ptr<std::uint64_t> epoch = std::make_shared<std::uint64_t>(0);
+    ScriptSceneState* current_state {};
 
     enum class CommandKind : std::uint8_t { AttachScript, Destroy };
     struct Command {
@@ -68,7 +72,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     LuaEntity make_handle(entt::entity entity) {
-        return LuaEntity { .entity = entity, .registry = current_registry, .epoch_token = epoch, .stamp = *epoch };
+        return LuaEntity { .entity = entity, .registry = current_registry, .scene_token = current_state->token };
     }
 
     const std::string& source_for(const AssetHandle& handle, const AssetRegistry& assets) {
@@ -112,6 +116,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     sol::environment& instance(entt::entity entity, const ScriptComponent& script, const AssetRegistry& assets) {
+        auto& instances = current_state->instances;
         if (auto it = instances.find(entity); it != instances.end()) {
             return it->second;
         }
@@ -131,21 +136,25 @@ struct ScriptSystem::Impl : ScriptHost {
         return stored;
     }
 
-    void ensure_attached(entt::registry& registry) {
-        if (attached != &registry) {
-            instances.clear();
-            pending.clear();
-            ++*epoch; // invalidate handles held from a prior scene
-            registry.on_destroy<ScriptComponent>().connect<&Impl::on_script_destroyed>(*this);
-            attached = &registry;
+    ScriptSceneState& scene_state(entt::registry& registry) {
+        if (auto* state = registry.ctx().find<ScriptSceneState>()) {
+            return *state;
         }
+        reset_globals();
+        registry.on_destroy<ScriptComponent>().connect<&Impl::on_script_destroyed>(*this);
+        return registry.ctx().emplace<ScriptSceneState>();
     }
 
     void on_script_destroyed(entt::registry& registry, entt::entity entity) {
-        if (auto it = instances.find(entity); it != instances.end()) {
+        auto* state = registry.ctx().find<ScriptSceneState>();
+        if (state == nullptr) {
+            return;
+        }
+        if (auto it = state->instances.find(entity); it != state->instances.end()) {
             auto& script = registry.get<ScriptComponent>(entity);
-            call_hook(it->second, "on_destroy", script.script, make_handle(entity));
-            instances.erase(it);
+            call_hook(it->second, "on_destroy", script.script,
+                LuaEntity { .entity = entity, .registry = &registry, .scene_token = state->token });
+            state->instances.erase(it);
         }
     }
 
@@ -260,16 +269,12 @@ struct ScriptSystem::Impl : ScriptHost {
 
     void play_sound(std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) override {
         require_registry("kione.play_sound");
-        if (!current_registry->ctx().contains<AudioSystem&>()
-            || !current_registry->ctx().contains<ResourceManager&>()) {
-            return;
-        }
-        auto& resources = current_registry->ctx().get<ResourceManager&>();
-        const auto* clip = resources.try_get<AudioClip>(ResourceManager::resolve(name));
+        auto& runtime = current_registry->ctx().get<Runtime&>();
+        const auto* clip = runtime.resources.try_get<AudioClip>(ResourceManager::resolve(name));
         if (clip == nullptr) {
             throw std::runtime_error(std::format("kione.play_sound: unknown clip '{}'", name));
         }
-        current_registry->ctx().get<AudioSystem&>().play(*clip, volume.value_or(1.0f), pitch.value_or(1.0f));
+        runtime.audio.play(*clip, volume.value_or(1.0f), pitch.value_or(1.0f));
     }
 
     void submit_draw(DrawCommand command) override {
@@ -374,17 +379,11 @@ ScriptSystem::~ScriptSystem() = default;
 
 void ScriptSystem::set_input_enabled(bool enabled) { impl->input_enabled = enabled; }
 
-void ScriptSystem::clear_cache() {
-    impl->sources.clear();
-    impl->instances.clear();
-    impl->pending.clear();
-    impl->reset_globals();
-    ++*impl->epoch;
-}
+void ScriptSystem::reload_sources() { impl->sources.clear(); }
 
 void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
-    impl->ensure_attached(registry);
+    impl->current_state = &impl->scene_state(registry);
     impl->current_registry = &registry;
     impl->current_assets = &assets;
 
@@ -395,11 +394,12 @@ void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     impl->flush_commands();
     impl->current_registry = nullptr;
     impl->current_assets = nullptr;
+    impl->current_state = nullptr;
 }
 
 void ScriptSystem::fixed_update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
-    impl->ensure_attached(registry);
+    impl->current_state = &impl->scene_state(registry);
     impl->current_registry = &registry;
     impl->current_assets = &assets;
 
@@ -410,6 +410,7 @@ void ScriptSystem::fixed_update(Scene& scene, const AssetRegistry& assets, float
     impl->flush_commands();
     impl->current_registry = nullptr;
     impl->current_assets = nullptr;
+    impl->current_state = nullptr;
 }
 
 bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const Event* event) {
@@ -418,7 +419,7 @@ bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const
         return false;
     }
     auto& registry = scene.registry;
-    impl->ensure_attached(registry);
+    impl->current_state = &impl->scene_state(registry);
     impl->current_registry = &registry;
     impl->current_assets = &assets;
 
@@ -430,6 +431,7 @@ bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const
     impl->flush_commands();
     impl->current_registry = nullptr;
     impl->current_assets = nullptr;
+    impl->current_state = nullptr;
     return consumed;
 }
 

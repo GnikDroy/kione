@@ -4,10 +4,10 @@
 #include <format>
 #include <list>
 #include <stdexcept>
-#include <unordered_set>
 
 #define MINIAUDIO_IMPLEMENTATION
 #define MA_NO_GENERATION
+#define MA_NO_RESOURCE_MANAGER
 #include <miniaudio.h>
 
 #include "components/audio.hpp"
@@ -26,18 +26,23 @@ AudioClip::AudioClip(std::span<const std::byte> encoded) {
     channels = decoder.outputChannels;
     sample_rate = decoder.outputSampleRate;
 
+    std::vector<float> pcm;
     std::vector<float> chunk(std::size_t(4096) * channels);
     ma_uint64 read;
     do {
         read = 0;
         ma_decoder_read_pcm_frames(&decoder, chunk.data(), 4096, &read);
-        frames.insert(frames.end(), chunk.begin(), chunk.begin() + long(read * channels));
+        pcm.insert(pcm.end(), chunk.begin(), chunk.begin() + long(read * channels));
     } while (read == 4096);
     ma_decoder_uninit(&decoder);
+    frames = std::make_shared<const std::vector<float>>(std::move(pcm));
 }
 
 namespace {
     constexpr std::size_t max_voices = 64;
+
+    struct AudioStarted { };
+    struct AudioAttached { };
 }
 
 struct AudioSystem::Impl {
@@ -48,12 +53,11 @@ struct AudioSystem::Impl {
         ma_audio_buffer buffer {};
         ma_sound sound {};
         entt::entity owner { entt::null };
+        std::shared_ptr<const std::vector<float>> pcm {};
     };
 
     // std::list: voices must not move — ma_sound holds a pointer to its buffer.
     std::list<Voice> voices;
-    std::unordered_set<entt::entity> started;
-    entt::registry* attached {};
 
     Impl() {
         if (ma_engine_init(nullptr, &engine) != MA_SUCCESS) {
@@ -71,13 +75,14 @@ struct AudioSystem::Impl {
     }
 
     void play(const AudioClip& clip, float volume, float pitch, bool loop, entt::entity owner) {
-        if (!ready || clip.channels == 0 || clip.frames.empty() || voices.size() >= max_voices) {
+        if (!ready || clip.channels == 0 || !clip.frames || clip.frames->empty() || voices.size() >= max_voices) {
             return;
         }
         auto& voice = voices.emplace_back();
         voice.owner = owner;
+        voice.pcm = clip.frames;
         auto buffer_config = ma_audio_buffer_config_init(
-            ma_format_f32, clip.channels, clip.frames.size() / clip.channels, clip.frames.data(), nullptr);
+            ma_format_f32, clip.channels, voice.pcm->size() / clip.channels, voice.pcm->data(), nullptr);
         buffer_config.sampleRate = clip.sample_rate;
         if (ma_audio_buffer_init(&buffer_config, &voice.buffer) != MA_SUCCESS) {
             voices.pop_back();
@@ -106,11 +111,10 @@ struct AudioSystem::Impl {
             release(voice);
         }
         voices.clear();
-        started.clear();
     }
 
-    void on_source_destroyed(entt::registry&, entt::entity entity) {
-        started.erase(entity);
+    void on_source_destroyed(entt::registry& registry, entt::entity entity) {
+        registry.remove<AudioStarted>(entity);
         for (auto it = voices.begin(); it != voices.end();) {
             if (it->owner == entity) {
                 release(*it);
@@ -138,18 +142,13 @@ void AudioSystem::update(Scene& scene) {
         return;
     }
     auto& registry = scene.registry;
-    // A new registry (editor play/stop) so we stop everything.
-    if (impl->attached != &registry) {
-        impl->stop_all();
+    if (!registry.ctx().contains<AudioAttached>()) {
+        registry.ctx().emplace<AudioAttached>();
         registry.on_destroy<AudioSourceComponent>().connect<&Impl::on_source_destroyed>(*impl);
-        impl->attached = &registry;
     }
 
     // Reap finished one-shots (no entity, so no destroy signal covers them) and follow
     // component volume/pitch so scripts can change them live.
-    //
-    // NOTE: on_source_destroyed stops owned voices first, but the attach check is by
-    // registry address, which a new registry can reuse.
     for (auto it = impl->voices.begin(); it != impl->voices.end();) {
         bool owner_died = it->owner != entt::null && !registry.valid(it->owner);
         if (owner_died || (!ma_sound_is_looping(&it->sound) && ma_sound_at_end(&it->sound))) {
@@ -171,13 +170,12 @@ void AudioSystem::update(Scene& scene) {
     }
     auto& resources = registry.ctx().get<ResourceManager&>();
 
-    // Start play-on-create sources exactly once.
-    // It is erased by on_source_destroyed when the component or entity dies.
+    // Start play-on-create sources exactly once; the tag dies with the component.
     registry.view<AudioSourceComponent>().each([&](auto entity, const AudioSourceComponent& source) {
-        if (!source.play_on_create || impl->started.contains(entity)) {
+        if (!source.play_on_create || registry.all_of<AudioStarted>(entity)) {
             return;
         }
-        impl->started.insert(entity);
+        registry.emplace<AudioStarted>(entity);
         const auto* clip = resources.try_get<AudioClip>(source.clip.id);
         if (clip == nullptr) {
             Log::core().warn(std::format("AudioSource references unknown clip '{}'", source.clip.name));

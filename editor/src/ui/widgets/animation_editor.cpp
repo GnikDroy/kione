@@ -44,7 +44,7 @@ void AnimationEditorWidget::save_clip(EditorLayer& editor_layer) {
         return;
     }
     // Make the edit visible to preview and the next play without a reload.
-    editor_layer.resources.set(selected.name, clip);
+    editor_layer.runtime.resources.set(selected.name, clip);
     Log::core().info(std::format("Saved animation clip: {}", path.string()));
 }
 
@@ -133,7 +133,7 @@ float AnimationEditorWidget::draw_preview(EditorLayer& editor_layer) {
         }
     }
 
-    const auto* texture = frame ? editor_layer.resources.try_get<Texture2D>(clip.texture.id) : nullptr;
+    const auto* texture = frame ? editor_layer.runtime.resources.try_get<Texture2D>(clip.texture.id) : nullptr;
     if (texture != nullptr) {
         constexpr auto stage = 128.0f;
         auto pixel_width = std::abs(frame->uv.w) * float(texture->width);

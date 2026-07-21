@@ -8,19 +8,21 @@
 #include "components/transform.hpp"
 
 static k2::LuaEntity handle_for(
-    entt::registry& registry, entt::entity entity, const std::shared_ptr<std::uint64_t>& epoch) {
-    return k2::LuaEntity { .entity = entity, .registry = &registry, .epoch_token = epoch, .stamp = *epoch };
+    entt::registry& registry, entt::entity entity, const std::shared_ptr<const void>& token) {
+    return k2::LuaEntity { .entity = entity, .registry = &registry, .scene_token = token };
 }
+
+static std::shared_ptr<const void> make_token() { return std::make_shared<const bool>(true); }
 
 TEST_CASE("A live handle resolves components") {
     entt::registry registry;
-    auto epoch = std::make_shared<std::uint64_t>(1);
+    auto token = make_token();
     auto entity = registry.create();
     registry.emplace<k2::TransformComponent>(entity);
     registry.emplace<k2::SpriteComponent>(entity);
     registry.emplace<k2::Camera>(entity);
 
-    auto handle = handle_for(registry, entity, epoch);
+    auto handle = handle_for(registry, entity, token);
     REQUIRE(handle.valid());
     REQUIRE(handle.transform() != nullptr);
     REQUIRE(handle.sprite() != nullptr);
@@ -31,10 +33,10 @@ TEST_CASE("A live handle resolves components") {
 
 TEST_CASE("tag is readable and writable through a live handle") {
     entt::registry registry;
-    auto epoch = std::make_shared<std::uint64_t>(1);
+    auto token = make_token();
     auto entity = registry.create();
     registry.emplace<k2::TagComponent>(entity, "fx");
-    auto handle = handle_for(registry, entity, epoch);
+    auto handle = handle_for(registry, entity, token);
 
     REQUIRE(handle.tag() == "fx");
     handle.set_tag("fx_spawned");
@@ -48,10 +50,10 @@ TEST_CASE("tag is readable and writable through a live handle") {
 
 TEST_CASE("A destroyed entity's handle is invalid and yields nil accessors") {
     entt::registry registry;
-    auto epoch = std::make_shared<std::uint64_t>(1);
+    auto token = make_token();
     auto entity = registry.create();
     registry.emplace<k2::TransformComponent>(entity);
-    auto handle = handle_for(registry, entity, epoch);
+    auto handle = handle_for(registry, entity, token);
 
     registry.destroy(entity);
 
@@ -61,25 +63,25 @@ TEST_CASE("A destroyed entity's handle is invalid and yields nil accessors") {
 
 TEST_CASE("A recycled slot does not resurrect an old handle") {
     entt::registry registry;
-    auto epoch = std::make_shared<std::uint64_t>(1);
+    auto token = make_token();
     auto first = registry.create();
-    auto stale = handle_for(registry, first, epoch);
+    auto stale = handle_for(registry, first, token);
     registry.destroy(first);
     auto reused = registry.create(); // same index, bumped version
     registry.emplace<k2::TransformComponent>(reused);
 
     REQUIRE_FALSE(stale.valid()); // version mismatch
-    REQUIRE(handle_for(registry, reused, epoch).valid());
+    REQUIRE(handle_for(registry, reused, token).valid());
 }
 
-TEST_CASE("An epoch bump invalidates a prior-epoch handle before touching the registry") {
+TEST_CASE("An expired scene token invalidates a handle before touching the registry") {
     entt::registry registry;
-    auto epoch = std::make_shared<std::uint64_t>(1);
+    auto token = make_token();
     auto entity = registry.create();
-    auto handle = handle_for(registry, entity, epoch);
+    auto handle = handle_for(registry, entity, token);
     REQUIRE(handle.valid());
 
-    ++*epoch; // editor Play/Stop swapped the scene
+    token.reset(); // the owning scene's script state died
 
     REQUIRE_FALSE(handle.valid());
     REQUIRE(handle.transform() == nullptr);
@@ -88,6 +90,6 @@ TEST_CASE("An epoch bump invalidates a prior-epoch handle before touching the re
 TEST_CASE("A null-token handle is invalid") {
     entt::registry registry;
     auto entity = registry.create();
-    k2::LuaEntity handle { .entity = entity, .registry = &registry, .epoch_token = {}, .stamp = 0 };
+    k2::LuaEntity handle { .entity = entity, .registry = &registry, .scene_token = {} };
     REQUIRE_FALSE(handle.valid());
 }

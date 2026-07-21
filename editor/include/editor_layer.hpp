@@ -1,10 +1,8 @@
 #include "asset/asset_registry.hpp"
-#include "core/audio.hpp"
 #include "core/imgui_layer.hpp"
 #include "core/project.hpp"
-#include "core/resources.hpp"
+#include "core/runtime.hpp"
 #include "core/scene.hpp"
-#include "core/script_system.hpp"
 
 #include <expected>
 #include <filesystem>
@@ -24,19 +22,15 @@
 namespace k2 {
 class EditorLayer : public k2::ImguiLayer {
 public:
-    // Voices reference clip PCM owned by resources, so audio dies first; scripts are
-    // declared before the scenes because registries can hold LuaComponents referencing
-    // the script system's lua state.
-    AudioSystem audio;
-    ScriptSystem scripts;
+    AssetRegistry assets
+        = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml", .type = Asset::Type::AssetBundle });
+
+    Runtime runtime;
+    std::optional<Project> project;
+
     Scene scene;
     std::string current_scene;
     std::optional<Scene> runtime_scene;
-
-    AssetRegistry assets
-        = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml", .type = Asset::Type::AssetBundle });
-    std::optional<Project> project;
-    ResourceManager resources;
 
     k2::editor::MainMenuWidget main_menu_widget;
     k2::editor::ComponentInspectorWindow<entt::entity> component_inspector { ICON_FA_WRENCH "  Inspector" };

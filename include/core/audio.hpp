@@ -12,7 +12,8 @@ struct Scene;
 struct AudioClip {
     std::uint32_t channels {};
     std::uint32_t sample_rate {};
-    std::vector<float> frames {};
+    // Shared so playing voices pin the PCM across clip replacement/destruction.
+    std::shared_ptr<const std::vector<float>> frames {};
 
     AudioClip() = default;
     explicit AudioClip(std::span<const std::byte> encoded);

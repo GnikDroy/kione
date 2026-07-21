@@ -89,6 +89,9 @@ static void load_audio_clips(ResourceManager& resources, const AssetRegistry& as
     for (const auto& [id, pair] : assets) {
         const auto& [name, asset] = pair;
         if (asset.type == Asset::Type::Audio) {
+            if (resources.contains<AudioClip>(id)) {
+                continue;
+            }
             auto clip = AssetLoader::try_get<AudioClip>(asset);
             if (!clip) {
                 Log::core().error(std::format("Failed to load audio clip '{}': {}", name, clip.error()));
