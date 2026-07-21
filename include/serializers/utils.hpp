@@ -34,6 +34,25 @@ template <> struct convert<glm::vec2> {
     }
 };
 
+template <> struct convert<glm::ivec2> {
+    static Node encode(const glm::ivec2& vec) {
+        YAML::Node node;
+        node.SetStyle(YAML::EmitterStyle::Flow);
+        node.push_back(vec.x);
+        node.push_back(vec.y);
+        return node;
+    }
+
+    static bool decode(const Node& node, glm::ivec2& vec) {
+        if (!node.IsSequence() || node.size() != 2) {
+            return false;
+        }
+        vec.x = node[0].as<int>();
+        vec.y = node[1].as<int>();
+        return true;
+    }
+};
+
 template <> struct convert<glm::vec3> {
     static Node encode(const glm::vec3& vec) {
         YAML::Node node;

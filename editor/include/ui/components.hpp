@@ -12,6 +12,7 @@
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
 #include "components/text.hpp"
+#include "components/tilemap.hpp"
 #include "components/transform.hpp"
 
 #include "ui/common.hpp"
@@ -251,6 +252,24 @@ void ComponentCopyAction<k2::ScriptComponent>(
     entt::registry& registry, entt::registry::entity_type from, entt::registry::entity_type to) {
     if (const auto* component = registry.try_get<k2::ScriptComponent>(from)) {
         registry.emplace_or_replace<k2::ScriptComponent>(to, k2::ScriptComponent { .script = component->script });
+    }
+}
+
+template <> void ComponentWidget<k2::TileMapComponent>(entt::registry& reg, entt::registry::entity_type e) {
+    auto& tilemap = reg.get<k2::TileMapComponent>(e);
+    auto& editor_layer = reg.ctx().get<EditorLayer&>();
+    if (BeginPropertyTable("TileMap")) {
+        PropertyLabel("Tileset");
+        ResourceInputWidget("##Tileset", tilemap.tileset, editor_layer.active_assets(), k2::Asset::Type::TileSet);
+        PropertyLabel("Size");
+        ImGui::TextDisabled("%d x %d", tilemap.size.x, tilemap.size.y);
+        PropertyLabel("Tile Size");
+        Vec2Field("##TileSize", tilemap.tile_size, { 32.0f, 32.0f }, 0.5f);
+        PropertyLabel("Color");
+        ImGui::ColorEdit4("##Color", glm::value_ptr(tilemap.color));
+        PropertyLabel("Unlit");
+        ImGui::Checkbox("##Unlit", &tilemap.unlit);
+        EndPropertyTable();
     }
 }
 

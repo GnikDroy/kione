@@ -18,6 +18,7 @@
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
 #include "components/text.hpp"
+#include "components/tilemap.hpp"
 #include "components/transform.hpp"
 #include "core/script/lua_component.hpp"
 
@@ -63,6 +64,7 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     copy_component<SpriteComponent>(registry, src, dst);
     copy_component<TextComponent>(registry, src, dst);
     copy_component<AnimationComponent>(registry, src, dst);
+    copy_component<TileMapComponent>(registry, src, dst);
     copy_component<AudioSourceComponent>(registry, src, dst);
     copy_component<ColliderComponent>(registry, src, dst);
     copy_component<Environment>(registry, src, dst);
@@ -116,6 +118,7 @@ namespace {
         { "Sprite", has_component<SpriteComponent> },
         { "Text", has_component<TextComponent> },
         { "Animation", has_component<AnimationComponent> },
+        { "TileMap", has_component<TileMapComponent> },
         { "AudioSource", has_component<AudioSourceComponent> },
         { "Collider", has_component<ColliderComponent> },
         { "Environment", has_component<Environment> },

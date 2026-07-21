@@ -24,6 +24,7 @@ add_executable(
     components/relation.cpp
 
     rendering/shapes.cpp
+    rendering/tileset.cpp
 
     serializers/components.cpp
 

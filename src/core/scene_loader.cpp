@@ -11,6 +11,7 @@
 #include "asset/scheme.hpp"
 #include "components/animation.hpp"
 #include "components/audio.hpp"
+#include "components/tilemap.hpp"
 #include "components/light.hpp"
 #include "components/relation.hpp"
 #include "components/script.hpp"
@@ -98,6 +99,25 @@ static void load_scripts(ResourceManager& resources, const AssetRegistry& assets
             continue;
         }
         resources.set(name, std::move(*script));
+    }
+}
+
+static void load_tilesets(ResourceManager& resources, const AssetRegistry& assets) {
+    for (const auto& [id, pair] : assets) {
+        const auto& [name, asset] = pair;
+        if (asset.type != Asset::Type::TileSet) {
+            continue;
+        }
+        auto tileset = AssetLoader::try_get<TileSet>(asset);
+        if (!tileset) {
+            Log::core().error(std::format("Failed to load tileset '{}': {}", name, tileset.error()));
+            continue;
+        }
+        load_texture(tileset->texture, resources, assets);
+        if (const auto* texture = resources.try_get<Texture2D>(tileset->texture.id)) {
+            tileset->texture_size = { texture->width, texture->height };
+        }
+        resources.set(name, std::move(*tileset));
     }
 }
 
@@ -205,6 +225,7 @@ std::expected<Scene, std::string> SceneLoader::load(
         deserialize.template operator()<ColliderComponent>(entity_node, "ColliderComponent", entity);
         deserialize.template operator()<Environment>(entity_node, "Environment", entity);
         deserialize.template operator()<AnimationComponent>(entity_node, "AnimationComponent", entity);
+        deserialize.template operator()<TileMapComponent>(entity_node, "TileMapComponent", entity);
         deserialize.template operator()<ScriptComponent>(entity_node, "ScriptComponent", entity);
         deserialize.template operator()<PointLight>(entity_node, "PointLight", entity);
         deserialize.template operator()<SpotLight>(entity_node, "SpotLight", entity);
@@ -265,6 +286,7 @@ std::expected<Scene, std::string> SceneLoader::load(
     load_fonts(resources, assets);
     load_audio_clips(resources, assets);
     load_scripts(resources, assets);
+    load_tilesets(resources, assets);
     return scene;
 } catch (const std::exception& e) {
     return std::unexpected(e.what());

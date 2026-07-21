@@ -17,6 +17,7 @@
 #include "serializers/components/tag.hpp" // IWYU pragma: keep
 #include "serializers/components/audio.hpp" // IWYU pragma: keep
 #include "serializers/components/text.hpp" // IWYU pragma: keep
+#include "serializers/components/tilemap.hpp" // IWYU pragma: keep
 #include "serializers/components/transform.hpp" // IWYU pragma: keep
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
 #include "serializers/utils.hpp" // IWYU pragma: keep
@@ -55,6 +56,7 @@ template <> struct convert<k2::Scene> {
             serialize.template operator()<k2::ColliderComponent>(entity_node, "ColliderComponent", entity);
             serialize.template operator()<k2::Environment>(entity_node, "Environment", entity);
             serialize.template operator()<k2::AnimationComponent>(entity_node, "AnimationComponent", entity);
+            serialize.template operator()<k2::TileMapComponent>(entity_node, "TileMapComponent", entity);
             serialize.template operator()<k2::ScriptComponent>(entity_node, "ScriptComponent", entity);
             serialize.template operator()<k2::PointLight>(entity_node, "PointLight", entity);
             serialize.template operator()<k2::SpotLight>(entity_node, "SpotLight", entity);

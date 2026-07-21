@@ -24,6 +24,7 @@ namespace k2 {
 struct Scene;
 struct Font;
 struct TextComponent;
+struct TileMapComponent;
 
 struct PrimitiveStyle {
     glm::vec4 color { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -118,6 +119,7 @@ private:
 
     static std::array<Vertex2D, 4> build_sprite_quad(const SpriteComponent& sprite);
     void collect_text(const TextComponent& text, const Font& font, const glm::mat4& world);
+    void collect_tilemap(const TileMapComponent& tilemap, const TileSet& tileset, const glm::mat4& world);
 
     void collect_lights(Scene& scene);
     void ensure_light_targets(std::size_t width, std::size_t height);

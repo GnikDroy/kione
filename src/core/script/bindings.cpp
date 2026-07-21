@@ -90,6 +90,10 @@ void bind_constants(sol::state& lua) {
 }
 
 void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled, ScriptHost& host) {
+    auto vec2 = lua.new_usertype<glm::vec2>("vec2", sol::constructors<glm::vec2(), glm::vec2(float, float)>());
+    vec2["x"] = &glm::vec2::x;
+    vec2["y"] = &glm::vec2::y;
+
     auto vec3 = lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>());
     vec3["x"] = &glm::vec3::x;
     vec3["y"] = &glm::vec3::y;
@@ -187,6 +191,24 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     };
     animation["stop"] = [](AnimationComponent& animation) { animation.playing = false; };
 
+    auto tilemap = lua.new_usertype<TileMapComponent>("TileMap");
+    tilemap["width"] = sol::property([](TileMapComponent& tilemap) { return tilemap.size.x; });
+    tilemap["height"] = sol::property([](TileMapComponent& tilemap) { return tilemap.size.y; });
+    tilemap["tile_size"] = ref_property(&TileMapComponent::tile_size);
+    tilemap["color"] = ref_property(&TileMapComponent::color);
+    tilemap["unlit"] = &TileMapComponent::unlit;
+    tilemap["tileset"] = asset_property(&TileMapComponent::tileset);
+    // Scripts see empty cells as nil; out-of-bounds access raises a script error.
+    tilemap["get_tile"] = [&lua](TileMapComponent& tilemap, int x, int y) -> sol::object {
+        auto tile = tilemap[x, y];
+        return tile == TileMapComponent::empty_tile ? sol::lua_nil : sol::make_object(lua, int(tile));
+    };
+    tilemap["set_tile"] = [](TileMapComponent& tilemap, int x, int y, sol::optional<int> index) {
+        auto value = index.value_or(-1);
+        tilemap[x, y] = value < 0 || value > int(TileMapComponent::empty_tile) ? TileMapComponent::empty_tile
+                                                                               : std::uint16_t(value);
+    };
+
     auto collider = lua.new_usertype<ColliderComponent>("Collider");
     collider["layer"] = &ColliderComponent::layer;
     collider["mask"] = &ColliderComponent::mask;
@@ -283,6 +305,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     entity["sprite"] = &LuaEntity::sprite;
     entity["text"] = &LuaEntity::text;
     entity["animation"] = &LuaEntity::animation;
+    entity["tilemap"] = &LuaEntity::tilemap;
     entity["audio_source"] = &LuaEntity::audio_source;
     entity["collider"] = &LuaEntity::collider;
     entity["environment"] = &LuaEntity::environment;

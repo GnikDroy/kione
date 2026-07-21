@@ -12,6 +12,7 @@
 #include "rendering/model.hpp"
 #include "serializers/asset/asset.hpp" // IWYU pragma: keep
 #include "serializers/asset/sprite_animation.hpp" // IWYU pragma: keep
+#include "serializers/asset/tileset.hpp" // IWYU pragma: keep
 
 namespace k2 {
 
@@ -81,6 +82,14 @@ template <> AudioClip AssetLoader::get<AudioClip>(const Asset& asset) {
     return AudioClip { std::as_bytes(std::span { raw }) };
 }
 
+template <> TileSet AssetLoader::get<TileSet>(const Asset& asset) {
+    if (asset.type != Asset::Type::TileSet) {
+        throw std::invalid_argument("Invalid Asset Type!");
+    }
+    auto stream = AssetScheme::get_stream(asset);
+    return YAML::Load(*stream).as<TileSet>();
+}
+
 template <> Script AssetLoader::get<Script>(const Asset& asset) {
     if (asset.type != Asset::Type::Script) {
         throw std::invalid_argument("Invalid Asset Type!");
@@ -117,6 +126,14 @@ template <> std::expected<BakedFont, std::string> AssetLoader::try_get<BakedFont
 template <> std::expected<AudioClip, std::string> AssetLoader::try_get<AudioClip>(const Asset& asset) noexcept {
     try {
         return get<AudioClip>(asset);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
+template <> std::expected<TileSet, std::string> AssetLoader::try_get<TileSet>(const Asset& asset) noexcept {
+    try {
+        return get<TileSet>(asset);
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
     }

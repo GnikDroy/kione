@@ -39,6 +39,9 @@ namespace {
         if (ext == ".k2anim") {
             return Asset::Type::Animation;
         }
+        if (ext == ".k2tileset") {
+            return Asset::Type::TileSet;
+        }
         if (ext == ".yaml") {
             return Asset::Type::AssetBundle;
         }
@@ -47,7 +50,7 @@ namespace {
 
     void add_asset_dialog(EditorLayer& editor_layer) {
         std::array filters = { nfdfilteritem_t { "Assets",
-            "png,jpg,jpeg,tga,bmp,ttf,otf,wav,mp3,flac,ogg,lua,glsl,k2scene,k2anim,yaml" } };
+            "png,jpg,jpeg,tga,bmp,ttf,otf,wav,mp3,flac,ogg,lua,glsl,k2scene,k2anim,k2tileset,yaml" } };
         [[maybe_unused]] auto lock = NFD::Guard();
         NFD::UniquePathU8 path;
         auto root = editor_layer.project->root.string();

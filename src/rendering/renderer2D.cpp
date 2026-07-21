@@ -6,6 +6,7 @@
 
 #include "components/light.hpp"
 #include "components/text.hpp"
+#include "components/tilemap.hpp"
 #include "core/logger.hpp"
 #include "core/scene.hpp"
 #include "rendering/embedded_shaders.hpp"
@@ -259,6 +260,15 @@ void Renderer2D::draw(Scene& scene) {
                 .blend = sprite.blend });
         });
 
+    scene.registry.view<k2::TransformComponent, k2::TileMapComponent>().each(
+        [&](auto entity, const auto&, const TileMapComponent& tilemap) {
+            const auto* tileset = resources != nullptr ? resources->try_get<TileSet>(tilemap.tileset.id) : nullptr;
+            if (tileset == nullptr || tileset->texture_size.x <= 0 || tileset->texture_size.y <= 0) {
+                return;
+            }
+            collect_tilemap(tilemap, *tileset, TransformComponent::world(scene.registry, entity));
+        });
+
     scene.registry.view<k2::TransformComponent, k2::TextComponent>().each(
         [&](auto entity, const auto&, const TextComponent& text) {
             const auto* font = resources != nullptr ? resources->try_get<Font>(text.font.id) : nullptr;
@@ -267,6 +277,47 @@ void Renderer2D::draw(Scene& scene) {
             }
             collect_text(text, *font, unscaled_world(scene.registry, entity));
         });
+}
+
+void Renderer2D::collect_tilemap(const TileMapComponent& tilemap, const TileSet& tileset, const glm::mat4& world) {
+    Drawable drawable { .z = world[3][2], .transform = world, .unlit = tilemap.unlit };
+    std::uint32_t quads = 0;
+    for (int row = 0; row < tilemap.size.y; row++) {
+        for (int col = 0; col < tilemap.size.x; col++) {
+            auto index = tilemap[col, row];
+            if (index == TileMapComponent::empty_tile || !tileset.contains(index)) {
+                continue;
+            }
+            auto uv = tileset[index].uv;
+            float left = float(col) * tilemap.tile_size.x;
+            float right = left + tilemap.tile_size.x;
+            float top = -float(row) * tilemap.tile_size.y;
+            float bottom = top - tilemap.tile_size.y;
+            drawable.vertices.push_back({ .position = { right, bottom, 0.0f },
+                .color = tilemap.color,
+                .texture_coordinate = { uv.x + uv.w, uv.y },
+                .texture = tileset.texture.id });
+            drawable.vertices.push_back({ .position = { left, top, 0.0f },
+                .color = tilemap.color,
+                .texture_coordinate = { uv.x, uv.y + uv.h },
+                .texture = tileset.texture.id });
+            drawable.vertices.push_back({ .position = { left, bottom, 0.0f },
+                .color = tilemap.color,
+                .texture_coordinate = { uv.x, uv.y },
+                .texture = tileset.texture.id });
+            drawable.vertices.push_back({ .position = { right, top, 0.0f },
+                .color = tilemap.color,
+                .texture_coordinate = { uv.x + uv.w, uv.y + uv.h },
+                .texture = tileset.texture.id });
+            for (auto corner : quad_indices) {
+                drawable.indices.push_back(quads * 4 + corner);
+            }
+            quads++;
+        }
+    }
+    if (quads > 0) {
+        drawables.push_back(std::move(drawable));
+    }
 }
 
 void Renderer2D::collect_text(const TextComponent& text, const Font& font, const glm::mat4& world) {

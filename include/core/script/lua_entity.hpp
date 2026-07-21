@@ -14,6 +14,7 @@
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
 #include "components/text.hpp"
+#include "components/tilemap.hpp"
 #include "components/transform.hpp"
 
 namespace k2 {
@@ -33,6 +34,9 @@ struct LuaEntity {
     [[nodiscard]] TextComponent* text() const { return valid() ? registry->try_get<TextComponent>(entity) : nullptr; }
     [[nodiscard]] AnimationComponent* animation() const {
         return valid() ? registry->try_get<AnimationComponent>(entity) : nullptr;
+    }
+    [[nodiscard]] TileMapComponent* tilemap() const {
+        return valid() ? registry->try_get<TileMapComponent>(entity) : nullptr;
     }
     [[nodiscard]] PointLight* point_light() const { return valid() ? registry->try_get<PointLight>(entity) : nullptr; }
     [[nodiscard]] SpotLight* spot_light() const { return valid() ? registry->try_get<SpotLight>(entity) : nullptr; }

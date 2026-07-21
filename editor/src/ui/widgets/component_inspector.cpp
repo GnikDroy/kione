@@ -79,6 +79,7 @@ template <class EntityType> ComponentInspectorWidget<EntityType>::ComponentInspe
     register_component<k2::Camera>(ICON_FA_CAMERA "  Camera");
     register_component<k2::MainCamera>(ICON_FA_VIDEO "  Main Camera");
     register_component<k2::ScriptComponent>(ICON_FA_CODE "  Script");
+    register_component<k2::TileMapComponent>(ICON_FA_TH "  Tile Map");
     register_component<k2::PointLight>(ICON_FA_LIGHTBULB "  Point Light");
     register_component<k2::SpotLight>(ICON_FA_STAR "  Spot Light");
     register_component<k2::SpriteLight>(ICON_FA_MOON "  Sprite Light");
