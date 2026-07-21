@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <format>
 #include <list>
+#include <ranges>
 #include <vector>
 
 #include "components/audio.hpp"
@@ -18,7 +19,7 @@ namespace {
     constexpr std::size_t max_voices = 64;
 
     struct AudioStarted { };
-    struct AudioAttached { };
+    struct AudioSystemAttached { };
 }
 
 struct AudioSystem::Impl {
@@ -82,23 +83,36 @@ struct AudioSystem::Impl {
         ma_audio_buffer_uninit(&voice.buffer);
     }
 
-    void stop_all() {
-        for (auto& voice : voices) {
+    template <class Predicate> void release_if(Predicate&& should_release) {
+        std::erase_if(voices, [&](Voice& voice) {
+            if (!should_release(voice)) {
+                return false;
+            }
             release(voice);
+            return true;
+        });
+    }
+
+    void stop_all() {
+        release_if([](const Voice&) { return true; });
+    }
+
+    void attach_scene(entt::registry& registry) {
+        if (registry.ctx().contains<AudioSystemAttached>()) {
+            return;
         }
-        voices.clear();
+        registry.ctx().emplace<AudioSystemAttached>();
+        registry.on_destroy<AudioSourceComponent>().connect<&Impl::on_source_destroyed>(*this);
+        stop_owned();
+    }
+
+    void stop_owned() {
+        release_if([](const Voice& voice) { return voice.owner != entt::null; });
     }
 
     void on_source_destroyed(entt::registry& registry, entt::entity entity) {
         registry.remove<AudioStarted>(entity);
-        for (auto it = voices.begin(); it != voices.end();) {
-            if (it->owner == entity) {
-                release(*it);
-                it = voices.erase(it);
-            } else {
-                ++it;
-            }
-        }
+        release_if([entity](const Voice& voice) { return voice.owner == entity; });
     }
 };
 
@@ -118,26 +132,20 @@ void AudioSystem::update(Scene& scene) {
         return;
     }
     auto& registry = scene.registry;
-    if (!registry.ctx().contains<AudioAttached>()) {
-        registry.ctx().emplace<AudioAttached>();
-        registry.on_destroy<AudioSourceComponent>().connect<&Impl::on_source_destroyed>(*impl);
-    }
+    impl->attach_scene(registry);
 
-    // Reap finished one-shots (no entity, so no destroy signal covers them) and follow
-    // component volume/pitch so scripts can change them live.
-    for (auto it = impl->voices.begin(); it != impl->voices.end();) {
-        bool owner_died = it->owner != entt::null && !registry.valid(it->owner);
-        if (owner_died || (!ma_sound_is_looping(&it->sound) && ma_sound_at_end(&it->sound))) {
-            impl->release(*it);
-            it = impl->voices.erase(it);
-        } else {
-            if (it->owner != entt::null) {
-                if (const auto* source = registry.try_get<AudioSourceComponent>(it->owner)) {
-                    ma_sound_set_volume(&it->sound, source->volume);
-                    ma_sound_set_pitch(&it->sound, std::max(0.01f, source->pitch));
-                }
-            }
-            ++it;
+    // Reap finished one-shots; no entity means no destroy signal covers them.
+    impl->release_if([&](Impl::Voice& voice) {
+        bool owner_died = voice.owner != entt::null && !registry.valid(voice.owner);
+        return owner_died || (!ma_sound_is_looping(&voice.sound) && ma_sound_at_end(&voice.sound));
+    });
+
+    // Follow component volume/pitch so scripts can change them live.
+    auto owned = impl->voices | std::views::filter([](auto& voice) { return voice.owner != entt::null; });
+    for (auto& voice : owned) {
+        if (const auto* source = registry.try_get<AudioSourceComponent>(voice.owner)) {
+            ma_sound_set_volume(&voice.sound, source->volume);
+            ma_sound_set_pitch(&voice.sound, std::max(0.01f, source->pitch));
         }
     }
 

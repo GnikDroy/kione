@@ -4,7 +4,6 @@
 #include <format>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include <sol/sol.hpp>
@@ -28,17 +27,15 @@
 
 namespace k2 {
 
-struct ScriptSceneState {
-    std::shared_ptr<const bool> token = std::make_shared<const bool>(true);
-};
+struct ScriptSystemAttached { };
 
 struct ScriptSystem::Impl : ScriptHost {
     sol::state lua;
+    Window* window {};
     bool input_enabled { true };
 
-    entt::registry* current_registry {};
-    const AssetRegistry* current_assets {};
-    ScriptSceneState* current_state {};
+    entt::registry* attached_registry {};
+    const AssetRegistry* attached_assets {};
 
     enum class CommandKind : std::uint8_t { AttachScript, Destroy };
     struct Command {
@@ -50,24 +47,20 @@ struct ScriptSystem::Impl : ScriptHost {
 
     static constexpr std::size_t command_cap = 10000;
 
-    std::unordered_set<std::string> baseline_globals;
-    std::unordered_set<std::string> baseline_kione;
-
-    explicit Impl(Window& window) {
-        lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table, sol::lib::io,
-            sol::lib::os, sol::lib::coroutine);
-        bind_script_api(lua, window, input_enabled, *this);
-        baseline_globals = table_string_keys(lua.globals());
-        baseline_kione = table_string_keys(lua["kione"]);
+    explicit Impl(Window& window)
+        : window { &window } {
+        rebuild_vm();
     }
 
-    void reset_globals() {
-        reset_table_to_baseline(lua.globals(), baseline_globals);
-        reset_table_to_baseline(lua["kione"], baseline_kione); // e.g. kione.game
+    void rebuild_vm() {
+        lua = sol::state {};
+        lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table, sol::lib::io,
+            sol::lib::os, sol::lib::coroutine);
+        bind_script_api(lua, *window, input_enabled, *this);
     }
 
     LuaEntity make_handle(entt::entity entity) {
-        return LuaEntity { .entity = entity, .registry = current_registry, .scene_token = current_state->token };
+        return LuaEntity { .entity = entity, .registry = attached_registry };
     }
 
     template <class... Args>
@@ -96,7 +89,7 @@ struct ScriptSystem::Impl : ScriptHost {
 
         script.env = ScriptEnvironment { new sol::environment { lua, sol::create, lua.globals() },
             [](sol::environment* env) { delete env; } };
-        auto& resources = current_registry->ctx().get<Runtime&>().resources;
+        auto& resources = attached_registry->ctx().get<Runtime&>().resources;
         const auto* source = resources.try_get<Script>(script.script.id);
         if (source == nullptr) {
             Log::core().warn(std::format("Scene references unknown script asset '{}'", script.script.name));
@@ -112,13 +105,16 @@ struct ScriptSystem::Impl : ScriptHost {
         return *script.env;
     }
 
-    ScriptSceneState& scene_state(entt::registry& registry) {
-        if (auto* state = registry.ctx().find<ScriptSceneState>()) {
-            return *state;
+    // Each scene runs in a fresh VM, so nothing a script did leaks into the next scene.
+    void attach_scene(entt::registry& registry, const AssetRegistry& assets) {
+        attached_registry = &registry;
+        attached_assets = &assets;
+        if (registry.ctx().contains<ScriptSystemAttached>()) {
+            return;
         }
-        reset_globals();
+        registry.ctx().emplace<ScriptSystemAttached>();
+        rebuild_vm();
         registry.on_destroy<ScriptComponent>().connect<&Impl::on_script_destroyed>(*this);
-        return registry.ctx().emplace<ScriptSceneState>();
     }
 
     void on_script_destroyed(entt::registry& registry, entt::entity entity) {
@@ -126,12 +122,7 @@ struct ScriptSystem::Impl : ScriptHost {
         if (!script.env) {
             return;
         }
-        auto* state = registry.ctx().find<ScriptSceneState>();
-        if (state == nullptr) {
-            return;
-        }
-        call_hook(*script.env, "on_destroy", script.script,
-            LuaEntity { .entity = entity, .registry = &registry, .scene_token = state->token });
+        call_hook(*script.env, "on_destroy", script.script, LuaEntity { .entity = entity, .registry = &registry });
     }
 
     // ScriptComponent pool is not mutated mid-iteration.
@@ -145,18 +136,18 @@ struct ScriptSystem::Impl : ScriptHost {
             auto command = pending[processed++];
             switch (command.kind) {
             case CommandKind::AttachScript: {
-                if (!current_registry->valid(command.entity)) {
+                if (!attached_registry->valid(command.entity)) {
                     break; // destroyed before its script attached
                 }
-                auto& script = current_registry->emplace<ScriptComponent>(command.entity, command.script);
+                auto& script = attached_registry->emplace<ScriptComponent>(command.entity, command.script);
                 instance(command.entity, script);
                 break;
             }
             case CommandKind::Destroy: {
-                if (!current_registry->valid(command.entity)) {
+                if (!attached_registry->valid(command.entity)) {
                     break;
                 }
-                destroy_with_children(*current_registry, command.entity);
+                destroy_with_children(*attached_registry, command.entity);
                 break;
             }
             }
@@ -166,7 +157,7 @@ struct ScriptSystem::Impl : ScriptHost {
 
     sol::object find(std::string_view tag) override {
         require_registry("kione.find");
-        auto entity = find_by_tag(*current_registry, tag);
+        auto entity = find_by_tag(*attached_registry, tag);
         if (entity == entt::null) {
             return sol::lua_nil;
         }
@@ -176,7 +167,7 @@ struct ScriptSystem::Impl : ScriptHost {
     sol::table find_all(std::string_view tag) override {
         require_registry("kione.find_all");
         auto table = lua.create_table();
-        for (auto entity : find_all_by_tag(*current_registry, tag)) {
+        for (auto entity : find_all_by_tag(*attached_registry, tag)) {
             table.add(make_handle(entity));
         }
         return table;
@@ -189,7 +180,7 @@ struct ScriptSystem::Impl : ScriptHost {
             names.push_back(name.get<std::string>());
         }
         auto table = lua.create_table();
-        for (auto entity : find_with_components(*current_registry, names)) {
+        for (auto entity : find_with_components(*attached_registry, names)) {
             table.add(make_handle(entity));
         }
         return table;
@@ -197,7 +188,7 @@ struct ScriptSystem::Impl : ScriptHost {
 
     LuaEntity spawn(std::string_view tag, float x, float y) override {
         require_registry("kione.spawn");
-        auto tmpl = find_by_tag(*current_registry, tag);
+        auto tmpl = find_by_tag(*attached_registry, tag);
         if (tmpl == entt::null) {
             throw std::runtime_error(std::format("kione.spawn: no entity tagged '{}' to clone", tag));
         }
@@ -209,14 +200,14 @@ struct ScriptSystem::Impl : ScriptHost {
         if (!source.valid()) {
             throw std::runtime_error("entity:clone called on an invalid entity");
         }
-        auto entity = clone_entity(*current_registry, source.entity);
-        RelationComponent::attach_last(*current_registry, entity, scene_root(*current_registry));
+        auto entity = clone_entity(*attached_registry, source.entity);
+        RelationComponent::attach_last(*attached_registry, entity, scene_root(*attached_registry));
         defer_script_from(source.entity, entity);
         return make_handle(entity);
     }
 
     SceneView* scene_view() {
-        auto* view = current_registry != nullptr ? current_registry->ctx().find<SceneView>() : nullptr;
+        auto* view = attached_registry != nullptr ? attached_registry->ctx().find<SceneView>() : nullptr;
         return (view != nullptr && view->viewport.w > 0.0f && view->viewport.h > 0.0f) ? view : nullptr;
     }
 
@@ -240,7 +231,7 @@ struct ScriptSystem::Impl : ScriptHost {
 
     void play_sound(std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) override {
         require_registry("kione.play_sound");
-        auto& runtime = current_registry->ctx().get<Runtime&>();
+        auto& runtime = attached_registry->ctx().get<Runtime&>();
         const auto* clip = runtime.resources.try_get<AudioClip>(ResourceManager::resolve(name));
         if (clip == nullptr) {
             throw std::runtime_error(std::format("kione.play_sound: unknown clip '{}'", name));
@@ -250,7 +241,7 @@ struct ScriptSystem::Impl : ScriptHost {
 
     void submit_draw(DrawCommand command) override {
         require_registry("kione.draw");
-        auto& draw_list = current_registry->ctx().emplace<DrawList>();
+        auto& draw_list = attached_registry->ctx().emplace<DrawList>();
         if (draw_list.commands.size() >= command_cap) {
             if (!draw_list.overflowed) {
                 Log::core().warn("Draw command cap exceeded; dropping further primitives this frame");
@@ -263,17 +254,17 @@ struct ScriptSystem::Impl : ScriptHost {
 
     void load_scene(std::string_view name) override {
         require_registry("kione.load_scene");
-        auto it = current_assets->find(ResourceManager::resolve(name));
-        if (it == current_assets->end() || it->second.second.type != Asset::Type::Scene) {
+        auto it = attached_assets->find(ResourceManager::resolve(name));
+        if (it == attached_assets->end() || it->second.second.type != Asset::Type::Scene) {
             throw std::runtime_error(std::format("kione.load_scene: unknown scene '{}'", name));
         }
-        current_registry->ctx().insert_or_assign(SceneRequest { std::string { name } });
+        attached_registry->ctx().insert_or_assign(SceneRequest { std::string { name } });
     }
 
     sol::table query_circle(float x, float y, float radius, sol::optional<std::uint32_t> mask) override {
         require_registry("kione.query_circle");
         auto table = lua.create_table();
-        for (auto entity : collision::query_circle(*current_registry, { x, y }, radius, mask.value_or(0xffffffff))) {
+        for (auto entity : collision::query_circle(*attached_registry, { x, y }, radius, mask.value_or(0xffffffff))) {
             table.add(make_handle(entity));
         }
         return table;
@@ -283,7 +274,7 @@ struct ScriptSystem::Impl : ScriptHost {
         require_registry("kione.query_aabb");
         auto table = lua.create_table();
         for (auto entity :
-            collision::query_aabb(*current_registry, { x, y }, { w * 0.5f, h * 0.5f }, mask.value_or(0xffffffff))) {
+            collision::query_aabb(*attached_registry, { x, y }, { w * 0.5f, h * 0.5f }, mask.value_or(0xffffffff))) {
             table.add(make_handle(entity));
         }
         return table;
@@ -292,7 +283,7 @@ struct ScriptSystem::Impl : ScriptHost {
     sol::table query_point(float x, float y, sol::optional<std::uint32_t> mask) override {
         require_registry("kione.query_point");
         auto table = lua.create_table();
-        for (auto entity : collision::query_point(*current_registry, { x, y }, mask.value_or(0xffffffff))) {
+        for (auto entity : collision::query_point(*attached_registry, { x, y }, mask.value_or(0xffffffff))) {
             table.add(make_handle(entity));
         }
         return table;
@@ -303,26 +294,26 @@ struct ScriptSystem::Impl : ScriptHost {
         if (!a.valid() || !b.valid()) {
             throw std::runtime_error("entity:overlaps called with an invalid entity");
         }
-        return collision::overlaps(*current_registry, a.entity, b.entity);
+        return collision::overlaps(*attached_registry, a.entity, b.entity);
     }
 
     void destroy(const LuaEntity& target) override {
-        if (!current_registry || !target.valid()) {
+        if (!attached_registry || !target.valid()) {
             return;
         }
         pending.push_back({ .kind = CommandKind::Destroy, .entity = target.entity, .script = {} });
     }
 
     void require_registry(const char* who) const {
-        if (!current_registry) {
-            throw std::runtime_error(std::format("{} called outside a script hook", who));
+        if (!attached_registry) {
+            throw std::runtime_error(std::format("{} called before a scene was attached", who));
         }
     }
 
     LuaEntity spawn_from(entt::entity tmpl, float x, float y) {
-        auto entity = clone_entity(*current_registry, tmpl);
-        RelationComponent::attach_last(*current_registry, entity, scene_root(*current_registry));
-        auto& transform = current_registry->get_or_emplace<TransformComponent>(entity);
+        auto entity = clone_entity(*attached_registry, tmpl);
+        RelationComponent::attach_last(*attached_registry, entity, scene_root(*attached_registry));
+        auto& transform = attached_registry->get_or_emplace<TransformComponent>(entity);
         transform.translation.x = x;
         transform.translation.y = y;
         defer_script_from(tmpl, entity);
@@ -330,7 +321,7 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     void defer_script_from(entt::entity tmpl, entt::entity entity) {
-        if (const auto* script = current_registry->try_get<ScriptComponent>(tmpl)) {
+        if (const auto* script = attached_registry->try_get<ScriptComponent>(tmpl)) {
             pending.push_back({ .kind = CommandKind::AttachScript, .entity = entity, .script = script->script });
         }
     }
@@ -345,45 +336,33 @@ void ScriptSystem::set_input_enabled(bool enabled) { impl->input_enabled = enabl
 
 void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
-    impl->current_state = &impl->scene_state(registry);
-    impl->current_registry = &registry;
-    impl->current_assets = &assets;
+    impl->attach_scene(registry, assets);
 
     for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
         auto& env = impl->instance(entity, script);
         impl->call_hook(env, "on_update", script.script, impl->make_handle(entity), dt);
     }
     impl->flush_commands();
-    impl->current_registry = nullptr;
-    impl->current_assets = nullptr;
-    impl->current_state = nullptr;
 }
 
 void ScriptSystem::fixed_update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
-    impl->current_state = &impl->scene_state(registry);
-    impl->current_registry = &registry;
-    impl->current_assets = &assets;
+    impl->attach_scene(registry, assets);
 
     for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
         auto& env = impl->instance(entity, script);
         impl->call_hook(env, "on_fixed_update", script.script, impl->make_handle(entity), dt);
     }
     impl->flush_commands();
-    impl->current_registry = nullptr;
-    impl->current_assets = nullptr;
-    impl->current_state = nullptr;
 }
 
 bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const Event* event) {
+    auto& registry = scene.registry;
+    impl->attach_scene(registry, assets);
     auto translated = translate_event(impl->lua, event);
     if (!translated || (translated->input && !impl->input_enabled)) {
         return false;
     }
-    auto& registry = scene.registry;
-    impl->current_state = &impl->scene_state(registry);
-    impl->current_registry = &registry;
-    impl->current_assets = &assets;
 
     bool consumed = false;
     for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
@@ -391,9 +370,6 @@ bool ScriptSystem::handle_event(Scene& scene, const AssetRegistry& assets, const
         consumed |= impl->call_hook(env, "on_event", script.script, impl->make_handle(entity), translated->table);
     }
     impl->flush_commands();
-    impl->current_registry = nullptr;
-    impl->current_assets = nullptr;
-    impl->current_state = nullptr;
     return consumed;
 }
 

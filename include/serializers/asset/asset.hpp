@@ -29,13 +29,12 @@ template <> struct convert<k2::AssetBundle> {
 
     static bool decode(const Node& node, k2::AssetBundle& registry) {
         // TODO: checking for VALID AssetBundle Format
-        for (auto it = node["assets"].begin(); it != node["assets"].end(); it++) {
-            auto type = k2::Asset::get_type(it->first.as<std::string>());
-            auto& asset_map_it = it->second;
+        for (const auto& typed_assets : node["assets"]) {
+            auto type = k2::Asset::get_type(typed_assets.first.as<std::string>());
 
-            for (auto asset_it = asset_map_it.begin(); asset_it != asset_map_it.end(); asset_it++) {
-                auto&& name = asset_it->first.as<std::string>();
-                k2::Asset asset { .url = asset_it->second.as<std::string>(), .type = type };
+            for (const auto& entry : typed_assets.second) {
+                auto&& name = entry.first.as<std::string>();
+                k2::Asset asset { .url = entry.second.as<std::string>(), .type = type };
                 auto [existing, inserted] = registry.assets.try_emplace(name, asset);
                 if (!inserted) {
                     throw std::runtime_error(std::format(

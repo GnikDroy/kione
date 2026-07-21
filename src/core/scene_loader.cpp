@@ -5,15 +5,16 @@
 #include <stdexcept>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "asset/loader.hpp"
 #include "asset/scheme.hpp"
 #include "components/animation.hpp"
+#include "components/audio.hpp"
 #include "components/light.hpp"
 #include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
-#include "components/audio.hpp"
 #include "components/text.hpp"
 #include "core/logger.hpp"
 #include "rendering/sprite_animation.hpp"
@@ -222,6 +223,41 @@ std::expected<Scene, std::string> SceneLoader::load(
     }
     if (roots != 1) {
         throw std::runtime_error("A scene must have exactly one root entity.");
+    }
+
+    // Ring integrity
+    std::unordered_set<entt::id_type> reached;
+    for (auto [entity, relation] : registry.view<RelationComponent>().each()) {
+        if (relation.children == 0) {
+            if (relation.first != entt::null) {
+                throw std::runtime_error("A scene entity ring is corrupt.");
+            }
+            continue;
+        }
+        auto curr = relation.first;
+        for (std::size_t i {}; i < relation.children; i++) {
+            const auto* curr_relation = curr != entt::null ? registry.try_get<RelationComponent>(curr) : nullptr;
+            if (curr_relation == nullptr || curr_relation->parent != entity
+                || !reached.insert(entt::to_integral(curr)).second) {
+                throw std::runtime_error("A scene entity ring is corrupt.");
+            }
+            const auto* next = curr_relation->next != entt::null
+                ? registry.try_get<RelationComponent>(curr_relation->next)
+                : nullptr;
+            const auto* prev = curr_relation->prev != entt::null
+                ? registry.try_get<RelationComponent>(curr_relation->prev)
+                : nullptr;
+            if (next == nullptr || prev == nullptr || next->prev != curr || prev->next != curr) {
+                throw std::runtime_error("A scene entity ring is corrupt.");
+            }
+            curr = curr_relation->next;
+        }
+        if (curr != relation.first) {
+            throw std::runtime_error("A scene entity ring is corrupt.");
+        }
+    }
+    if (reached.size() != remap.size() - 1) {
+        throw std::runtime_error("A scene entity is not reachable from the root.");
     }
 
     load_textures(resources, assets);

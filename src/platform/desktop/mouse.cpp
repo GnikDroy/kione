@@ -42,12 +42,9 @@ MouseDevice::MouseDevice(Window* w)
 
     glfwSetDropCallback(w->impl->window.get(), [](auto glfw_window, auto count, auto paths) {
         auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
-        std::vector<std::string> paths_vec;
-        for (int i {}; i < count; i++) {
-            paths_vec.emplace_back(paths[i]);
-        }
+        auto dropped = std::span { paths, std::size_t(count) };
         auto event = std::make_unique<MouseDropEvent>();
-        event->paths = std::move(paths_vec);
+        event->paths.assign(dropped.begin(), dropped.end());
         window->events.push(std::move(event));
     });
 }

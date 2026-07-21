@@ -1,6 +1,8 @@
 #include "core/entity_ops.hpp"
 
+#include <algorithm>
 #include <format>
+#include <iterator>
 #include <stdexcept>
 #include <type_traits>
 #include <unordered_map>
@@ -76,9 +78,8 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
 void destroy_with_children(entt::registry& registry, entt::entity entity) {
     RelationComponent::detach(registry, entity);
     std::vector<entt::entity> doomed { entity };
-    for (auto& child : RelationComponent::get_children(registry, entity, true)) {
-        doomed.push_back(child.first);
-    }
+    auto children = RelationComponent::get_children(registry, entity, true);
+    std::ranges::transform(children, std::back_inserter(doomed), [](auto& child) { return child.first; });
     registry.destroy(doomed.begin(), doomed.end());
 }
 
@@ -141,11 +142,7 @@ std::vector<entt::entity> find_with_components(entt::registry& registry, std::sp
 
     std::vector<entt::entity> matches;
     for (auto entity : registry.view<entt::entity>()) {
-        bool all = true;
-        for (auto check : checks) {
-            all = all && check(registry, entity);
-        }
-        if (all) {
+        if (std::ranges::all_of(checks, [&](auto check) { return check(registry, entity); })) {
             matches.push_back(entity);
         }
     }

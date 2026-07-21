@@ -113,6 +113,43 @@ TEST_CASE("SceneLoader loads an empty scene") {
     REQUIRE(loaded->registry.view<k2::RelationComponent>().size() == 1);
 }
 
+TEST_CASE("SceneLoader rejects corrupt sibling rings") {
+    k2::Scene scene;
+    auto& registry = scene.registry;
+    auto root = k2::scene_root(registry);
+    auto a = registry.create();
+    auto b = registry.create();
+    registry.emplace<k2::TagComponent>(a, "a");
+    registry.emplace<k2::TagComponent>(b, "b");
+    k2::RelationComponent::attach_last(registry, a, root);
+    k2::RelationComponent::attach_last(registry, b, root);
+
+    k2::ResourceManager resources;
+    k2::AssetRegistry assets;
+
+    // The untampered scene is valid; the file is emitted in tree order, so
+    // node[0] is the root and node[1] is 'a'.
+    REQUIRE(k2::SceneLoader::load(YAML::Node { scene }, resources, assets).has_value());
+
+    SECTION("children count larger than the ring") {
+        auto node = YAML::Node { scene };
+        node[0]["RelationComponent"]["Children"] = 5;
+        REQUIRE_FALSE(k2::SceneLoader::load(node, resources, assets).has_value());
+    }
+
+    SECTION("sibling link points at an unknown entity") {
+        auto node = YAML::Node { scene };
+        node[1]["RelationComponent"]["Next"] = 999999;
+        REQUIRE_FALSE(k2::SceneLoader::load(node, resources, assets).has_value());
+    }
+
+    SECTION("entity orphaned from its parent's ring") {
+        auto node = YAML::Node { scene };
+        node[0]["RelationComponent"]["Children"] = 1;
+        REQUIRE_FALSE(k2::SceneLoader::load(node, resources, assets).has_value());
+    }
+}
+
 TEST_CASE("SceneLoader rejects a scene without a root entity") {
     k2::ResourceManager resources;
     k2::AssetRegistry assets;

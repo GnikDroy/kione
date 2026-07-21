@@ -82,7 +82,6 @@ public:
             return;
         }
         scene = std::move(*loaded);
-        runtime.audio.stop_all();
         attach_scene_context();
     }
 

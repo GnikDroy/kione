@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <memory>
 #include <string>
 
 #include <entt/entt.hpp>
@@ -22,11 +21,8 @@ namespace k2 {
 struct LuaEntity {
     entt::entity entity { entt::null };
     entt::registry* registry {};
-    std::weak_ptr<const void> scene_token {};
 
-    [[nodiscard]] bool valid() const {
-        return !scene_token.expired() && registry != nullptr && registry->valid(entity);
-    }
+    [[nodiscard]] bool valid() const { return registry != nullptr && registry->valid(entity); }
 
     [[nodiscard]] TransformComponent* transform() const {
         return valid() ? registry->try_get<TransformComponent>(entity) : nullptr;

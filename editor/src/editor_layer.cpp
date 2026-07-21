@@ -239,7 +239,6 @@ void EditorLayer::update(float dt) {
                 loaded->registry.ctx().emplace<EditorLayer&>(*this);
                 loaded->registry.ctx().emplace<Runtime&>(runtime);
                 runtime_scene = std::move(*loaded);
-                runtime.audio.stop_all();
                 entity_selector.get_widget().reset_selection();
             } else {
                 Log::core().error(std::format("Scene switch failed: {}", loaded.error()));

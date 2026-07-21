@@ -13,7 +13,6 @@ add_executable(
     core/fnv.cpp
     core/key_names.cpp
     core/script_constants.cpp
-    core/script_globals.cpp
     core/collision.cpp
     core/entity_ops.cpp
     core/lua_entity.cpp
