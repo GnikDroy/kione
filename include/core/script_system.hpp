@@ -27,7 +27,5 @@ public:
     bool handle_event(Scene& scene, const AssetRegistry& assets, const Event* event);
 
     void set_input_enabled(bool enabled);
-
-    void reload_sources();
 };
 }

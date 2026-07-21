@@ -168,7 +168,6 @@ void EditorLayer::play() {
     copy->registry.ctx().emplace<EditorLayer&>(*this);
     copy->registry.ctx().emplace<Runtime&>(runtime);
     runtime_scene = std::move(*copy);
-    runtime.scripts.reload_sources();
     entity_selector.get_widget().reset_selection();
 }
 

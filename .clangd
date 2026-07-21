@@ -1,0 +1,14 @@
+CompileFlags:
+  CompilationDatabase: build
+  Remove: [-Xclang, -include-pch, -Winvalid-pch]
+
+Diagnostics:
+  UnusedIncludes: Strict
+
+---
+If:
+  PathMatch: build/.*
+Diagnostics:
+  Suppress: '*'
+  ClangTidy:
+    Remove: ['*']

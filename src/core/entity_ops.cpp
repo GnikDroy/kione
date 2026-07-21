@@ -11,6 +11,7 @@
 #include "components/collider.hpp"
 #include "components/environment.hpp"
 #include "components/light.hpp"
+#include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
@@ -48,7 +49,19 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     copy_component<PointLight>(registry, src, dst);
     copy_component<SpotLight>(registry, src, dst);
     copy_component<SpriteLight>(registry, src, dst);
+    if (const auto* data = registry.try_get<LuaComponent>(src); data != nullptr && data->valid()) {
+        registry.emplace<LuaComponent>(dst, deep_copy_table(*data));
+    }
     return dst;
+}
+
+void destroy_with_children(entt::registry& registry, entt::entity entity) {
+    RelationComponent::detach(registry, entity);
+    std::vector<entt::entity> doomed { entity };
+    for (auto& child : RelationComponent::get_children(registry, entity, true)) {
+        doomed.push_back(child.first);
+    }
+    registry.destroy(doomed.begin(), doomed.end());
 }
 
 entt::entity find_by_tag(entt::registry& registry, std::string_view tag) {

@@ -81,6 +81,14 @@ template <> AudioClip AssetLoader::get<AudioClip>(const Asset& asset) {
     return AudioClip { std::as_bytes(std::span { raw }) };
 }
 
+template <> Script AssetLoader::get<Script>(const Asset& asset) {
+    if (asset.type != Asset::Type::Script) {
+        throw std::invalid_argument("Invalid Asset Type!");
+    }
+    auto raw = AssetScheme::get_raw(asset);
+    return Script { .source = std::string { raw.begin(), raw.end() } };
+}
+
 template <> std::expected<Image, std::string> AssetLoader::try_get<Image>(const Asset& asset) noexcept {
     try {
         return get<Image>(asset);
@@ -109,6 +117,14 @@ template <> std::expected<BakedFont, std::string> AssetLoader::try_get<BakedFont
 template <> std::expected<AudioClip, std::string> AssetLoader::try_get<AudioClip>(const Asset& asset) noexcept {
     try {
         return get<AudioClip>(asset);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
+template <> std::expected<Script, std::string> AssetLoader::try_get<Script>(const Asset& asset) noexcept {
+    try {
+        return get<Script>(asset);
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
     }

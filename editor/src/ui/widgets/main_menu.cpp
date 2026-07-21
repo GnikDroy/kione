@@ -1,6 +1,7 @@
 
 #include "ui/widgets/main_menu.hpp"
 #include "components/relation.hpp"
+#include "core/entity_ops.hpp"
 #include "editor_layer.hpp"
 
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
@@ -173,13 +174,7 @@ static void render_scene_menu(EditorLayer& editor_layer) {
             selector.set_active(duplicate_entity(editor_layer, registry, active));
         }
         if (ImGui::MenuItem("Delete Entity", nullptr, false, has_selection)) {
-            RelationComponent::detach(registry, active);
-            auto&& children = RelationComponent::get_children(registry, active, true);
-            std::vector<entt::entity> to_delete;
-            to_delete.reserve(children.size() + 1);
-            std::ranges::transform(children, std::back_inserter(to_delete), [](auto& pair) { return pair.first; });
-            to_delete.push_back(active);
-            registry.destroy(to_delete.begin(), to_delete.end());
+            destroy_with_children(registry, active);
             selector.reset_selection();
         }
         ImGui::Separator();

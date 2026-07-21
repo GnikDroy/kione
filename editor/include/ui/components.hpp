@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include "components/animation.hpp"
+#include "components/audio.hpp"
 #include "components/camera.hpp"
 #include "components/collider.hpp"
 #include "components/environment.hpp"
@@ -10,7 +11,6 @@
 #include "components/script.hpp"
 #include "components/sprite.hpp"
 #include "components/tag.hpp"
-#include "components/audio.hpp"
 #include "components/text.hpp"
 #include "components/transform.hpp"
 
@@ -243,6 +243,14 @@ template <> void ComponentWidget<k2::ScriptComponent>(entt::registry& reg, entt:
         PropertyLabel("Script");
         ResourceInputWidget("##Script", script.script, editor_layer.active_assets(), k2::Asset::Type::Script);
         EndPropertyTable();
+    }
+}
+
+template <>
+void ComponentCopyAction<k2::ScriptComponent>(
+    entt::registry& registry, entt::registry::entity_type from, entt::registry::entity_type to) {
+    if (const auto* component = registry.try_get<k2::ScriptComponent>(from)) {
+        registry.emplace_or_replace<k2::ScriptComponent>(to, k2::ScriptComponent { .script = component->script });
     }
 }
 

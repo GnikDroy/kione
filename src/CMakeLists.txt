@@ -19,7 +19,9 @@ add_library(
     asset/scheme.cpp
     core/animation_system.cpp
     core/app.cpp
-    core/audio.cpp
+    core/audio_clip.cpp
+    core/audio_system.cpp
+    core/miniaudio.cpp
     core/collision.cpp
     core/entity_ops.cpp
     core/imgui_layer.cpp

@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "core/audio.hpp"
+#include "core/audio_clip.hpp"
 
 #include <cstddef>
 #include <cstdint>

@@ -3,6 +3,7 @@
 #include <format>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -10,8 +11,8 @@
 #include "core/logger.hpp"
 #include "core/resources.hpp"
 #include "core/script/host.hpp"
-#include "core/script/lua_component.hpp"
 #include "core/script/key_names.hpp"
+#include "core/script/lua_component.hpp"
 #include "core/script/lua_entity.hpp"
 #include "core/window.hpp"
 #include "rendering/font.hpp"
@@ -66,6 +67,16 @@ namespace {
         table[sol::metatable_key] = meta;
     }
 
+    template <class Owner, class Member> auto ref_property(Member Owner::* member) {
+        return sol::property([member](Owner& owner) -> Member& { return owner.*member; },
+            [member](Owner& owner, const Member& value) { owner.*member = value; });
+    }
+
+    template <class Owner> auto asset_property(AssetHandle Owner::* member) {
+        return sol::property([member](Owner& owner) { return (owner.*member).name; },
+            [member](Owner& owner, const std::string& name) { (owner.*member).set(name); });
+    }
+
 }
 
 std::unordered_set<std::string> table_string_keys(const sol::table& table) {
@@ -101,229 +112,232 @@ void bind_constants(sol::state& lua) {
 }
 
 void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled, ScriptHost& host) {
-    lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(), "x",
-        &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
-    lua.new_usertype<glm::vec4>("vec4", sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>(), "x",
-        &glm::vec4::x, "y", &glm::vec4::y, "z", &glm::vec4::z, "w", &glm::vec4::w);
+    auto vec3 = lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>());
+    vec3["x"] = &glm::vec3::x;
+    vec3["y"] = &glm::vec3::y;
+    vec3["z"] = &glm::vec3::z;
 
-    lua.new_usertype<TransformComponent>("Transform", "translation",
-        sol::property([](TransformComponent& transform) -> glm::vec3& { return transform.translation; },
-            [](TransformComponent& transform, const glm::vec3& value) { transform.translation = value; }),
-        "scale",
-        sol::property([](TransformComponent& transform) -> glm::vec3& { return transform.scale; },
-            [](TransformComponent& transform, const glm::vec3& value) { transform.scale = value; }),
-        "angle",
-        sol::property([](TransformComponent& transform) { return glm::eulerAngles(transform.orientation).z; },
+    auto vec4
+        = lua.new_usertype<glm::vec4>("vec4", sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>());
+    vec4["x"] = &glm::vec4::x;
+    vec4["y"] = &glm::vec4::y;
+    vec4["z"] = &glm::vec4::z;
+    vec4["w"] = &glm::vec4::w;
+
+    auto rect = lua.new_usertype<Rectf>("Rect");
+    rect["x"] = &Rectf::x;
+    rect["y"] = &Rectf::y;
+    rect["w"] = &Rectf::w;
+    rect["h"] = &Rectf::h;
+
+    auto transform = lua.new_usertype<TransformComponent>("Transform");
+    transform["translation"] = ref_property(&TransformComponent::translation);
+    transform["scale"] = ref_property(&TransformComponent::scale);
+    transform["angle"]
+        = sol::property([](TransformComponent& transform) { return glm::eulerAngles(transform.orientation).z; },
             [](TransformComponent& transform, float angle) {
                 transform.orientation = glm::quat(glm::vec3 { 0.0f, 0.0f, angle });
-            }));
+            });
 
-    lua.new_usertype<Rectf>("Rect", "x", &Rectf::x, "y", &Rectf::y, "w", &Rectf::w, "h", &Rectf::h);
-
-    lua.new_usertype<Camera>("Camera", "position",
-        sol::property([](Camera& camera) -> glm::vec3& { return camera.position; },
-            [](Camera& camera, const glm::vec3& value) { camera.position = value; }),
-        "target",
-        sol::property([](Camera& camera) -> glm::vec3& { return camera.target; },
-            [](Camera& camera, const glm::vec3& value) { camera.target = value; }),
-        "look_at", [](Camera& camera, float x, float y) {
-            camera.position.x = x;
-            camera.position.y = y;
-            camera.target.x = x;
-            camera.target.y = y;
-        });
-
-    lua.new_usertype<SpriteComponent>("Sprite", "color",
-        sol::property([](SpriteComponent& sprite) -> glm::vec4& { return sprite.color; },
-            [](SpriteComponent& sprite, const glm::vec4& value) { sprite.color = value; }),
-        "uv",
-        sol::property([](SpriteComponent& sprite) -> Rectf& { return sprite.uv_rect; },
-            [](SpriteComponent& sprite, const Rectf& value) { sprite.uv_rect = value; }),
-        "texture",
-        sol::property([](SpriteComponent& sprite) { return sprite.texture.name; },
-            [](SpriteComponent& sprite, const std::string& name) { sprite.texture.set(name); }),
-        "unlit", &SpriteComponent::unlit, "blend",
-        sol::property(
-            [](SpriteComponent& sprite) { return sprite.blend == BlendMode::Additive ? "additive" : "alpha"; },
-            [](SpriteComponent& sprite, std::string_view value) {
-                if (value == "alpha") {
-                    sprite.blend = BlendMode::Alpha;
-                } else if (value == "additive") {
-                    sprite.blend = BlendMode::Additive;
-                } else {
-                    throw std::runtime_error(std::format("Unknown blend mode '{}'", value));
-                }
-            }),
-        "intensity", &SpriteComponent::intensity);
-
-    auto color_property = []<class Light>() {
-        return sol::property([](Light& light) -> glm::vec3& { return light.color; },
-            [](Light& light, const glm::vec3& value) { light.color = value; });
+    auto camera = lua.new_usertype<Camera>("Camera");
+    camera["position"] = ref_property(&Camera::position);
+    camera["target"] = ref_property(&Camera::target);
+    camera["look_at"] = [](Camera& camera, float x, float y) {
+        camera.position.x = x;
+        camera.position.y = y;
+        camera.target.x = x;
+        camera.target.y = y;
     };
 
-    lua.new_usertype<PointLight>("PointLight", "color", color_property.template operator()<PointLight>(), "intensity",
-        &PointLight::intensity, "radius", &PointLight::radius);
+    auto sprite = lua.new_usertype<SpriteComponent>("Sprite");
+    sprite["color"] = ref_property(&SpriteComponent::color);
+    sprite["uv"] = ref_property(&SpriteComponent::uv_rect);
+    sprite["texture"] = asset_property(&SpriteComponent::texture);
+    sprite["unlit"] = &SpriteComponent::unlit;
+    sprite["intensity"] = &SpriteComponent::intensity;
+    sprite["blend"] = sol::property(
+        [](SpriteComponent& sprite) { return sprite.blend == BlendMode::Additive ? "additive" : "alpha"; },
+        [](SpriteComponent& sprite, std::string_view value) {
+            if (value == "alpha") {
+                sprite.blend = BlendMode::Alpha;
+            } else if (value == "additive") {
+                sprite.blend = BlendMode::Additive;
+            } else {
+                throw std::runtime_error(std::format("Unknown blend mode '{}'", value));
+            }
+        });
 
-    lua.new_usertype<SpotLight>("SpotLight", "color", color_property.template operator()<SpotLight>(), "intensity",
-        &SpotLight::intensity, "radius", &SpotLight::radius, "inner_angle", &SpotLight::inner_angle, "outer_angle",
-        &SpotLight::outer_angle);
+    auto point_light = lua.new_usertype<PointLight>("PointLight");
+    point_light["color"] = ref_property(&PointLight::color);
+    point_light["intensity"] = &PointLight::intensity;
+    point_light["radius"] = &PointLight::radius;
 
-    lua.new_usertype<SpriteLight>("SpriteLight", "color", color_property.template operator()<SpriteLight>(),
-        "intensity", &SpriteLight::intensity, "texture",
-        sol::property([](SpriteLight& light) { return light.texture.name; },
-            [](SpriteLight& light, const std::string& name) { light.texture.set(name); }));
+    auto spot_light = lua.new_usertype<SpotLight>("SpotLight");
+    spot_light["color"] = ref_property(&SpotLight::color);
+    spot_light["intensity"] = &SpotLight::intensity;
+    spot_light["radius"] = &SpotLight::radius;
+    spot_light["inner_angle"] = &SpotLight::inner_angle;
+    spot_light["outer_angle"] = &SpotLight::outer_angle;
 
-    lua.new_usertype<TextComponent>("Text", "text", &TextComponent::text, "size", &TextComponent::size, "color",
-        sol::property([](TextComponent& text) -> glm::vec4& { return text.color; },
-            [](TextComponent& text, const glm::vec4& value) { text.color = value; }),
-        "font",
-        sol::property([](TextComponent& text) { return text.font.name; },
-            [](TextComponent& text, const std::string& name) { text.font.set(name); }));
+    auto sprite_light = lua.new_usertype<SpriteLight>("SpriteLight");
+    sprite_light["color"] = ref_property(&SpriteLight::color);
+    sprite_light["intensity"] = &SpriteLight::intensity;
+    sprite_light["texture"] = asset_property(&SpriteLight::texture);
 
-    lua.new_usertype<AudioSourceComponent>("AudioSource", "volume", &AudioSourceComponent::volume, "pitch",
-        &AudioSourceComponent::pitch, "looping", &AudioSourceComponent::looping, "clip",
-        sol::property([](AudioSourceComponent& source) { return source.clip.name; },
-            [](AudioSourceComponent& source, const std::string& name) { source.clip.set(name); }));
+    auto text = lua.new_usertype<TextComponent>("Text");
+    text["text"] = &TextComponent::text;
+    text["size"] = &TextComponent::size;
+    text["color"] = ref_property(&TextComponent::color);
+    text["font"] = asset_property(&TextComponent::font);
 
-    lua.new_usertype<AnimationComponent>(
-        "Animation", "playing", &AnimationComponent::playing, "speed", &AnimationComponent::speed, "finished",
-        sol::property([](AnimationComponent& animation) { return animation.finished; }), "clip",
-        sol::property([](AnimationComponent& animation) { return animation.clip.name; }), "play",
-        [](AnimationComponent& animation, const std::string& clip) {
-            animation.clip.set(clip);
-            animation.elapsed = 0.0f;
-            animation.playing = true;
-            animation.finished = false;
+    auto audio_source = lua.new_usertype<AudioSourceComponent>("AudioSource");
+    audio_source["volume"] = &AudioSourceComponent::volume;
+    audio_source["pitch"] = &AudioSourceComponent::pitch;
+    audio_source["looping"] = &AudioSourceComponent::looping;
+    audio_source["clip"] = asset_property(&AudioSourceComponent::clip);
+
+    auto animation = lua.new_usertype<AnimationComponent>("Animation");
+    animation["playing"] = &AnimationComponent::playing;
+    animation["speed"] = &AnimationComponent::speed;
+    animation["finished"] = sol::property([](AnimationComponent& animation) { return animation.finished; });
+    animation["clip"] = sol::property([](AnimationComponent& animation) { return animation.clip.name; });
+    animation["play"] = [](AnimationComponent& animation, const std::string& clip) {
+        animation.clip.set(clip);
+        animation.elapsed = 0.0f;
+        animation.playing = true;
+        animation.finished = false;
+    };
+    animation["stop"] = [](AnimationComponent& animation) { animation.playing = false; };
+
+    auto collider = lua.new_usertype<ColliderComponent>("Collider");
+    collider["layer"] = &ColliderComponent::layer;
+    collider["mask"] = &ColliderComponent::mask;
+    collider["shape"] = sol::property(
+        [](ColliderComponent& collider) -> const char* {
+            if (std::holds_alternative<BoxShape>(collider.shape)) {
+                return "box";
+            }
+            return std::holds_alternative<CircleShape>(collider.shape) ? "circle" : "pill";
         },
-        "stop", [](AnimationComponent& animation) { animation.playing = false; });
-
-    lua.new_usertype<ColliderComponent>("Collider", "shape",
-        sol::property(
-            [](ColliderComponent& collider) -> const char* {
-                if (std::holds_alternative<BoxShape>(collider.shape)) {
-                    return "box";
-                }
-                return std::holds_alternative<CircleShape>(collider.shape) ? "circle" : "pill";
-            },
-            [](ColliderComponent& collider, std::string_view value) {
-                if (value == "box") {
-                    collider.shape = BoxShape {};
-                } else if (value == "circle") {
-                    collider.shape = CircleShape {};
-                } else if (value == "pill") {
-                    collider.shape = PillShape {};
-                } else {
-                    throw std::runtime_error(std::format("Unknown collider shape '{}'", value));
-                }
-            }),
-        "radius",
-        sol::property(
-            [](ColliderComponent& collider) -> float {
-                if (auto* circle = std::get_if<CircleShape>(&collider.shape)) {
-                    return circle->radius;
-                }
-                if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
-                    return pill->radius;
-                }
+        [](ColliderComponent& collider, std::string_view value) {
+            if (value == "box") {
+                collider.shape = BoxShape {};
+            } else if (value == "circle") {
+                collider.shape = CircleShape {};
+            } else if (value == "pill") {
+                collider.shape = PillShape {};
+            } else {
+                throw std::runtime_error(std::format("Unknown collider shape '{}'", value));
+            }
+        });
+    collider["radius"] = sol::property(
+        [](ColliderComponent& collider) -> float {
+            if (auto* circle = std::get_if<CircleShape>(&collider.shape)) {
+                return circle->radius;
+            }
+            if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                return pill->radius;
+            }
+            throw std::runtime_error("collider.radius: a box collider has no radius");
+        },
+        [](ColliderComponent& collider, float value) {
+            if (auto* circle = std::get_if<CircleShape>(&collider.shape)) {
+                circle->radius = value;
+            } else if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                pill->radius = value;
+            } else {
                 throw std::runtime_error("collider.radius: a box collider has no radius");
-            },
-            [](ColliderComponent& collider, float value) {
-                if (auto* circle = std::get_if<CircleShape>(&collider.shape)) {
-                    circle->radius = value;
-                } else if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
-                    pill->radius = value;
-                } else {
-                    throw std::runtime_error("collider.radius: a box collider has no radius");
-                }
-            }),
-        "half_height",
-        sol::property(
-            [](ColliderComponent& collider) -> float {
-                if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
-                    return pill->half_height;
-                }
+            }
+        });
+    collider["half_height"] = sol::property(
+        [](ColliderComponent& collider) -> float {
+            if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                return pill->half_height;
+            }
+            throw std::runtime_error("collider.half_height: only pill colliders have a half_height");
+        },
+        [](ColliderComponent& collider, float value) {
+            if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
+                pill->half_height = value;
+            } else {
                 throw std::runtime_error("collider.half_height: only pill colliders have a half_height");
-            },
-            [](ColliderComponent& collider, float value) {
-                if (auto* pill = std::get_if<PillShape>(&collider.shape)) {
-                    pill->half_height = value;
-                } else {
-                    throw std::runtime_error("collider.half_height: only pill colliders have a half_height");
-                }
-            }),
-        "width",
-        sol::property(
-            [](ColliderComponent& collider) -> float {
-                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
-                    return box->size.x;
-                }
+            }
+        });
+    collider["width"] = sol::property(
+        [](ColliderComponent& collider) -> float {
+            if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                return box->size.x;
+            }
+            throw std::runtime_error("collider.width: only box colliders have a width");
+        },
+        [](ColliderComponent& collider, float value) {
+            if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                box->size.x = value;
+            } else {
                 throw std::runtime_error("collider.width: only box colliders have a width");
-            },
-            [](ColliderComponent& collider, float value) {
-                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
-                    box->size.x = value;
-                } else {
-                    throw std::runtime_error("collider.width: only box colliders have a width");
-                }
-            }),
-        "height",
-        sol::property(
-            [](ColliderComponent& collider) -> float {
-                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
-                    return box->size.y;
-                }
+            }
+        });
+    collider["height"] = sol::property(
+        [](ColliderComponent& collider) -> float {
+            if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                return box->size.y;
+            }
+            throw std::runtime_error("collider.height: only box colliders have a height");
+        },
+        [](ColliderComponent& collider, float value) {
+            if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
+                box->size.y = value;
+            } else {
                 throw std::runtime_error("collider.height: only box colliders have a height");
-            },
-            [](ColliderComponent& collider, float value) {
-                if (auto* box = std::get_if<BoxShape>(&collider.shape)) {
-                    box->size.y = value;
-                } else {
-                    throw std::runtime_error("collider.height: only box colliders have a height");
-                }
-            }),
-        "layer", &ColliderComponent::layer, "mask", &ColliderComponent::mask);
+            }
+        });
 
-    lua.new_usertype<Environment>("Environment", "ambient_color",
-        sol::property([](Environment& env) -> glm::vec3& { return env.ambient_color; },
-            [](Environment& env, const glm::vec3& value) { env.ambient_color = value; }),
-        "ambient_intensity", &Environment::ambient_intensity, "clear_color",
-        sol::property([](Environment& env) -> glm::vec4& { return env.clear_color; },
-            [](Environment& env, const glm::vec4& value) { env.clear_color = value; }),
-        "bloom", &Environment::bloom, "bloom_intensity", &Environment::bloom_intensity, "bloom_threshold",
-        &Environment::bloom_threshold);
+    auto environment = lua.new_usertype<Environment>("Environment");
+    environment["ambient_color"] = ref_property(&Environment::ambient_color);
+    environment["ambient_intensity"] = &Environment::ambient_intensity;
+    environment["clear_color"] = ref_property(&Environment::clear_color);
+    environment["bloom"] = &Environment::bloom;
+    environment["bloom_intensity"] = &Environment::bloom_intensity;
+    environment["bloom_threshold"] = &Environment::bloom_threshold;
 
-    lua.new_usertype<LuaEntity>(
-        "Entity", "transform", &LuaEntity::transform, "sprite", &LuaEntity::sprite, "text", &LuaEntity::text,
-        "text_size",
-        [](const LuaEntity& self) -> std::tuple<float, float> {
-            auto* text = self.text();
-            if (text == nullptr || !self.registry->ctx().contains<ResourceManager&>()) {
-                return { 0.0f, 0.0f };
-            }
-            auto* font = self.registry->ctx().get<ResourceManager&>().try_get<Font>(text->font.id);
-            if (font == nullptr) {
-                return { 0.0f, 0.0f };
-            }
-            auto metrics = font->measure(text->text, text->size);
-            return { metrics.width, metrics.height };
-        },
-        "animation", &LuaEntity::animation, "audio_source", &LuaEntity::audio_source,
-        "collider", &LuaEntity::collider, "environment", &LuaEntity::environment, "overlaps",
-        [&host](const LuaEntity& self, const LuaEntity& other) { return host.overlaps(self, other); },
-        "point_light", &LuaEntity::point_light, "spot_light", &LuaEntity::spot_light, "sprite_light", &LuaEntity::sprite_light, "data",
-        [&lua](const LuaEntity& self) -> sol::object {
-            if (!self.valid()) {
-                return sol::lua_nil;
-            }
-            return lua_component(lua, *self.registry, self.entity);
-        },
-        "camera", &LuaEntity::camera, "tag",
-        sol::property([](const LuaEntity& self) { return self.tag(); },
-            [](const LuaEntity& self, const std::string& value) { self.set_tag(value); }),
-        "valid",
-        &LuaEntity::valid, "id", &LuaEntity::id, "clone", [&host](const LuaEntity& self) { return host.clone(self); },
-        "destroy", [&host](const LuaEntity& self) { host.destroy(self); }, sol::meta_function::equal_to,
-        &LuaEntity::operator==);
+    auto entity = lua.new_usertype<LuaEntity>("Entity");
+    entity["transform"] = &LuaEntity::transform;
+    entity["sprite"] = &LuaEntity::sprite;
+    entity["text"] = &LuaEntity::text;
+    entity["animation"] = &LuaEntity::animation;
+    entity["audio_source"] = &LuaEntity::audio_source;
+    entity["collider"] = &LuaEntity::collider;
+    entity["environment"] = &LuaEntity::environment;
+    entity["point_light"] = &LuaEntity::point_light;
+    entity["spot_light"] = &LuaEntity::spot_light;
+    entity["sprite_light"] = &LuaEntity::sprite_light;
+    entity["camera"] = &LuaEntity::camera;
+    entity["valid"] = &LuaEntity::valid;
+    entity["id"] = &LuaEntity::id;
+    entity["tag"] = sol::property([](const LuaEntity& self) { return self.tag(); },
+        [](const LuaEntity& self, const std::string& value) { self.set_tag(value); });
+    entity["text_size"] = [](const LuaEntity& self) -> std::tuple<float, float> {
+        auto* text = self.text();
+        if (text == nullptr || !self.registry->ctx().contains<ResourceManager&>()) {
+            return { 0.0f, 0.0f };
+        }
+        auto* font = self.registry->ctx().get<ResourceManager&>().try_get<Font>(text->font.id);
+        if (font == nullptr) {
+            return { 0.0f, 0.0f };
+        }
+        auto metrics = font->measure(text->text, text->size);
+        return { metrics.width, metrics.height };
+    };
+    entity["data"] = [&lua](const LuaEntity& self) -> sol::object {
+        if (!self.valid()) {
+            return sol::lua_nil;
+        }
+        return lua_component(lua, *self.registry, self.entity);
+    };
+    entity["overlaps"] = [&host](const LuaEntity& self, const LuaEntity& other) { return host.overlaps(self, other); };
+    entity["clone"] = [&host](const LuaEntity& self) { return host.clone(self); };
+    entity["destroy"] = [&host](const LuaEntity& self) { host.destroy(self); };
+    entity[sol::meta_function::equal_to] = &LuaEntity::operator==;
 
     bind_constants(lua);
 
@@ -335,9 +349,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     kione_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
     kione_table["screen_to_world"] = [&host](float x, float y) { return host.screen_to_world(x, y); };
     kione_table["world_to_screen"] = [&host](float x, float y) { return host.world_to_screen(x, y); };
-    kione_table["play_sound"] = [&host](std::string_view name, sol::optional<float> volume, sol::optional<float> pitch) {
-        host.play_sound(name, volume, pitch);
-    };
+    kione_table["play_sound"] = [&host](std::string_view name, sol::optional<float> volume,
+                                    sol::optional<float> pitch) { host.play_sound(name, volume, pitch); };
     kione_table["load_scene"] = [&host](std::string_view name) { host.load_scene(name); };
     kione_table["query_circle"] = [&host](float x, float y, float radius, sol::optional<std::uint32_t> mask) {
         return host.query_circle(x, y, radius, mask);
@@ -349,26 +362,26 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         = [&host](float x, float y, sol::optional<std::uint32_t> mask) { return host.query_point(x, y, mask); };
     kione_table["draw_line"] = [&host](float x1, float y1, float x2, float y2, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(
-            options, DrawCommand { .kind = DrawCommand::Kind::Line, .a = { x1, y1 }, .b = { x2, y2 } }));
+            std::move(options), DrawCommand { .kind = DrawCommand::Kind::Line, .a = { x1, y1 }, .b = { x2, y2 } }));
     };
     kione_table["draw_rect"] = [&host](float x, float y, float w, float h, sol::optional<sol::table> options) {
-        host.submit_draw(parse_draw_options(
-            options, DrawCommand { .kind = DrawCommand::Kind::Rect, .a = { x, y }, .b = { w, h } }));
+        host.submit_draw(
+            parse_draw_options(std::move(options), DrawCommand { .kind = DrawCommand::Kind::Rect, .a = { x, y }, .b = { w, h } }));
     };
     kione_table["draw_circle"] = [&host](float x, float y, float radius, sol::optional<sol::table> options) {
-        host.submit_draw(parse_draw_options(options,
+        host.submit_draw(parse_draw_options(std::move(options),
             DrawCommand { .kind = DrawCommand::Kind::Circle, .a = { x, y }, .radius = radius, .width = 2.0f }));
     };
     kione_table["draw_point"] = [&host](float x, float y, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(
-            options, DrawCommand { .kind = DrawCommand::Kind::Point, .a = { x, y }, .width = 4.0f }));
+            std::move(options), DrawCommand { .kind = DrawCommand::Kind::Point, .a = { x, y }, .width = 4.0f }));
     };
-    kione_table["draw_polygon"] = [&host](sol::table flat_points, sol::optional<sol::table> options) {
+    kione_table["draw_polygon"] = [&host](const sol::table& flat_points, sol::optional<sol::table> options) {
         DrawCommand command { .kind = DrawCommand::Kind::Polygon };
         for (std::size_t i = 1; i + 1 <= flat_points.size(); i += 2) {
-            command.points.push_back({ flat_points.get<float>(i), flat_points.get<float>(i + 1) });
+            command.points.emplace_back(flat_points.get<float>(i), flat_points.get<float>(i + 1));
         }
-        host.submit_draw(parse_draw_options(options, std::move(command)));
+        host.submit_draw(parse_draw_options(std::move(options), std::move(command)));
     };
 
     auto input = lua.create_named_table("Input");

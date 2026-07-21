@@ -4,17 +4,19 @@
 -Wextra
 -pedantic
 
+-DSOL_ALL_SAFETIES_ON=1
+-DSPDLOG_COMPILED_LIB
+-DSPDLOG_USE_STD_FORMAT
+
 --include-directory=include
+--include-directory=src
 --include-directory=editor/include
 
---include-directory=build/_deps/entt-src/src
 --include-directory=build/_deps/entt-src/src
 
 --include-directory=build/_deps/catch2-src/src
 --include-directory=build/_deps/catch2-build/generated-includes
 
---include-directory=build/_deps/cereal-src/include
---include-directory=build/_deps/fastgltf-src/include
 --include-directory=build/_deps/glad-build/include
 --include-directory=build/_deps/glfw-src/include
 --include-directory=build/_deps/glm-src
@@ -22,13 +24,12 @@
 --include-directory=build/_deps/imgui-src
 --include-directory=build/_deps/imgui-src/backends
 --include-directory=build/_deps/imgui-src/misc/cpp
+--include-directory=build/_deps/imguizmo-src/src
 --include-directory=build/_deps/lua-src
+--include-directory=build/_deps/miniaudio-src
 --include-directory=build/_deps/nfd-src/src/include
 --include-directory=build/_deps/sol2-src/include
-
--DSPDLOG_USE_STD_FORMAT
 --include-directory=build/_deps/spdlog-src/include
-
 --include-directory=build/_deps/stb-src
 --include-directory=build/_deps/tinyobjloader-src
 --include-directory=build/_deps/yaml-cpp-src/include

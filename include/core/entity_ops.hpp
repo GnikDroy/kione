@@ -9,8 +9,11 @@
 
 namespace k2 {
 
-// Copies all components except RelationComponent and ScriptComponent
+// Copies all components except RelationComponent and ScriptComponent;
+// LuaComponent data is deep-copied.
 entt::entity clone_entity(entt::registry& registry, entt::entity src);
+
+void destroy_with_children(entt::registry& registry, entt::entity entity);
 
 entt::entity find_by_tag(entt::registry& registry, std::string_view tag);
 

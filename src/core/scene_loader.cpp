@@ -85,6 +85,21 @@ static void load_fonts(ResourceManager& resources, const AssetRegistry& assets) 
     }
 }
 
+static void load_scripts(ResourceManager& resources, const AssetRegistry& assets) {
+    for (const auto& [id, pair] : assets) {
+        const auto& [name, asset] = pair;
+        if (asset.type != Asset::Type::Script) {
+            continue;
+        }
+        auto script = AssetLoader::try_get<Script>(asset);
+        if (!script) {
+            Log::core().error(std::format("Failed to load script '{}': {}", name, script.error()));
+            continue;
+        }
+        resources.set(name, std::move(*script));
+    }
+}
+
 static void load_audio_clips(ResourceManager& resources, const AssetRegistry& assets) {
     for (const auto& [id, pair] : assets) {
         const auto& [name, asset] = pair;
@@ -199,6 +214,7 @@ std::expected<Scene, std::string> SceneLoader::load(
     load_animation_clips(registry, resources, assets);
     load_fonts(resources, assets);
     load_audio_clips(resources, assets);
+    load_scripts(resources, assets);
     return scene;
 } catch (const std::exception& e) {
     return std::unexpected(e.what());
