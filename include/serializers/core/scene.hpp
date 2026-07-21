@@ -1,5 +1,7 @@
 #pragma once
 
+#include <queue>
+
 #include <yaml-cpp/yaml.h>
 
 // Note that these headers need to be included
@@ -39,7 +41,7 @@ template <> struct convert<k2::Scene> {
             }
         };
 
-        for (auto entity : registry.view<entt::entity>()) {
+        auto emit = [&](entt::entity entity) {
             YAML::Node entity_node;
             entity_node["Entity"] = entity;
             serialize.template operator()<k2::TagComponent>(entity_node, "TagComponent", entity);
@@ -58,6 +60,26 @@ template <> struct convert<k2::Scene> {
             serialize.template operator()<k2::SpotLight>(entity_node, "SpotLight", entity);
             serialize.template operator()<k2::SpriteLight>(entity_node, "SpriteLight", entity);
             node.push_back(entity_node);
+        };
+
+        // Tree order from the scene root.
+        std::queue<entt::entity> pending;
+        registry.view<k2::RelationComponent>().each([&](auto entity, const k2::RelationComponent& relation) {
+            if (relation.parent == entt::null) {
+                pending.push(entity);
+            }
+        });
+        while (!pending.empty()) {
+            auto entity = pending.front();
+            pending.pop();
+            emit(entity);
+            if (const auto* relation = registry.try_get<k2::RelationComponent>(entity)) {
+                auto curr = relation->first;
+                for (std::size_t i {}; i < relation->children; i++) {
+                    pending.push(curr);
+                    curr = registry.get<k2::RelationComponent>(curr).next;
+                }
+            }
         }
         return node;
     }

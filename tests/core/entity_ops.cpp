@@ -47,6 +47,25 @@ TEST_CASE("clone_entity excludes Relation and Script") {
     REQUIRE_FALSE(registry.all_of<k2::RelationComponent>(clone)); // a clone is a root
 }
 
+TEST_CASE("scene_root is created once and reused") {
+    entt::registry registry;
+    auto root = k2::scene_root(registry);
+    REQUIRE((registry.get<k2::RelationComponent>(root).parent == entt::null));
+    REQUIRE(k2::scene_root(registry) == root);
+}
+
+TEST_CASE("create_entity appends under the scene root in order") {
+    entt::registry registry;
+    auto a = k2::create_entity(registry);
+    auto b = k2::create_entity(registry);
+
+    auto roots = k2::RelationComponent::get_children(registry, k2::scene_root(registry));
+    REQUIRE(roots.size() == 2);
+    REQUIRE(roots[0].first == a);
+    REQUIRE(roots[1].first == b);
+    REQUIRE(registry.all_of<k2::TransformComponent>(a));
+}
+
 TEST_CASE("find_with_components filters by named components") {
     entt::registry registry;
     auto lit_sprite = registry.create();

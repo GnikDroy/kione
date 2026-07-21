@@ -10,6 +10,7 @@
 #include <sol/sol.hpp>
 
 #include "components/camera.hpp"
+#include "components/relation.hpp"
 #include "components/script.hpp"
 #include "components/transform.hpp"
 #include "core/audio_clip.hpp"
@@ -209,6 +210,7 @@ struct ScriptSystem::Impl : ScriptHost {
             throw std::runtime_error("entity:clone called on an invalid entity");
         }
         auto entity = clone_entity(*current_registry, source.entity);
+        RelationComponent::attach_last(*current_registry, entity, scene_root(*current_registry));
         defer_script_from(source.entity, entity);
         return make_handle(entity);
     }
@@ -319,6 +321,7 @@ struct ScriptSystem::Impl : ScriptHost {
 
     LuaEntity spawn_from(entt::entity tmpl, float x, float y) {
         auto entity = clone_entity(*current_registry, tmpl);
+        RelationComponent::attach_last(*current_registry, entity, scene_root(*current_registry));
         auto& transform = current_registry->get_or_emplace<TransformComponent>(entity);
         transform.translation.x = x;
         transform.translation.y = y;

@@ -205,19 +205,58 @@ TEST_CASE("get_children returns direct children only by default", "[relation]") 
     REQUIRE(recursive.size() == 2);
 }
 
-TEST_CASE("get_children of null lists root entities with a relation", "[relation]") {
+TEST_CASE("detach clears the sibling links", "[relation]") {
     entt::registry registry;
-    auto root = registry.create();
-    auto child = registry.create();
-    k2::RelationComponent::attach_last(registry, child, root);
+    auto parent = registry.create();
+    auto a = registry.create();
+    auto b = registry.create();
+    k2::RelationComponent::attach_last(registry, a, parent);
+    k2::RelationComponent::attach_last(registry, b, parent);
 
-    auto roots = k2::RelationComponent::get_children(registry, entt::entity { entt::null });
-    REQUIRE(roots.size() == 1);
-    REQUIRE(roots.front().first == root);
+    k2::RelationComponent::detach(registry, a);
+
+    auto& detached = registry.get<k2::RelationComponent>(a);
+    REQUIRE((detached.parent == entt::null));
+    REQUIRE((detached.prev == entt::null));
+    REQUIRE((detached.next == entt::null));
+}
+
+TEST_CASE("attach moves an entity between parents without an explicit detach", "[relation]") {
+    entt::registry registry;
+    auto old_parent = registry.create();
+    auto new_parent = registry.create();
+    auto child = registry.create();
+    k2::RelationComponent::attach_last(registry, child, old_parent);
+
+    k2::RelationComponent::attach_last(registry, child, new_parent);
+
+    REQUIRE(registry.get<k2::RelationComponent>(old_parent).children == 0);
+    REQUIRE(children_in_order(registry, new_parent) == std::vector { child });
+    REQUIRE(ring_is_consistent(registry, new_parent));
 }
 
 TEST_CASE("get_children of an entity without a relation is empty", "[relation]") {
     entt::registry registry;
     auto entity = registry.create();
     REQUIRE(k2::RelationComponent::get_children(registry, entity).empty());
+}
+
+TEST_CASE("attach refuses to create a cycle", "[relation]") {
+    entt::registry registry;
+    auto parent = registry.create();
+    auto child = registry.create();
+    auto grandchild = registry.create();
+    k2::RelationComponent::attach_last(registry, child, parent);
+    k2::RelationComponent::attach_last(registry, grandchild, child);
+
+    REQUIRE_THROWS(k2::RelationComponent::attach_last(registry, parent, parent));
+    REQUIRE_THROWS(k2::RelationComponent::attach_last(registry, parent, grandchild));
+    REQUIRE_THROWS(k2::RelationComponent::attach_before(registry, parent, grandchild));
+    REQUIRE_THROWS(k2::RelationComponent::attach_after(registry, child, grandchild));
+
+    // The refused attaches left the tree untouched.
+    REQUIRE(children_in_order(registry, parent) == std::vector { child });
+    REQUIRE(children_in_order(registry, child) == std::vector { grandchild });
+    REQUIRE(ring_is_consistent(registry, parent));
+    REQUIRE(ring_is_consistent(registry, child));
 }

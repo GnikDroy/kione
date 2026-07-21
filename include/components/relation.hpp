@@ -2,6 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <queue>
+#include <stdexcept>
 
 namespace k2 {
 
@@ -52,31 +53,37 @@ private:
      * @return The relation component of the child entity
      *
      * This function is used to attach a child entity to a parent entity, either at
-     * the beginning or end of the list of children.
+     * the beginning or end of the list of children. The child is detached from its
+     * current ring first.
      *
-     * We perform no checks here, so make sure to not create a cycle.
+     * Throws if the attachment would create a cycle.
      *
      */
     template <bool AttachAtFirst, class EntityType>
     static RelationComponent& attach_child(
         entt::basic_registry<EntityType>& registry, EntityType child, EntityType parent) {
-        auto& parent_relation = registry.template get_or_emplace<RelationComponent>(parent);
-        auto& child_relation = registry.template get_or_emplace<RelationComponent>(child);
+        if (is_ancestor_or_self(registry, child, parent)) {
+            throw std::runtime_error("RelationComponent: attaching would create a cycle");
+        }
+        detach(registry, child);
+        registry.template get_or_emplace<RelationComponent>(child);
+        registry.template get_or_emplace<RelationComponent>(parent);
+        auto& parent_relation = registry.template get<RelationComponent>(parent);
         if (parent_relation.children == 0) {
+            auto& child_relation = registry.template get<RelationComponent>(child);
             parent_relation.children++;
             parent_relation.first = child;
             child_relation.prev = child;
             child_relation.next = child;
             child_relation.parent = parent;
-        } else {
-            if constexpr (AttachAtFirst) {
-                attach_before(registry, child, parent_relation.first);
-            } else {
-                auto last = registry.template get<RelationComponent>(parent_relation.first).prev;
-                attach_after(registry, child, last);
-            }
+            return child_relation;
         }
-        return child_relation;
+        if constexpr (AttachAtFirst) {
+            return attach_before(registry, child, parent_relation.first);
+        } else {
+            auto last = registry.template get<RelationComponent>(parent_relation.first).prev;
+            return attach_after(registry, child, last);
+        }
     }
 
     /**
@@ -91,7 +98,7 @@ private:
      * This function is a helper function for attaching a sibling entity to another entity.
      * If sibling is `entt::null`, it will clear the sibling relationships of the node.
      *
-     * We perform no checks here, so make sure to not create a cycle.
+     * Throws if the attachment would create a cycle.
      *
      */
     template <bool AttachBefore, class EntityType>
@@ -103,6 +110,11 @@ private:
             return relation;
         }
 
+        if (is_ancestor_or_self(registry, node, sibling)) {
+            throw std::runtime_error("RelationComponent: attaching would create a cycle");
+        }
+        detach(registry, node);
+        registry.template get_or_emplace<RelationComponent>(node);
         auto& sibling_relation = registry.template get_or_emplace<RelationComponent>(sibling);
 
         if (sibling_relation.prev == entt::null) {
@@ -110,7 +122,7 @@ private:
             sibling_relation.next = sibling;
         }
 
-        auto& node_relation = registry.template get_or_emplace<RelationComponent>(node);
+        auto& node_relation = registry.template get<RelationComponent>(node);
         node_relation.parent = sibling_relation.parent;
 
         if (sibling_relation.parent != entt::null) {
@@ -154,7 +166,7 @@ public:
      * This function attaches a child entity to a parent entity at the
      * beginning of the list of children.
      *
-     * We perform no checks here, so make sure to not create a cycle.
+     * Throws if the attachment would create a cycle.
      *
      */
     template <class EntityType>
@@ -174,7 +186,7 @@ public:
      * This function attaches a child entity to a parent entity at the
      * end of the list of children.
      *
-     * We perform no checks here, so make sure to not create a cycle.
+     * Throws if the attachment would create a cycle.
      *
      */
     template <class EntityType>
@@ -193,7 +205,7 @@ public:
      *
      * This function attaches a sibling entity to another sibling entity before it.
      *
-     * We perform no checks here, so make sure to not create a cycle.
+     * Throws if the attachment would create a cycle.
      *
      */
     template <class EntityType>
@@ -212,7 +224,7 @@ public:
      *
      * This function attaches a sibling entity to another sibling entity after it.
      *
-     * We perform no checks here, so make sure to not create a cycle.
+     * Throws if the attachment would create a cycle.
      *
      */
     template <class EntityType>
@@ -222,45 +234,69 @@ public:
     }
 
     /**
+     * @brief Whether `ancestor` is `node` itself or appears on its parent chain
+     * @tparam EntityType The type of entity
+     * @param registry The registry containing the entities
+     * @param ancestor The candidate ancestor entity
+     * @param node The entity whose parent chain is walked
+     * @return Whether `ancestor` is `node` or one of its ancestors
+     */
+    template <class EntityType>
+    static bool is_ancestor_or_self(
+        entt::basic_registry<EntityType>& registry, EntityType ancestor, EntityType node) {
+        for (auto curr = node; curr != entt::null;) {
+            if (curr == ancestor) {
+                return true;
+            }
+            const auto* relation = registry.template try_get<RelationComponent>(curr);
+            curr = relation ? relation->parent : EntityType { entt::null };
+        }
+        return false;
+    }
+
+    /**
      * @brief Detaches an entity from its parent and siblings
      * @tparam EntityType The type of entity
      * @param registry The registry containing the entities
      * @param node The entity to detach
      * @return void
      *
-     * This function detaches an entity from its parent, if it has one.
-     * It also detaches the entity from its siblings.
+     * This function removes an entity from whichever sibling ring it is linked
+     * into, including the root ring, and clears its links. Detached entities
+     * belong to no ring until they are attached again.
      *
      */
     template <class EntityType> static void detach(entt::basic_registry<EntityType>& registry, EntityType node) {
         auto* relation = registry.template try_get<RelationComponent>(node);
-        if (relation && relation->parent != entt::null) {
-            auto& parent_relation = registry.template get<RelationComponent>(relation->parent);
-            parent_relation.children--;
-            if (parent_relation.children == 0) {
-                parent_relation.first = entt::null;
-            } else if (parent_relation.first == node) {
-                parent_relation.first = relation->next;
-            }
-
-            auto& next_relation = registry.template get<RelationComponent>(relation->next);
-            auto& prev_relation = registry.template get<RelationComponent>(relation->prev);
-            next_relation.prev = relation->prev;
-            prev_relation.next = relation->next;
-
-            relation->parent = entt::null;
+        if (relation == nullptr || relation->parent == entt::null) {
+            return;
         }
+        auto& parent_relation = registry.template get<RelationComponent>(relation->parent);
+        parent_relation.children--;
+        if (parent_relation.children == 0) {
+            parent_relation.first = entt::null;
+        } else if (parent_relation.first == node) {
+            parent_relation.first = relation->next;
+        }
+
+        auto& next_relation = registry.template get<RelationComponent>(relation->next);
+        auto& prev_relation = registry.template get<RelationComponent>(relation->prev);
+        next_relation.prev = relation->prev;
+        prev_relation.next = relation->next;
+
+        relation->parent = entt::null;
+        relation->prev = entt::null;
+        relation->next = entt::null;
     }
 
     /**
      * @brief Gets the list of children of an entity
      * @tparam EntityType The type of entity
      * @param registry The registry containing the entities
-     * @param parent The parent entity
-     * @param recursively Whether to get the children recursively
+     * @param parent The parent entity, or `entt::null` for the root ring
      * @return A vector of pairs containing the entity and its relation component
      *
-     * This function gets the list of children of an entity.
+     * This function gets the list of children of an entity in ring order.
      * If `recursively` is true, it will get the children recursively.
      *
      */
@@ -269,32 +305,25 @@ public:
         entt::basic_registry<EntityType>& registry, EntityType parent, bool recursively = false) {
         std::vector<std::pair<EntityType, RelationComponent*>> children;
         if (parent == entt::null) {
-            registry.template view<RelationComponent>().each([&](auto entity, auto& relation_component) {
-                if (relation_component.parent == entt::null || recursively) {
-                    children.emplace_back(entity, &relation_component);
+            return children;
+        }
+        std::queue<RelationComponent*> rings;
+        auto* start = registry.template try_get<RelationComponent>(parent);
+        if (start == nullptr) {
+            return children;
+        }
+        rings.push(start);
+        while (!rings.empty()) {
+            auto& ring = *rings.front();
+            rings.pop();
+            auto curr = ring.first;
+            for (std::size_t i {}; i < ring.children; i++) {
+                auto& curr_relation = registry.template get<RelationComponent>(curr);
+                children.emplace_back(curr, &curr_relation);
+                if (recursively) {
+                    rings.push(&curr_relation);
                 }
-            });
-        } else {
-            std::queue<EntityType> queue;
-            queue.push(parent);
-            while (!queue.empty()) {
-                auto node = queue.front();
-                queue.pop();
-                auto parent_relation_ptr = registry.template try_get<RelationComponent>(node);
-                if (parent_relation_ptr) {
-                    auto& parent_relation = *parent_relation_ptr;
-                    children.reserve(parent_relation.children);
-
-                    auto curr = parent_relation.first;
-                    for (std::size_t i {}; i < parent_relation.children; i++) {
-                        auto& curr_relation = registry.template get<RelationComponent>(curr);
-                        children.emplace_back(curr, &curr_relation);
-                        if (recursively) {
-                            queue.push(curr);
-                        }
-                        curr = curr_relation.next;
-                    }
-                }
+                curr = curr_relation.next;
             }
         }
         return children;

@@ -9,6 +9,8 @@
 
 namespace k2 {
 
+entt::entity scene_root(entt::registry& registry);
+
 entt::entity create_entity(entt::registry& registry);
 
 // Copies all components except RelationComponent and ScriptComponent;

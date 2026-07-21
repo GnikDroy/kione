@@ -210,6 +210,20 @@ std::expected<Scene, std::string> SceneLoader::load(
         deserialize.template operator()<SpriteLight>(entity_node, "SpriteLight", entity);
     }
 
+    // The root is the unique parentless entity; every other entity is in its tree.
+    std::size_t roots = 0;
+    for (auto entity_node : node) {
+        auto entity = remap.at(entity_node["Entity"].as<entt::entity>());
+        const auto* relation = registry.try_get<RelationComponent>(entity);
+        if (relation == nullptr) {
+            throw std::runtime_error("A scene entity must be part of the entity tree.");
+        }
+        roots += relation->parent == entt::null ? 1 : 0;
+    }
+    if (roots != 1) {
+        throw std::runtime_error("A scene must have exactly one root entity.");
+    }
+
     load_textures(resources, assets);
     load_animation_clips(registry, resources, assets);
     load_fonts(resources, assets);

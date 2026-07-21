@@ -34,9 +34,21 @@ namespace {
 
 }
 
+entt::entity scene_root(entt::registry& registry) {
+    for (auto [entity, relation] : registry.view<RelationComponent>().each()) {
+        if (relation.parent == entt::null) {
+            return entity;
+        }
+    }
+    auto root = registry.create();
+    registry.emplace<RelationComponent>(root);
+    return root;
+}
+
 entt::entity create_entity(entt::registry& registry) {
     auto entity = registry.create();
     registry.emplace<TransformComponent>(entity);
+    RelationComponent::attach_last(registry, entity, scene_root(registry));
     return entity;
 }
 

@@ -1,6 +1,7 @@
 #include "editor_layer.hpp"
 #include "asset/loader.hpp"
 #include "core/animation_system.hpp"
+#include "core/entity_ops.hpp"
 #include "core/scene_loader.hpp"
 #include "core/window.hpp"
 #include "events/window.hpp"
@@ -16,6 +17,7 @@ EditorLayer::EditorLayer(k2::Window& window)
     , runtime { window } {
     scene.registry.ctx().emplace<EditorLayer&>(*this);
     scene.registry.ctx().emplace<ResourceManager&>(runtime.resources);
+    scene_root(scene.registry);
     runtime.resources.set("white", k2::Texture2D::create_white_texture<uint8_t>());
 
     for (auto& [id, pair] : assets) {
@@ -117,8 +119,10 @@ std::expected<void, std::string> EditorLayer::create_scene(const std::filesystem
     }
     auto name = scene_file.stem().string();
 
+    Scene empty;
+    scene_root(empty.registry);
     std::ofstream scene_out { scene_file };
-    scene_out << YAML::Node { Scene {} } << "\n";
+    scene_out << YAML::Node { empty } << "\n";
     if (!scene_out) {
         return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
     }
@@ -142,8 +146,10 @@ std::expected<void, std::string> EditorLayer::create_project(const std::filesyst
     new_project.main_scene = new_project.name;
     auto scene_file = new_project.root / (new_project.name + ".k2scene");
 
+    Scene empty;
+    scene_root(empty.registry);
     std::ofstream scene_out { scene_file };
-    scene_out << YAML::Node { Scene {} } << "\n";
+    scene_out << YAML::Node { empty } << "\n";
     if (!scene_out) {
         return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
     }

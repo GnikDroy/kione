@@ -3,6 +3,7 @@
 #include "core/scene_loader.hpp"
 
 #include "components/relation.hpp"
+#include "core/entity_ops.hpp"
 #include "serializers/core/scene.hpp"
 
 using namespace k2::literals;
@@ -36,6 +37,7 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
     registry.emplace<k2::TagComponent>(parent, "parent");
     registry.emplace<k2::TransformComponent>(parent).scale = { 2.0f, 2.0f, 1.0f };
     registry.emplace<k2::MainCamera>(parent);
+    k2::RelationComponent::attach_last(registry, parent, k2::scene_root(registry));
 
     auto child_a = registry.create();
     registry.emplace<k2::TagComponent>(child_a, "child_a");
@@ -67,7 +69,7 @@ TEST_CASE("SceneLoader round trip remaps entity references") {
     REQUIRE((new_parent != parent));
 
     auto& parent_relation = loaded_registry.get<k2::RelationComponent>(new_parent);
-    REQUIRE((parent_relation.parent == entt::null));
+    REQUIRE((parent_relation.parent == k2::scene_root(loaded_registry)));
     REQUIRE(parent_relation.children == 2);
     REQUIRE((parent_relation.first == new_child_a));
 
@@ -100,11 +102,26 @@ TEST_CASE("SceneLoader rejects malformed scenes") {
 }
 
 TEST_CASE("SceneLoader loads an empty scene") {
+    k2::Scene empty;
+    k2::scene_root(empty.registry);
     k2::ResourceManager resources;
     k2::AssetRegistry assets;
-    auto loaded = k2::SceneLoader::load(YAML::Node { k2::Scene {} }, resources, assets);
+    auto loaded = k2::SceneLoader::load(YAML::Node { empty }, resources, assets);
     REQUIRE(loaded.has_value());
-    REQUIRE(loaded->registry.view<entt::entity>().size() == 0);
+    // Only the scene root.
+    REQUIRE(loaded->registry.view<entt::entity>().size() == 1);
+    REQUIRE(loaded->registry.view<k2::RelationComponent>().size() == 1);
+}
+
+TEST_CASE("SceneLoader rejects a scene without a root entity") {
+    k2::ResourceManager resources;
+    k2::AssetRegistry assets;
+    REQUIRE_FALSE(k2::SceneLoader::load(YAML::Node { k2::Scene {} }, resources, assets).has_value());
+
+    k2::Scene untracked;
+    auto entity = untracked.registry.create();
+    untracked.registry.emplace<k2::TagComponent>(entity, "loose");
+    REQUIRE_FALSE(k2::SceneLoader::load(YAML::Node { untracked }, resources, assets).has_value());
 }
 
 TEST_CASE("SceneLoader round trips script, camera, and remaining light components") {
@@ -112,6 +129,7 @@ TEST_CASE("SceneLoader round trips script, camera, and remaining light component
     auto& registry = original.registry;
 
     auto entity = registry.create();
+    k2::RelationComponent::attach_last(registry, entity, k2::scene_root(registry));
     registry.emplace<k2::TagComponent>(entity, "loaded");
     registry.emplace<k2::ScriptComponent>(entity, k2::AssetHandle { "mover" });
     registry.emplace<k2::SpotLight>(entity, glm::vec3 { 0.0f, 1.0f, 0.0f }, 3.0f, 400.0f, 0.2f, 0.5f);

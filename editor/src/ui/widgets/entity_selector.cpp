@@ -39,23 +39,8 @@ static entt::entity duplicate_subtree(EditorLayer& editor_layer, entt::registry&
 
 entt::entity duplicate_entity(EditorLayer& editor_layer, entt::registry& registry, entt::entity source) {
     auto clone = duplicate_subtree(editor_layer, registry, source);
-    if (auto* relation = registry.try_get<RelationComponent>(source);
-        relation != nullptr && relation->parent != entt::null) {
-        RelationComponent::attach_after(registry, clone, source);
-    }
+    RelationComponent::attach_after(registry, clone, source);
     return clone;
-}
-
-template <class EntityType>
-static bool is_ancestor_or_self(entt::basic_registry<EntityType>& registry, EntityType ancestor, EntityType node) {
-    for (auto curr = node; curr != entt::null;) {
-        if (curr == ancestor) {
-            return true;
-        }
-        auto* relation = registry.template try_get<RelationComponent>(curr);
-        curr = relation ? relation->parent : entt::null;
-    }
-    return false;
 }
 
 template <bool AttachBefore, class EntityType>
@@ -73,7 +58,7 @@ static void in_between_drag_drop_target(
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
             auto dragged = *static_cast<EntityType*>(payload->Data);
             deferred_op = [&registry, dragged, entity]() {
-                if (dragged == entity || is_ancestor_or_self(registry, dragged, entity)) {
+                if (RelationComponent::is_ancestor_or_self(registry, dragged, entity)) {
                     return;
                 }
                 reparent_preserving_world(registry, dragged, [&] {
@@ -109,7 +94,7 @@ static void entity_drag_drop_target(
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
             auto dragged = *static_cast<EntityType*>(payload->Data);
             deferred_op = [&registry, dragged, entity]() {
-                if (dragged == entity || is_ancestor_or_self(registry, dragged, entity)) {
+                if (RelationComponent::is_ancestor_or_self(registry, dragged, entity)) {
                     return;
                 }
                 reparent_preserving_world(registry, dragged, [&] {
@@ -140,7 +125,9 @@ static void entity_context_menu(EditorLayer& editor_layer, entt::basic_registry<
         }
         if (ImGui::MenuItem("Detach")) {
             deferred_op = [&registry, entity]() {
-                reparent_preserving_world(registry, entity, [&] { RelationComponent::detach(registry, entity); });
+                reparent_preserving_world(registry, entity, [&] {
+                    RelationComponent::attach_last(registry, entity, k2::scene_root(registry));
+                });
             };
         }
         if (ImGui::MenuItem("Delete")) {
@@ -227,11 +214,10 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
 
     EntityType entity_clicked = active_entity;
     DeferredOp deferred_op;
-    for (auto entity : registry.view<entt::entity>()) {
-        auto* relation = registry.try_get<RelationComponent>(entity);
-        if (!relation || relation->parent == entt::null) {
-            recursive_draw(editor_layer, entity_clicked, active_entity, entity, registry, false, deferred_op);
-        }
+    auto roots = RelationComponent::get_children(registry, k2::scene_root(registry));
+    for (auto& [entity, relation] : roots) {
+        recursive_draw(
+            editor_layer, entity_clicked, active_entity, entity, registry, entity == roots.front().first, deferred_op);
     }
 
     if (deferred_op) {
@@ -241,7 +227,6 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
 
     if (ImGui::BeginPopupContextWindow(
             "##CreateEntityRoot", ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonRight)) {
-        // TODO: Create entity after last root entity
         if (ImGui::MenuItem("Create Entity")) {
             active_entity = create_entity(registry);
         }
