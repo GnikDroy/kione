@@ -69,10 +69,11 @@ GLenum Texture2D::predict_type_from_sized(std::size_t sized) {
 }
 
 template <FloatOrUInt8 T>
-Texture2D::Texture2D(std::size_t width, std::size_t height, std::span<const T> data, GLuint sized_format,
-    bool generate_mipmaps) {
+Texture2D::Texture2D(
+    std::size_t width, std::size_t height, std::span<const T> data, GLuint sized_format, bool generate_mipmaps) {
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     this->width = int(width);
     this->height = int(height);
     glTexImage2D(GL_TEXTURE_2D, 0, (GLint)sized_format, (GLsizei)width, (GLsizei)height, 0,
@@ -123,6 +124,7 @@ Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps) {
         if (image) {
             glGenTextures(1, &id);
             glBindTexture(GL_TEXTURE_2D, id);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             width = image.width;
             height = image.height;
 
@@ -166,6 +168,7 @@ TextureCube& TextureCube::load(const std::array<std::filesystem::path, 6>& textu
     if (id == 0) {
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
         for (size_t i = 0; i < texture_paths.size(); i++) {
             auto& texture_path = texture_paths[i];
