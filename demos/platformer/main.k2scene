@@ -1,0 +1,1033 @@
+- Entity: 0
+  RelationComponent:
+    Parent: 4294967295
+    First: 1
+    Next: 4294967295
+    Previous: 4294967295
+    Children: 9
+- Entity: 1
+  TagComponent: Camera
+  TransformComponent:
+    Translation: [0, 0, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 2
+    Previous: 9
+    Children: 0
+  Camera:
+    Position: [0, 0, 1000]
+    Target: [0, 0, 0]
+    Up: [0, 1, 0]
+    ProjectionType: Orthographic
+    ProjectionTraits:
+      Left: -510
+      Right: 510
+      Top: 290
+      Bottom: -290
+      FarClip: 0
+      NearClip: 2000
+  MainCamera: true
+  Environment:
+    AmbientColor: [1, 1, 1]
+    AmbientIntensity: 0.870000005
+    ClearColor: [0, 0, 0, 1]
+    Bloom: true
+    BloomIntensity: 1
+    BloomThreshold: 1
+- Entity: 2
+  TagComponent: Player
+  TransformComponent:
+    Translation: [-482.869995, -174.900391, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 3
+    Previous: 1
+    Children: 0
+  SpriteComponent:
+    Texture: spring_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 32]
+    Size: [16, 32]
+  ColliderComponent:
+    Shape: Box
+    Size: [16.5, 32]
+  ScriptComponent:
+    Script: player
+- Entity: 3
+  TagComponent: Background
+  TransformComponent:
+    Translation: [0, 0, -5]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 4
+    Previous: 2
+    Children: 0
+  TileMapComponent:
+    Tileset: sky
+    Size: [32, 18]
+    TileSize: [32, 32]
+    Tiles: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27]
+    Color: [1, 1, 1, 1]
+    Unlit: false
+- Entity: 4
+  TagComponent: Water
+  TransformComponent:
+    Translation: [0, 0, -4]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 5
+    Previous: 3
+    Children: 0
+  TileMapComponent:
+    Tileset: foreground
+    Size: [32, 18]
+    TileSize: [32, 32]
+    Tiles: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 24, 24, -1, -1, -1, -1, -1, -1, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, -1, 146, 146, 146, 146, 146, 24, 24, 24, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59]
+    Color: [1, 1, 1, 1]
+    Unlit: false
+- Entity: 5
+  TagComponent: Tiles
+  TransformComponent:
+    Translation: [0, 0, -3]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 6
+    Previous: 4
+    Children: 0
+  TileMapComponent:
+    Tileset: autumn
+    Size: [32, 18]
+    TileSize: [32, 32]
+    Tiles: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 134, -1, -1, -1, -1, -1, -1, -1, -1, 58, 59, 59, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 72, 73, -1, -1, -1, -1, -1, -1, -1, -1, 65, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 88, 89, 88, 89, -1, -1, -1, 134, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 61, 62, -1, -1, -1, -1, -1, -1, -1, 99, 100, 99, 100, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 75, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 25, 26, 26, 27, -1, -1, -1, -1, -1, -1, -1, -1, -1, 143, 144, 143, 144, -1, -1, -1, -1, 24, 24, -1, -1, -1, -1, -1, -1, -1, -1, 79, 36, 37, 37, 38, -1, -1, -1, -1, -1, -1, -1, -1, 35, 146, 148, 146, 148, 24, -1, -1, -1, -1, -1, -1, -1, 89, 89, 14, 14, 14, 14, 14, 48, 48, 48, 48, -1, -1, -1, -1, -1, -1, -1, 35, 46, 157, 159, 157, 159, 45, 24, 24, -1, -1, -1, -1, -1, 100, 100, -1, -1, -1, -1, -1, 80, 81, 81, 82, 33, 34, 33, 34, 69, 69, 69, 46, 80, 81, 81, 81, 81, 82, 36, 38, 24, 24, 23, 190, 190, 100, 100, -1, -1, -1, -1, -1, 91, 92, 92, 93, 44, 45, 44, 45, -1, -1, -1, -1, 91, 92, 92, 92, 92, 93, 47, 49, 36, 37, 38, -1, -1, -1, -1, -1, -1, -1, -1, 85, 103, 103, 103, 104, 102, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 103, 104, 47, 48, 49, 140, -1, -1, -1, -1, -1, 138, 139, 160, 158, 158, 158, 159]
+    Color: [1, 1, 1, 1]
+    Unlit: false
+- Entity: 6
+  TagComponent: Foreground
+  TransformComponent:
+    Translation: [0, 0, -2]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 7
+    Previous: 5
+    Children: 0
+  TileMapComponent:
+    Tileset: objects
+    Size: [32, 18]
+    TileSize: [32, 32]
+    Tiles: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 25, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 43, -1, -1, -1, -1, -1, -1, 93, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 128, 117, -1, 61, -1, -1, -1, -1, -1, -1, -1, 73, -1, -1, 112, 112, 112, 112, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 144, 145, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 128, 92, 91, -1, -1, -1, 75, -1, -1, 127, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 48, -1, -1, -1, -1, -1, -1, 110, 57, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 109, -1, -1, -1, -1, -1, -1, 66, -1, -1, -1, -1, -1, -1, -1, -1, 14, 14, 14, 14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 81, 74, 74, 74, 74, -1, -1, 153, 154, 155, 156, 157, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 190, 190, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 57, 59, -1, 146, -1, -1, -1, -1, -1, -1, 47, -1, -1, -1, -1, 146, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 146, 146, 146, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+    Color: [1, 1, 1, 1]
+    Unlit: false
+- Entity: 7
+  TagComponent: Colliders
+  TransformComponent:
+    Translation: [0, 0, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 10
+    Next: 8
+    Previous: 6
+    Children: 18
+- Entity: 8
+  TagComponent: Coins
+  TransformComponent:
+    Translation: [0, 0, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 28
+    Next: 9
+    Previous: 7
+    Children: 12
+- Entity: 9
+  TagComponent: Water
+  TransformComponent:
+    Translation: [0, 0, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 40
+    Next: 1
+    Previous: 8
+    Children: 16
+- Entity: 10
+  TransformComponent:
+    Translation: [0, -230.118912, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 11
+    Previous: 27
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [1023.5, 72.5]
+- Entity: 11
+  TransformComponent:
+    Translation: [63.7678795, -112.286736, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 12
+    Previous: 10
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [59, 28]
+- Entity: 12
+  TransformComponent:
+    Translation: [-160.33609, -163.722595, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 13
+    Previous: 11
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [187, 66]
+- Entity: 13
+  TransformComponent:
+    Translation: [-144.105698, -193.706909, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 14
+    Previous: 12
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [280.5, 62.5]
+- Entity: 14
+  TransformComponent:
+    Translation: [-160.33609, -132.031464, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 15
+    Previous: 13
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [123, 66.5]
+- Entity: 15
+  TransformComponent:
+    Translation: [0, 2.77255249, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 16
+    Previous: 14
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [123, 26]
+- Entity: 16
+  TransformComponent:
+    Translation: [255.769699, -55.3106422, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 17
+    Previous: 15
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [60, 11.5]
+- Entity: 17
+  TransformComponent:
+    Translation: [-160.238861, -8.46206188, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 18
+    Previous: 16
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [60, 11.5]
+- Entity: 18
+  TransformComponent:
+    Translation: [-23.405632, -72.7029266, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 19
+    Previous: 17
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [14, 11.5]
+- Entity: 19
+  TransformComponent:
+    Translation: [151.32193, -23.2120438, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 20
+    Previous: 18
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [14, 11.5]
+- Entity: 20
+  TransformComponent:
+    Translation: [-447.00592, -63.9395027, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 21
+    Previous: 19
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [121, 58]
+- Entity: 21
+  TransformComponent:
+    Translation: [-335.833374, 16.1814423, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 22
+    Previous: 20
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [26.5, 26.5]
+- Entity: 22
+  TransformComponent:
+    Translation: [368.026367, -117.060066, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 23
+    Previous: 21
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [26.5, 37]
+- Entity: 23
+  TransformComponent:
+    Translation: [-271.813293, -47.8386192, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 24
+    Previous: 22
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [26.5, 26.5]
+- Entity: 24
+  TransformComponent:
+    Translation: [450.992828, -116.613945, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 25
+    Previous: 23
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [126.5, 100]
+- Entity: 25
+  TransformComponent:
+    Translation: [316.19455, -174.031311, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 26
+    Previous: 24
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [310, 88]
+- Entity: 26
+  TransformComponent:
+    Translation: [513.496033, 8.39242554, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 27
+    Previous: 25
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [11, 156.5]
+- Entity: 27
+  TransformComponent:
+    Translation: [-515.393921, -60.7999725, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 7
+    First: 4294967295
+    Next: 10
+    Previous: 26
+    Children: 0
+  ColliderComponent:
+    Shape: Box
+    Size: [11, 283]
+- Entity: 28
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [-369.924316, -158.941849, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 29
+    Previous: 39
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 29
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [-342.838104, -159.619003, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 30
+    Previous: 28
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 30
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [-317.106232, -158.941849, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 31
+    Previous: 29
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 31
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [-271.736908, -18.0937347, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 32
+    Previous: 30
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 32
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [-336.743713, 45.5588112, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 33
+    Previous: 31
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 33
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [0.577141762, 33, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 34
+    Previous: 32
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 34
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [-23.6190166, 33, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 35
+    Previous: 33
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 35
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [24.3258247, 33, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 36
+    Previous: 34
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 36
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [150.470093, 6.62438965, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 37
+    Previous: 35
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 37
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [234.184265, -27.7785892, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 38
+    Previous: 36
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 38
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [258.266388, -27.7785892, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 39
+    Previous: 37
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 39
+  TagComponent: Coin
+  TransformComponent:
+    Translation: [281.873627, -27.7785892, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 8
+    First: 4294967295
+    Next: 28
+    Previous: 38
+    Children: 0
+  SpriteComponent:
+    Texture: coin_
+    Color: [1, 1, 1, 1]
+    Region: [0, 0, 16, 16]
+    Size: [16, 16]
+  ColliderComponent:
+    Shape: Circle
+    Radius: 3.5
+  AnimationComponent:
+    Clip: coin
+    Speed: 1
+    Playing: true
+- Entity: 40
+  TransformComponent:
+    Translation: [-375.538635, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 41
+    Previous: 55
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 41
+  TransformComponent:
+    Translation: [-359.635162, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 42
+    Previous: 40
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 42
+  TransformComponent:
+    Translation: [-343.731781, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 43
+    Previous: 41
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 43
+  TransformComponent:
+    Translation: [-327.8284, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 44
+    Previous: 42
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 44
+  TransformComponent:
+    Translation: [-311.924957, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 45
+    Previous: 43
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 45
+  TransformComponent:
+    Translation: [-296.021545, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 46
+    Previous: 44
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 46
+  TransformComponent:
+    Translation: [231.804291, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 47
+    Previous: 45
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 47
+  TransformComponent:
+    Translation: [247.67601, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 48
+    Previous: 46
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 48
+  TransformComponent:
+    Translation: [263.694702, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 49
+    Previous: 47
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 49
+  TransformComponent:
+    Translation: [279.713379, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 50
+    Previous: 48
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 50
+  TransformComponent:
+    Translation: [295.732056, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 51
+    Previous: 49
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 51
+  TransformComponent:
+    Translation: [327.769409, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 52
+    Previous: 50
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 52
+  TransformComponent:
+    Translation: [343.667297, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 53
+    Previous: 51
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 53
+  TransformComponent:
+    Translation: [311.750732, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 54
+    Previous: 52
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 54
+  TransformComponent:
+    Translation: [359.62561, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 55
+    Previous: 53
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
+- Entity: 55
+  TransformComponent:
+    Translation: [375.583954, -216.562683, 0]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 9
+    First: 4294967295
+    Next: 40
+    Previous: 54
+    Children: 0
+  SpriteComponent:
+    Texture: foreground_
+    Color: [1, 1, 1, 1]
+    Region: [0, 64, 16, 16]
+    Size: [16, 16]
+  AnimationComponent:
+    Clip: water
+    Speed: 1
+    Playing: true
