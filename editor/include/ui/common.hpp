@@ -2,16 +2,17 @@
 #include "asset/asset_handle.hpp"
 #include "asset/asset_registry.hpp"
 #include "core/utils.hpp"
+#include <algorithm>
 #include <array>
 #include <cfloat>
-#include <cmath>
 #include <cstdio>
-#include <span>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <imgui.h>
 #include <imgui_stdlib.h>
+#include <initializer_list>
+#include <span>
 
 namespace k2::editor {
 
@@ -195,5 +196,47 @@ inline void ResourceInputWidget(const std::string& label, AssetHandle& handle, c
     if (dangling) {
         ImGui::PopStyleColor();
     }
+}
+
+inline const ImVec4 accent_green { 0.20f, 0.55f, 0.25f, 1.0f };
+
+inline const ImVec4 accent_blue { 0.20f, 0.45f, 0.70f, 1.0f };
+
+inline ImVec2 AccentButtonSize(const char* label) {
+    return { ImGui::CalcTextSize(label, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f + 8.0f,
+        ImGui::GetFrameHeight() * 1.15f };
+}
+
+inline bool AccentButton(const char* label, const ImVec4& color, bool enabled = true, const char* tooltip = nullptr) {
+    ImVec4 hovered { std::min(color.x * 1.2f + 0.05f, 1.0f), std::min(color.y * 1.2f + 0.05f, 1.0f),
+        std::min(color.z * 1.2f + 0.05f, 1.0f), color.w };
+    ImVec4 active { color.x * 0.85f, color.y * 0.85f, color.z * 0.85f, color.w };
+    ImGui::PushStyleColor(ImGuiCol_Button, color);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hovered);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, active);
+    ImGui::BeginDisabled(!enabled);
+    bool clicked = ImGui::Button(label, AccentButtonSize(label));
+    ImGui::EndDisabled();
+    ImGui::PopStyleColor(3);
+    if (tooltip != nullptr && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("%s", tooltip);
+    }
+    return clicked;
+}
+
+inline bool PrimarySaveButton(const char* label, bool enabled, const char* tooltip = "Save") {
+    return AccentButton(label, accent_green, enabled, tooltip);
+}
+
+inline void RightAlignAccentButtons(std::initializer_list<const char*> labels) {
+    float total = 0.0f;
+    for (const char* label : labels) {
+        total += AccentButtonSize(label).x;
+    }
+    if (labels.size() > 1) {
+        total += ImGui::GetStyle().ItemSpacing.x * float(labels.size() - 1);
+    }
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, ImGui::GetContentRegionAvail().x - total));
 }
 }

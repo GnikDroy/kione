@@ -1,5 +1,6 @@
 #include "ui/widgets/asset_list.hpp"
 #include "editor_layer.hpp"
+#include "ui/common.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <algorithm>
@@ -79,24 +80,24 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
     bool actionable = editor_layer.project.has_value() && !editor_layer.is_playing();
     const auto& assets = editor_layer.active_assets();
 
-    ImGui::BeginDisabled(!editor_layer.project.has_value());
-    if (ImGui::Button(ICON_FA_SYNC "  Reload")) {
+    auto shown = std::ranges::count_if(assets, [](const auto& entry) { return !entry.second.first.empty(); });
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextDisabled("%td assets", shown);
+
+    RightAlignAccentButtons({ ICON_FA_SYNC "##reload_assets", ICON_FA_PLUS "##add_asset" });
+    if (AccentButton(
+            ICON_FA_SYNC "##reload_assets", ImVec4 { 0.30f, 0.45f, 0.55f, 1.0f }, editor_layer.project.has_value(),
+            "Reload")) {
         if (auto reloaded = editor_layer.reload_assets()) {
             Log::core().info("Reloaded asset manifest.");
         } else {
             Log::core().error(std::format("Failed to reload assets: {}", reloaded.error()));
         }
     }
-    ImGui::EndDisabled();
     ImGui::SameLine();
-    ImGui::BeginDisabled(!actionable);
-    if (ImGui::Button(ICON_FA_PLUS "  Add")) {
+    if (AccentButton(ICON_FA_PLUS "##add_asset", accent_blue, actionable, "Add")) {
         add_asset_dialog(editor_layer);
     }
-    ImGui::EndDisabled();
-    ImGui::SameLine();
-    auto shown = std::ranges::count_if(assets, [](const auto& entry) { return !entry.second.first.empty(); });
-    ImGui::TextDisabled("%td assets", shown);
 
     filter.Draw("##Search", std::min(ImGui::GetContentRegionAvail().x, 400.0f));
 

@@ -66,9 +66,8 @@ private:
             throw std::runtime_error("RelationComponent: attaching would create a cycle");
         }
         detach(registry, child);
-        registry.template get_or_emplace<RelationComponent>(child);
-        registry.template get_or_emplace<RelationComponent>(parent);
-        auto& parent_relation = registry.template get<RelationComponent>(parent);
+        static_cast<void>(registry.template get_or_emplace<RelationComponent>(child));
+        auto& parent_relation = registry.template get_or_emplace<RelationComponent>(parent);
         if (parent_relation.children == 0) {
             auto& child_relation = registry.template get<RelationComponent>(child);
             parent_relation.children++;
@@ -114,7 +113,7 @@ private:
             throw std::runtime_error("RelationComponent: attaching would create a cycle");
         }
         detach(registry, node);
-        registry.template get_or_emplace<RelationComponent>(node);
+        static_cast<void>(registry.template get_or_emplace<RelationComponent>(node));
         auto& sibling_relation = registry.template get_or_emplace<RelationComponent>(sibling);
 
         if (sibling_relation.prev == entt::null) {

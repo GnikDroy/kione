@@ -223,18 +223,14 @@ void AnimationEditorWidget::draw_frame_stage() {
 void AnimationEditorWidget::render(EditorLayer& editor_layer) {
     ImGui::SetNextItemWidth(220.0f);
     ResourceInputWidget("##Clip", selected, editor_layer.active_assets(), Asset::Type::Animation);
-    ImGui::SameLine();
-    ImGui::BeginDisabled(!editor_layer.project.has_value());
-    if (ImGui::Button(ICON_FA_PLUS "  New Clip")) {
+    RightAlignAccentButtons({ ICON_FA_PLUS "##new_clip", ICON_FA_SAVE "##save_clip" });
+    if (AccentButton(ICON_FA_PLUS "##new_clip", accent_blue, editor_layer.project.has_value(), "New Clip")) {
         new_clip(editor_layer);
     }
-    ImGui::EndDisabled();
     ImGui::SameLine();
-    ImGui::BeginDisabled(!loaded);
-    if (ImGui::Button(ICON_FA_SAVE "  Save")) {
+    if (PrimarySaveButton(ICON_FA_SAVE "##save_clip", loaded)) {
         save_clip(editor_layer);
     }
-    ImGui::EndDisabled();
 
     if (selected.name.empty()) {
         ImGui::TextDisabled("Select or create an animation clip.");
