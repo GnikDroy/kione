@@ -116,6 +116,8 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
         ImGui::ColorEdit4("##Color", glm::value_ptr(sprite.color));
         PropertyLabel("Texture");
         ResourceInputWidget("##Texture", sprite.texture, editor_layer.active_assets(), k2::Asset::Type::Image);
+        PropertyLabel("Size");
+        Vec2Field("##Size", sprite.size, { 64.0f, 64.0f }, 1.0f);
         PropertyLabel("UV Rect");
         RectField("##UvRect", sprite.uv_rect, { .x = 0.0f, .y = 0.0f, .w = 1.0f, .h = 1.0f });
         PropertyLabel("Unlit");

@@ -73,27 +73,28 @@ void Renderer2D::set_clear_color(float r, float g, float b, float a) { clear_col
 
 std::array<Vertex2D, 4> Renderer2D::build_sprite_quad(const SpriteComponent& sprite) {
     auto color = glm::vec4 { glm::vec3 { sprite.color } * sprite.intensity, sprite.color.a };
+    auto half = sprite.size * 0.5f;
     return {
         Vertex2D {
-            .position = { 0.5f, -0.5f, 0.0f },
+            .position = { half.x, -half.y, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
         Vertex2D {
-            .position = { -0.5f, 0.5f, 0.0f },
+            .position = { -half.x, half.y, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y + sprite.uv_rect.h },
             .texture = sprite.texture.id,
         },
         Vertex2D {
-            .position = { -0.5f, -0.5f, 0.0f },
+            .position = { -half.x, -half.y, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y },
             .texture = sprite.texture.id,
         },
         Vertex2D {
-            .position = { 0.5f, 0.5f, 0.0f },
+            .position = { half.x, half.y, 0.0f },
             .color = color,
             .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y + sprite.uv_rect.h },
             .texture = sprite.texture.id,

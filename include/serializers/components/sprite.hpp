@@ -12,6 +12,7 @@ template <> struct convert<k2::SpriteComponent> {
         node["Texture"] = sprite.texture;
         node["Color"] = sprite.color;
         node["UvRect"] = sprite.uv_rect;
+        node["Size"] = sprite.size;
         if (sprite.unlit) {
             node["Unlit"] = sprite.unlit;
         }
@@ -31,6 +32,7 @@ template <> struct convert<k2::SpriteComponent> {
         sprite.texture = node["Texture"].as<k2::AssetHandle>();
         sprite.color = node["Color"].as<glm::vec4>();
         sprite.uv_rect = node["UvRect"].as<k2::Rect<float>>();
+        sprite.size = node["Size"].as<glm::vec2>(sprite.size);
         sprite.unlit = node["Unlit"].as<bool>(false);
         const auto& blend = node["Blend"].as<std::string>("Alpha");
         if (blend == "Additive") {

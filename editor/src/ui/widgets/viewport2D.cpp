@@ -142,10 +142,11 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
         auto picked_z = -std::numeric_limits<float>::infinity();
 
         auto& registry = editor_layer.active_scene().registry;
-        registry.view<k2::TransformComponent, k2::SpriteComponent>().each([&](auto entity, const auto&, const auto&) {
+        registry.view<k2::TransformComponent, k2::SpriteComponent>().each([&](auto entity, const auto&, const auto& sprite) {
             auto world_matrix = k2::TransformComponent::world(registry, entity);
             auto local = glm::inverse(world_matrix) * glm::vec4 { world.x, world.y, world_matrix[3][2], 1.0f };
-            if (std::abs(local.x) <= 0.5f && std::abs(local.y) <= 0.5f && world_matrix[3][2] >= picked_z) {
+            if (std::abs(local.x) <= sprite.size.x * 0.5f && std::abs(local.y) <= sprite.size.y * 0.5f
+                && world_matrix[3][2] >= picked_z) {
                 picked = entity;
                 picked_z = world_matrix[3][2];
             }
