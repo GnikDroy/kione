@@ -122,10 +122,12 @@ std::expected<void, std::string> EditorLayer::create_scene(const std::filesystem
 
     Scene empty;
     scene_root(empty.registry);
-    std::ofstream scene_out { scene_file };
-    scene_out << YAML::Node { empty } << "\n";
-    if (!scene_out) {
-        return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
+    {
+        std::ofstream scene_out { scene_file };
+        scene_out << YAML::Node { empty } << "\n";
+        if (!scene_out) {
+            return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
+        }
     }
 
     if (auto added = project->add_asset(Asset::Type::Scene, name, scene_file); !added) {
@@ -149,10 +151,12 @@ std::expected<void, std::string> EditorLayer::create_project(const std::filesyst
 
     Scene empty;
     scene_root(empty.registry);
-    std::ofstream scene_out { scene_file };
-    scene_out << YAML::Node { empty } << "\n";
-    if (!scene_out) {
-        return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
+    {
+        std::ofstream scene_out { scene_file };
+        scene_out << YAML::Node { empty } << "\n";
+        if (!scene_out) {
+            return std::unexpected(std::format("Failed to write scene file: {}", scene_file.string()));
+        }
     }
     YAML::Node assets_node { YAML::NodeType::Map };
     assets_node["Scene"][new_project.name] = std::format("file:///{}.k2scene", new_project.name);

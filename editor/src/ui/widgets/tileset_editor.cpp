@@ -60,11 +60,13 @@ void TileSetEditorWidget::new_tileset(EditorLayer& editor_layer) {
     }
 
     TileSet fresh {};
-    std::ofstream out { path };
-    out << YAML::Node { fresh } << "\n";
-    if (!out) {
-        Log::core().error(std::format("Failed to write tileset: {}", path.string()));
-        return;
+    {
+        std::ofstream out { path };
+        out << YAML::Node { fresh } << "\n";
+        if (!out) {
+            Log::core().error(std::format("Failed to write tileset: {}", path.string()));
+            return;
+        }
     }
 
     auto& project = *editor_layer.project;

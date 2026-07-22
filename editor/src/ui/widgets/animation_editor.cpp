@@ -61,11 +61,13 @@ void AnimationEditorWidget::new_clip(EditorLayer& editor_layer) {
     }
 
     SpriteAnimation fresh { .frames = { {} } };
-    std::ofstream out { path };
-    out << YAML::Node { fresh } << "\n";
-    if (!out) {
-        Log::core().error(std::format("Failed to write animation clip: {}", path.string()));
-        return;
+    {
+        std::ofstream out { path };
+        out << YAML::Node { fresh } << "\n";
+        if (!out) {
+            Log::core().error(std::format("Failed to write animation clip: {}", path.string()));
+            return;
+        }
     }
 
     auto& project = *editor_layer.project;
