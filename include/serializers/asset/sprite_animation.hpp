@@ -9,7 +9,7 @@ namespace YAML {
 template <> struct convert<k2::SpriteAnimation::Frame> {
     static Node encode(const k2::SpriteAnimation::Frame& frame) {
         Node node;
-        node["uv"] = frame.uv;
+        node["region"] = frame.region;
         node["duration"] = frame.duration;
         node["color"] = frame.color;
         return node;
@@ -19,7 +19,7 @@ template <> struct convert<k2::SpriteAnimation::Frame> {
         if (!node.IsMap()) {
             return false;
         }
-        frame.uv = node["uv"].as<k2::Rectf>();
+        frame.region = node["region"].as<k2::Rectf>();
         frame.duration = node["duration"].as<float>(0.1f);
         if (node["color"].IsDefined()) {
             frame.color = node["color"].as<glm::vec4>();

@@ -118,8 +118,8 @@ template <> void ComponentWidget<k2::SpriteComponent>(entt::registry& reg, entt:
         ResourceInputWidget("##Texture", sprite.texture, editor_layer.active_assets(), k2::Asset::Type::Image);
         PropertyLabel("Size");
         Vec2Field("##Size", sprite.size, { 64.0f, 64.0f }, 1.0f);
-        PropertyLabel("UV Rect");
-        RectField("##UvRect", sprite.uv_rect, { .x = 0.0f, .y = 0.0f, .w = 1.0f, .h = 1.0f });
+        PropertyLabel("Region (px)");
+        RectField("##Region", sprite.region, { .x = 0.0f, .y = 0.0f, .w = 64.0f, .h = 64.0f }, 1.0f);
         PropertyLabel("Unlit");
         ImGui::Checkbox("##Unlit", &sprite.unlit);
         PropertyLabel("Blend");

@@ -117,7 +117,7 @@ private:
     void push_primitive(shapes::Mesh mesh, const PrimitiveStyle& style);
     void draw_command(const DrawCommand& command);
 
-    static std::array<Vertex2D, 4> build_sprite_quad(const SpriteComponent& sprite);
+    static std::array<Vertex2D, 4> build_sprite_quad(const SpriteComponent& sprite, const Rectf& uv);
     void collect_text(const TextComponent& text, const Font& font, const glm::mat4& world);
     void collect_tilemap(const TileMapComponent& tilemap, const TileSet& tileset, const glm::mat4& world);
 

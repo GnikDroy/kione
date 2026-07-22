@@ -37,17 +37,17 @@ TEST_CASE("SpriteComponent serializer round-trips", "[serializers]") {
     k2::SpriteComponent sprite {
         .color { 0.1f, 0.2f, 0.3f, 0.4f },
         .texture = k2::AssetHandle { "cobble" },
-        .uv_rect { 0.0f, 0.5f, 4.0f, 2.0f },
+        .region { 0.0f, 0.5f, 4.0f, 2.0f },
     };
 
     auto loaded = round_trip(sprite);
     REQUIRE(loaded.color == sprite.color);
     REQUIRE(loaded.texture.name == "cobble");
     REQUIRE(loaded.texture.id == sprite.texture.id);
-    REQUIRE(loaded.uv_rect.x == sprite.uv_rect.x);
-    REQUIRE(loaded.uv_rect.y == sprite.uv_rect.y);
-    REQUIRE(loaded.uv_rect.w == sprite.uv_rect.w);
-    REQUIRE(loaded.uv_rect.h == sprite.uv_rect.h);
+    REQUIRE(loaded.region.x == sprite.region.x);
+    REQUIRE(loaded.region.y == sprite.region.y);
+    REQUIRE(loaded.region.w == sprite.region.w);
+    REQUIRE(loaded.region.h == sprite.region.h);
 }
 
 TEST_CASE("ColliderComponent serializer round-trips every shape", "[serializers]") {

@@ -134,10 +134,13 @@ float AnimationEditorWidget::draw_preview(EditorLayer& editor_layer) {
     }
 
     const auto* texture = frame ? editor_layer.runtime.resources.try_get<Texture2D>(clip.texture.id) : nullptr;
-    if (texture != nullptr) {
+    if (texture != nullptr && texture->width > 0 && texture->height > 0) {
         constexpr auto stage = 128.0f;
-        auto pixel_width = std::abs(frame->uv.w) * float(texture->width);
-        auto pixel_height = std::abs(frame->uv.h) * float(texture->height);
+        // region is in texture pixels; normalize to uv for the preview image.
+        k2::Rectf uv { .x = frame->region.x / float(texture->width), .y = frame->region.y / float(texture->height),
+            .w = frame->region.w / float(texture->width), .h = frame->region.h / float(texture->height) };
+        auto pixel_width = std::abs(frame->region.w);
+        auto pixel_height = std::abs(frame->region.h);
         auto size = ImVec2 { stage, stage };
         if (pixel_width > 0.0f && pixel_height > 0.0f) {
             auto scale = std::min(stage / pixel_width, stage / pixel_height);
@@ -148,9 +151,8 @@ float AnimationEditorWidget::draw_preview(EditorLayer& editor_layer) {
         ImGui::Dummy({ stage, stage });
         ImGui::SetCursorPos({ cursor.x + (stage - size.x) * 0.5f, cursor.y + (stage - size.y) * 0.5f });
         // Engine textures are v-flipped
-        ImGui::ImageWithBg((std::uint64_t)texture->id, size, { frame->uv.x, frame->uv.y + frame->uv.h },
-            { frame->uv.x + frame->uv.w, frame->uv.y }, { 0.0f, 0.0f, 0.0f, 0.0f },
-            { frame->color.r, frame->color.g, frame->color.b, frame->color.a });
+        ImGui::ImageWithBg((std::uint64_t)texture->id, size, { uv.x, uv.y + uv.h }, { uv.x + uv.w, uv.y },
+            { 0.0f, 0.0f, 0.0f, 0.0f }, { frame->color.r, frame->color.g, frame->color.b, frame->color.a });
     } else {
         ImGui::Dummy({ 128.0f, 128.0f });
     }
@@ -265,7 +267,7 @@ void AnimationEditorWidget::render(EditorLayer& editor_layer) {
     ImGui::BeginGroup();
     if (!clip.frames.empty()) {
         auto& frame = clip.frames[size_t(selected_frame)];
-        RectField("##Uv", frame.uv, { .x = 0.0f, .y = 0.0f, .w = 1.0f, .h = 1.0f }, 0.01f);
+        RectField("##Region", frame.region, { .x = 0.0f, .y = 0.0f, .w = 64.0f, .h = 64.0f }, 1.0f);
         ImGui::SetNextItemWidth(-FLT_MIN);
         ImGui::DragFloat("##Duration", &frame.duration, 0.01f, 0.0f, 60.0f, "%.3f s");
         ImGui::SetNextItemWidth(-FLT_MIN);

@@ -17,8 +17,8 @@ k2::SpriteAnimation traffic_light() {
     return k2::SpriteAnimation {
         .texture = k2::AssetHandle { "sheet" },
         .frames {
-            { .uv { 0.0f, 0.0f, 0.5f, 1.0f }, .duration = 0.4f, .color { 1.0f, 0.0f, 0.0f, 1.0f } },
-            { .uv { 0.5f, 0.0f, 0.5f, 1.0f }, .duration = 0.1f, .color { 0.0f, 1.0f, 0.0f, 1.0f } },
+            { .region { 0.0f, 0.0f, 0.5f, 1.0f }, .duration = 0.4f, .color { 1.0f, 0.0f, 0.0f, 1.0f } },
+            { .region { 0.5f, 0.0f, 0.5f, 1.0f }, .duration = 0.1f, .color { 0.0f, 1.0f, 0.0f, 1.0f } },
         },
     };
 }
@@ -48,17 +48,17 @@ TEST_CASE("AnimationSystem applies uv and color and loops over uneven frames", "
     k2::AnimationSystem::update(scene, 0.0f);
     auto& sprite = scene.registry.get<k2::SpriteComponent>(entity);
     REQUIRE(sprite.texture.name == "sheet");
-    REQUIRE(sprite.uv_rect.x == Approx(0.0f));
+    REQUIRE(sprite.region.x == Approx(0.0f));
     REQUIRE(sprite.color.x == Approx(1.0f));
 
     // 0.45s: inside the short second frame.
     k2::AnimationSystem::update(scene, 0.45f);
-    REQUIRE(sprite.uv_rect.x == Approx(0.5f));
+    REQUIRE(sprite.region.x == Approx(0.5f));
     REQUIRE(sprite.color.y == Approx(1.0f));
 
     // 0.65s total wraps to 0.15s: first frame again.
     k2::AnimationSystem::update(scene, 0.2f);
-    REQUIRE(sprite.uv_rect.x == Approx(0.0f));
+    REQUIRE(sprite.region.x == Approx(0.0f));
     REQUIRE(sprite.color.x == Approx(1.0f));
 }
 
@@ -78,7 +78,7 @@ TEST_CASE("AnimationSystem clamps and stops non-looping clips", "[animation]") {
     REQUIRE_FALSE(animation.finished);
     k2::AnimationSystem::update(scene, 1.0f);
     auto& sprite = scene.registry.get<k2::SpriteComponent>(entity);
-    REQUIRE(sprite.uv_rect.x == Approx(0.5f));
+    REQUIRE(sprite.region.x == Approx(0.5f));
     REQUIRE_FALSE(animation.playing);
     REQUIRE(animation.finished);
 
@@ -103,11 +103,11 @@ TEST_CASE("AnimationSystem respects speed and paused state", "[animation]") {
     // 0.22s at 2x -> 0.44s: second frame.
     k2::AnimationSystem::update(scene, 0.22f);
     auto& sprite = scene.registry.get<k2::SpriteComponent>(entity);
-    REQUIRE(sprite.uv_rect.x == Approx(0.5f));
+    REQUIRE(sprite.region.x == Approx(0.5f));
 
     animation.playing = false;
     k2::AnimationSystem::update(scene, 10.0f);
-    REQUIRE(sprite.uv_rect.x == Approx(0.5f));
+    REQUIRE(sprite.region.x == Approx(0.5f));
 }
 
 TEST_CASE("SpriteAnimation serializer round-trips", "[animation]") {
@@ -119,7 +119,7 @@ TEST_CASE("SpriteAnimation serializer round-trips", "[animation]") {
     REQUIRE(loaded.texture.id == "sheet"_fnv1a);
     REQUIRE(loaded.loop == false);
     REQUIRE(loaded.frames.size() == 2);
-    REQUIRE(loaded.frames[0].uv.w == Approx(0.5f));
+    REQUIRE(loaded.frames[0].region.w == Approx(0.5f));
     REQUIRE(loaded.frames[0].duration == Approx(0.4f));
     REQUIRE(loaded.frames[0].color.x == Approx(1.0f));
     REQUIRE(loaded.frames[1].duration == Approx(0.1f));
@@ -127,7 +127,7 @@ TEST_CASE("SpriteAnimation serializer round-trips", "[animation]") {
 }
 
 TEST_CASE("SpriteAnimation frame defaults apply when omitted", "[animation]") {
-    auto node = YAML::Load("texture: sheet\nframes:\n  - uv: [0, 0, 1, 1]\n");
+    auto node = YAML::Load("texture: sheet\nframes:\n  - region: [0, 0, 1, 1]\n");
     auto clip = node.as<k2::SpriteAnimation>();
     REQUIRE(clip.loop == true);
     REQUIRE(clip.frames.size() == 1);

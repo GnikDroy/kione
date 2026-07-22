@@ -134,7 +134,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     auto sprite = lua.new_usertype<SpriteComponent>("Sprite");
     sprite["color"] = ref_property(&SpriteComponent::color);
     sprite["size"] = ref_property(&SpriteComponent::size);
-    sprite["uv"] = ref_property(&SpriteComponent::uv_rect);
+    sprite["region"] = ref_property(&SpriteComponent::region);
     sprite["texture"] = asset_property(&SpriteComponent::texture);
     sprite["unlit"] = &SpriteComponent::unlit;
     sprite["intensity"] = &SpriteComponent::intensity;

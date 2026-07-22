@@ -11,7 +11,7 @@ namespace k2 {
 
 struct SpriteAnimation {
     struct Frame {
-        Rectf uv { .x = 0.0f, .y = 0.0f, .w = 1.0f, .h = 1.0f };
+        Rectf region { .x = 0.0f, .y = 0.0f, .w = 64.0f, .h = 64.0f };
         float duration = 0.1f;
         glm::vec4 color { 1.0f, 1.0f, 1.0f, 1.0f };
     };

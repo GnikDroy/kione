@@ -71,32 +71,32 @@ void Renderer2D::clear(std::uint32_t mask) {
 
 void Renderer2D::set_clear_color(float r, float g, float b, float a) { clear_color = { r, g, b, a }; }
 
-std::array<Vertex2D, 4> Renderer2D::build_sprite_quad(const SpriteComponent& sprite) {
+std::array<Vertex2D, 4> Renderer2D::build_sprite_quad(const SpriteComponent& sprite, const Rectf& uv) {
     auto color = glm::vec4 { glm::vec3 { sprite.color } * sprite.intensity, sprite.color.a };
     auto half = sprite.size * 0.5f;
     return {
         Vertex2D {
             .position = { half.x, -half.y, 0.0f },
             .color = color,
-            .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y },
+            .texture_coordinate = { uv.x + uv.w, uv.y },
             .texture = sprite.texture.id,
         },
         Vertex2D {
             .position = { -half.x, half.y, 0.0f },
             .color = color,
-            .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y + sprite.uv_rect.h },
+            .texture_coordinate = { uv.x, uv.y + uv.h },
             .texture = sprite.texture.id,
         },
         Vertex2D {
             .position = { -half.x, -half.y, 0.0f },
             .color = color,
-            .texture_coordinate = { sprite.uv_rect.x, sprite.uv_rect.y },
+            .texture_coordinate = { uv.x, uv.y },
             .texture = sprite.texture.id,
         },
         Vertex2D {
             .position = { half.x, half.y, 0.0f },
             .color = color,
-            .texture_coordinate = { sprite.uv_rect.x + sprite.uv_rect.w, sprite.uv_rect.y + sprite.uv_rect.h },
+            .texture_coordinate = { uv.x + uv.w, uv.y + uv.h },
             .texture = sprite.texture.id,
         },
     };
@@ -252,7 +252,18 @@ void Renderer2D::draw(Scene& scene) {
     scene.registry.view<k2::TransformComponent, k2::SpriteComponent>().each(
         [&](auto entity, const auto&, const auto& sprite) {
             auto world = TransformComponent::world(scene.registry, entity);
-            auto quad = build_sprite_quad(sprite);
+
+            // Region is authored in pixels; normalize to UV
+            Rectf uv { .x = 0.0f, .y = 0.0f, .w = 1.0f, .h = 1.0f };
+            const auto* texture = resources != nullptr ? resources->try_get<Texture2D>(sprite.texture.id) : nullptr;
+            if (texture != nullptr && texture->width > 0 && texture->height > 0) {
+                uv = { .x = sprite.region.x / float(texture->width),
+                    .y = sprite.region.y / float(texture->height),
+                    .w = sprite.region.w / float(texture->width),
+                    .h = sprite.region.h / float(texture->height) };
+            }
+
+            auto quad = build_sprite_quad(sprite, uv);
             drawables.push_back(Drawable { .z = world[3][2],
                 .transform = world,
                 .vertices = { quad.begin(), quad.end() },

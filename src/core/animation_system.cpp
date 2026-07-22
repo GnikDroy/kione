@@ -40,7 +40,7 @@ void AnimationSystem::update(Scene& scene, float dt) {
 
             const auto& frame = clip->frame_at(time);
             sprite.texture = clip->texture;
-            sprite.uv_rect = frame.uv;
+            sprite.region = frame.region;
             sprite.color = frame.color;
         });
 }
