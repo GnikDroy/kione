@@ -77,6 +77,7 @@ std::expected<void, std::string> EditorLayer::open_project(const std::filesystem
     current_scene = new_project->main_scene;
     entity_selector.get_widget().reset_selection();
     project = std::move(*new_project);
+    file_explorer.get_widget().set_directory(project->root);
     return {};
 }
 

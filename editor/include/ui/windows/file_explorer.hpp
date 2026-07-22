@@ -12,6 +12,8 @@ protected:
 public:
     explicit FileExplorerWindow(const std::string& title)
         : IImGuiWindow(title) { }
+
+    auto& get_widget() { return widget; }
 };
 
 }

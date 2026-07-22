@@ -48,6 +48,12 @@ public:
      */
     void render(EditorLayer&) override;
 
+    /**
+     * @brief Navigates the explorer to a directory.
+     * @param directory The directory to navigate to
+     */
+    void set_directory(std::filesystem::path directory) { current_directory = std::move(directory); }
+
 private:
     /**
      * @brief Caches the directory entries if the current directory has changed.
