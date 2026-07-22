@@ -86,6 +86,7 @@ void TileMapEditorWidget::push_grid_overlay(const k2::TileMapComponent& tilemap,
     float map_w = float(tilemap.size.x) * tilemap.tile_size.x;
     float map_h = float(tilemap.size.y) * tilemap.tile_size.y;
     float cell_px = tilemap.tile_size.x / zoom; // approximate on-screen size of a cell
+    auto origin = tilemap.top_left();
 
     // A dark underlay plus a light line for grid lines.
     auto shadow = ImGui::GetColorU32(ImVec4 { 0.0f, 0.0f, 0.0f, 0.35f });
@@ -95,24 +96,24 @@ void TileMapEditorWidget::push_grid_overlay(const k2::TileMapComponent& tilemap,
     if (cell_px >= 4.0f) {
         auto line = ImGui::GetColorU32(ImVec4 { 1.0f, 1.0f, 1.0f, 0.45f });
         for (int col = 1; col < tilemap.size.x; col++) {
-            float x = float(col) * tilemap.tile_size.x;
-            auto a = world_to_screen({ x, 0.0f });
-            auto b = world_to_screen({ x, -map_h });
+            float x = origin.x + float(col) * tilemap.tile_size.x;
+            auto a = world_to_screen({ x, origin.y });
+            auto b = world_to_screen({ x, origin.y - map_h });
             draw_list->AddLine(offset(a), offset(b), shadow);
             draw_list->AddLine(a, b, line);
         }
         for (int row = 1; row < tilemap.size.y; row++) {
-            float y = -float(row) * tilemap.tile_size.y;
-            auto a = world_to_screen({ 0.0f, y });
-            auto b = world_to_screen({ map_w, y });
+            float y = origin.y - float(row) * tilemap.tile_size.y;
+            auto a = world_to_screen({ origin.x, y });
+            auto b = world_to_screen({ origin.x + map_w, y });
             draw_list->AddLine(offset(a), offset(b), shadow);
             draw_list->AddLine(a, b, line);
         }
     }
-    auto tl = world_to_screen({ 0.0f, 0.0f });
-    auto tr = world_to_screen({ map_w, 0.0f });
-    auto br = world_to_screen({ map_w, -map_h });
-    auto bl = world_to_screen({ 0.0f, -map_h });
+    auto tl = world_to_screen({ origin.x, origin.y });
+    auto tr = world_to_screen({ origin.x + map_w, origin.y });
+    auto br = world_to_screen({ origin.x + map_w, origin.y - map_h });
+    auto bl = world_to_screen({ origin.x, origin.y - map_h });
     draw_list->AddQuad(offset(tl), offset(tr), offset(br), offset(bl), shadow, 1.5f);
     draw_list->AddQuad(tl, tr, br, bl, ImGui::GetColorU32(ImVec4 { 1.0f, 1.0f, 1.0f, 0.85f }), 1.5f);
 
@@ -120,11 +121,11 @@ void TileMapEditorWidget::push_grid_overlay(const k2::TileMapComponent& tilemap,
     if (ImGui::IsItemHovered()) {
         auto mouse = ImGui::GetIO().MousePos;
         auto world = renderer2D.camera.screen_to_world({ mouse.x, mouse.y }, view);
-        int col = int(std::floor(world.x / tilemap.tile_size.x));
-        int row = int(std::floor(-world.y / tilemap.tile_size.y));
-        if (tilemap.contains(col, row)) {
-            float left = float(col) * tilemap.tile_size.x;
-            float top = -float(row) * tilemap.tile_size.y;
+        auto cell = tilemap.cell_at({ world.x, world.y });
+        if (tilemap.contains(cell.x, cell.y)) {
+            auto position = tilemap.cell_position(cell.x, cell.y);
+            float left = position.x;
+            float top = position.y;
             float right = left + tilemap.tile_size.x;
             float bottom = top - tilemap.tile_size.y;
             ImVec4 rgba = tool == Tool::Eraser ? ImVec4 { 1.0f, 0.4f, 0.4f, 1.0f } : ImVec4 { 0.4f, 0.7f, 1.0f, 1.0f };
@@ -168,8 +169,9 @@ void TileMapEditorWidget::handle_paint(k2::TileMapComponent& tilemap, ImVec2 rec
         return;
     }
     auto world = renderer2D.camera.screen_to_world(mouse, view);
-    int col = int(std::floor(world.x / tilemap.tile_size.x));
-    int row = int(std::floor(-world.y / tilemap.tile_size.y));
+    auto cell = tilemap.cell_at({ world.x, world.y });
+    int col = cell.x;
+    int row = cell.y;
     if (!tilemap.contains(col, row)) {
         return;
     }

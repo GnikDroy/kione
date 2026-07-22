@@ -17,5 +17,7 @@ struct SceneLoader {
 
     [[nodiscard]] static std::expected<Scene, std::string> load(
         const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets) noexcept;
+
+    static void load_resources(entt::registry& registry, ResourceManager& resources, const AssetRegistry& assets);
 };
 }

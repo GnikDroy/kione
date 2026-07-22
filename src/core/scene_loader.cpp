@@ -160,6 +160,15 @@ static void load_animation_clips(entt::registry& registry, ResourceManager& reso
     });
 }
 
+void SceneLoader::load_resources(entt::registry& registry, ResourceManager& resources, const AssetRegistry& assets) {
+    load_textures(resources, assets);
+    load_animation_clips(registry, resources, assets);
+    load_fonts(resources, assets);
+    load_audio_clips(resources, assets);
+    load_scripts(resources, assets);
+    load_tilesets(resources, assets);
+}
+
 std::expected<Scene, std::string> SceneLoader::load(
     const YAML::Node& node, ResourceManager& resources, const AssetRegistry& assets) noexcept try {
     if (!node.IsSequence()) {
@@ -281,12 +290,7 @@ std::expected<Scene, std::string> SceneLoader::load(
         throw std::runtime_error("A scene entity is not reachable from the root.");
     }
 
-    load_textures(resources, assets);
-    load_animation_clips(registry, resources, assets);
-    load_fonts(resources, assets);
-    load_audio_clips(resources, assets);
-    load_scripts(resources, assets);
-    load_tilesets(resources, assets);
+    load_resources(registry, resources, assets);
     return scene;
 } catch (const std::exception& e) {
     return std::unexpected(e.what());

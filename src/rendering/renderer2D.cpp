@@ -301,9 +301,10 @@ void Renderer2D::collect_tilemap(const TileMapComponent& tilemap, const TileSet&
                 continue;
             }
             auto uv = tileset[index].uv;
-            float left = float(col) * tilemap.tile_size.x;
+            auto position = tilemap.cell_position(col, row);
+            float left = position.x;
             float right = left + tilemap.tile_size.x;
-            float top = -float(row) * tilemap.tile_size.y;
+            float top = position.y;
             float bottom = top - tilemap.tile_size.y;
             drawable.vertices.push_back({ .position = { right, bottom, 0.0f },
                 .color = tilemap.color,

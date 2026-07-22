@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
@@ -23,6 +24,24 @@ struct TileMapComponent {
     bool unlit { false };
 
     [[nodiscard]] bool contains(int x, int y) const { return x >= 0 && y >= 0 && x < size.x && y < size.y; }
+
+    [[nodiscard]] glm::vec2 world_size() const { return { float(size.x) * tile_size.x, float(size.y) * tile_size.y }; }
+
+    [[nodiscard]] glm::vec2 top_left() const {
+        auto extent = world_size();
+        return { -extent.x * 0.5f, extent.y * 0.5f };
+    }
+
+    [[nodiscard]] glm::vec2 cell_position(int col, int row) const {
+        auto origin = top_left();
+        return { origin.x + float(col) * tile_size.x, origin.y - float(row) * tile_size.y };
+    }
+
+    [[nodiscard]] glm::ivec2 cell_at(glm::vec2 local) const {
+        auto origin = top_left();
+        return { int(std::floor((local.x - origin.x) / tile_size.x)),
+            int(std::floor((origin.y - local.y) / tile_size.y)) };
+    }
 
     void resize(glm::ivec2 new_size) {
         new_size = glm::max(new_size, glm::ivec2 { 0, 0 });

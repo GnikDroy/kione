@@ -55,7 +55,7 @@ std::expected<void, std::string> EditorLayer::reload_assets() {
     if (auto reloaded = project->reload_assets(); !reloaded) {
         return reloaded;
     }
-    load_image_resources(project->assets);
+    SceneLoader::load_resources(active_scene().registry, runtime.resources, project->assets);
     return {};
 }
 
