@@ -11,6 +11,8 @@ add_executable(
     src/ui/widgets/log_viewer.cpp
     src/ui/widgets/main_menu.cpp
     src/ui/widgets/project_settings.cpp
+    src/ui/widgets/tilemap_editor.cpp
+    src/ui/widgets/tileset_editor.cpp
     src/ui/widgets/viewport2D.cpp
 )
 add_executable(kione2D::editor ALIAS editor)

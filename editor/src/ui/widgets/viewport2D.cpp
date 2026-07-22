@@ -36,8 +36,8 @@ void Viewport2DWidget::resize_frame_buffer() {
         } } });
 }
 
-void Viewport2DWidget::update_camera() {
-    renderer2D.camera = k2::Camera {
+k2::Camera Viewport2DWidget::make_camera() const {
+    return k2::Camera {
         .position { camera_position.x, camera_position.y, 1000.f },
         .target { camera_position.x, camera_position.y, 0 },
         .up { 0, 1.0f, 0 },
@@ -53,12 +53,7 @@ void Viewport2DWidget::update_camera() {
     };
 }
 
-glm::vec2 Viewport2DWidget::screen_to_world(ImVec2 screen, ImVec2 rect_min) const {
-    auto u = (screen.x - rect_min.x) / width;
-    auto v = (screen.y - rect_min.y) / height;
-    return { camera_position.x + (u - 0.5f) * width * zoom,
-        camera_position.y + (0.5f - v) * height * zoom };
-}
+void Viewport2DWidget::update_camera() { renderer2D.camera = make_camera(); }
 
 void Viewport2DWidget::draw_gizmo(EditorLayer& editor_layer, ImVec2 rect_min) {
     // Space is the pan modifier; the gizmo must not grab the drag.
@@ -132,16 +127,17 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
         camera_position.y += io.MouseDelta.y * zoom;
     }
 
+    glm::vec2 mouse { io.MousePos.x, io.MousePos.y };
     if (hovered && io.MouseWheel != 0.0f) {
-        auto world_before = screen_to_world(io.MousePos, rect_min);
+        auto world_before = make_camera().screen_to_world(mouse, viewport(rect_min));
         zoom = std::clamp(zoom * std::pow(0.9f, io.MouseWheel), 0.01f, 100.0f);
-        auto world_after = screen_to_world(io.MousePos, rect_min);
+        auto world_after = make_camera().screen_to_world(mouse, viewport(rect_min));
         camera_position += world_before - world_after;
     }
 
     if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsKeyDown(ImGuiKey_Space)
         && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing()) {
-        auto world = screen_to_world(io.MousePos, rect_min);
+        auto world = make_camera().screen_to_world(mouse, viewport(rect_min));
         auto picked = entt::entity { entt::null };
         auto picked_z = -std::numeric_limits<float>::infinity();
 

@@ -219,6 +219,8 @@ void EditorLayer::build_default_layout(unsigned int dockspace_id) {
     ImGui::DockBuilderDockWindow(log_viewer.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(file_explorer.title.c_str(), bottom);
     ImGui::DockBuilderDockWindow(viewport2D.title.c_str(), center);
+    ImGui::DockBuilderDockWindow(tileset_editor.title.c_str(), center);
+    ImGui::DockBuilderDockWindow(tilemap_editor.title.c_str(), center);
     ImGui::DockBuilderFinish(dockspace_id);
 }
 
@@ -257,6 +259,8 @@ void EditorLayer::update(float dt) {
     project_settings.render(*this);
     asset_list.render(*this);
     animation_editor.render(*this);
+    tileset_editor.render(*this);
+    tilemap_editor.render(*this);
     log_viewer.render(*this);
     file_explorer.render(*this);
     viewport2D.render(*this);

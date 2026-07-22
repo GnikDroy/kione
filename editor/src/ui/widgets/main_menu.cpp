@@ -227,6 +227,12 @@ static void render_view_menu(EditorLayer& editor_layer) {
         if (ImGui::MenuItem(editor_layer.animation_editor.title.c_str(), "", editor_layer.animation_editor.show)) {
             editor_layer.animation_editor.show = !editor_layer.animation_editor.show;
         }
+        if (ImGui::MenuItem(editor_layer.tileset_editor.title.c_str(), "", editor_layer.tileset_editor.show)) {
+            editor_layer.tileset_editor.show = !editor_layer.tileset_editor.show;
+        }
+        if (ImGui::MenuItem(editor_layer.tilemap_editor.title.c_str(), "", editor_layer.tilemap_editor.show)) {
+            editor_layer.tilemap_editor.show = !editor_layer.tilemap_editor.show;
+        }
         ImGui::Separator();
         if (ImGui::MenuItem("Reset Layout")) {
             editor_layer.reset_layout();

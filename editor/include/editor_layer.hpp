@@ -16,6 +16,8 @@
 #include "ui/windows/file_explorer.hpp"
 #include "ui/windows/log_viewer.hpp"
 #include "ui/windows/project_settings.hpp"
+#include "ui/windows/tilemap_editor.hpp"
+#include "ui/windows/tileset_editor.hpp"
 #include "ui/windows/viewport2D.hpp"
 
 namespace k2 {
@@ -40,6 +42,8 @@ public:
     k2::editor::ProjectSettingsWindow project_settings { ICON_FA_COG "  Project Settings" };
     k2::editor::AssetListWindow asset_list { ICON_FA_ARCHIVE "  Assets" };
     k2::editor::AnimationEditorWindow animation_editor { ICON_FA_FILM "  Animation" };
+    k2::editor::TileSetEditorWindow tileset_editor { ICON_FA_PAINT_BRUSH "  Tile Set" };
+    k2::editor::TileMapEditorWindow tilemap_editor { ICON_FA_TH "  Tilemap Editor" };
 
     explicit EditorLayer(k2::Window& window);
     void begin_frame() override;

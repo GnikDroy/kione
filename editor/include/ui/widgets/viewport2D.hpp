@@ -26,6 +26,9 @@ private:
     void update_camera();
     void draw_gizmo(EditorLayer&, ImVec2 rect_min);
     void handle_interaction(EditorLayer&, ImVec2 rect_min);
-    [[nodiscard]] glm::vec2 screen_to_world(ImVec2 screen, ImVec2 rect_min) const;
+    [[nodiscard]] k2::Camera make_camera() const;
+    [[nodiscard]] k2::Rect<float> viewport(ImVec2 rect_min) const {
+        return { .x = rect_min.x, .y = rect_min.y, .w = width, .h = height };
+    }
 };
 }
