@@ -6,7 +6,6 @@ add_executable(
     src/ui/widgets/asset.cpp
     src/ui/widgets/asset_list.cpp
     src/ui/widgets/component_inspector.cpp
-    src/ui/widgets/debug.cpp
     src/ui/widgets/entity_selector.cpp
     src/ui/widgets/file_explorer.cpp
     src/ui/widgets/log_viewer.cpp

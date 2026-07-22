@@ -12,7 +12,6 @@
 #include "ui/windows/animation_editor.hpp"
 #include "ui/windows/asset_list.hpp"
 #include "ui/windows/component_inspector.hpp"
-#include "ui/windows/debug.hpp"
 #include "ui/windows/entity_selector.hpp"
 #include "ui/windows/file_explorer.hpp"
 #include "ui/windows/log_viewer.hpp"
@@ -36,7 +35,6 @@ public:
     k2::editor::ComponentInspectorWindow<entt::entity> component_inspector { ICON_FA_WRENCH "  Inspector" };
     k2::editor::EntitySelectorWindow<entt::entity> entity_selector { ICON_FA_BARS "  Entity Selector" };
     k2::editor::LogViewerWindow log_viewer { ICON_FA_BOOK "  Log Viewer" };
-    k2::editor::DebugWindow debug_widget { ICON_FA_BUG "  Debug" };
     k2::editor::FileExplorerWindow file_explorer { ICON_FA_FILE "  File Explorer" };
     k2::editor::Viewport2DWindow viewport2D { ICON_FA_BINOCULARS "  Viewport 2D" };
     k2::editor::ProjectSettingsWindow project_settings { ICON_FA_COG "  Project Settings" };

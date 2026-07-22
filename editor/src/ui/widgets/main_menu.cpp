@@ -198,9 +198,6 @@ static void render_view_menu(EditorLayer& editor_layer) {
         if (ImGui::MenuItem(editor_layer.entity_selector.title.c_str(), "", editor_layer.entity_selector.show)) {
             editor_layer.entity_selector.show = !editor_layer.entity_selector.show;
         }
-        if (ImGui::MenuItem(editor_layer.debug_widget.title.c_str(), "", editor_layer.debug_widget.show)) {
-            editor_layer.debug_widget.show = !editor_layer.debug_widget.show;
-        }
         if (ImGui::MenuItem(editor_layer.file_explorer.title.c_str(), "", editor_layer.file_explorer.show)) {
             editor_layer.file_explorer.show = !editor_layer.file_explorer.show;
         }
@@ -224,6 +221,14 @@ static void render_view_menu(EditorLayer& editor_layer) {
     }
 }
 
+static void render_fps() {
+    auto text = std::format("{:.0f} FPS", ImGui::GetIO().Framerate);
+    float width = ImGui::CalcTextSize(text.c_str()).x;
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - width - ImGui::GetStyle().ItemSpacing.x * 2.0f);
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextDisabled("%s", text.c_str());
+}
+
 void MainMenuWidget::render(EditorLayer& editor_layer) {
     if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_N)) {
         new_project_dialog(editor_layer);
@@ -245,6 +250,7 @@ void MainMenuWidget::render(EditorLayer& editor_layer) {
         render_file_menu(editor_layer);
         render_scene_menu(editor_layer);
         render_view_menu(editor_layer);
+        render_fps();
         ImGui::EndMainMenuBar();
     }
 }
