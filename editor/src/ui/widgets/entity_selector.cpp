@@ -1,5 +1,5 @@
 
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <cassert>
 #include <functional>
 #include <imgui.h>
@@ -158,10 +158,10 @@ static void recursive_draw(EditorLayer& editor_layer, EntityType& entity_clicked
     auto* tag = registry.template try_get<TagComponent>(entity);
     if (tag && !tag->tag.empty()) {
         node_open = ImGui::TreeNodeEx(reinterpret_cast<const void*>((uintptr_t)entt::to_integral(entity)), flags,
-            ICON_FA_CUBE "  %s", tag->tag.c_str());
+            ICON_MS_DEPLOYED_CODE "  %s", tag->tag.c_str());
     } else {
         node_open = ImGui::TreeNodeEx(reinterpret_cast<const void*>((uintptr_t)entt::to_integral(entity)), flags,
-            ICON_FA_CUBE "  Entity %d", entt::to_integral(entity));
+            ICON_MS_DEPLOYED_CODE "  Entity %d", entt::to_integral(entity));
     }
 
     if (ImGui::IsItemClicked()) {
@@ -205,7 +205,7 @@ template <class EntityType> void EntitySelector<EntityType>::render(EditorLayer&
         active_entity = entt::null;
     }
 
-    if (ImGui::Button(ICON_FA_PLUS "  Create Entity", { -std::numeric_limits<float>::min(), 0.0f })) {
+    if (ImGui::Button(ICON_MS_ADD "  Create Entity", { -std::numeric_limits<float>::min(), 0.0f })) {
         active_entity = create_entity(registry);
     }
     ImGui::Separator();

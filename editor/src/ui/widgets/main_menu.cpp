@@ -7,7 +7,7 @@
 
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
 
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <algorithm>
 #include <nfd.hpp>
 
@@ -128,7 +128,7 @@ static void render_file_menu(EditorLayer& editor_layer) {
 
 static void render_help_menu() {
     if (ImGui::BeginMenu("Help")) {
-        if (ImGui::MenuItem(ICON_FA_INFO_CIRCLE "  About")) {
+        if (ImGui::MenuItem(ICON_MS_INFO "  About")) {
             k2::open_url("https://github.com/gnikdroy/kione");
         }
         ImGui::EndMenu();
@@ -138,17 +138,17 @@ static void render_help_menu() {
 static void render_scene_menu(EditorLayer& editor_layer) {
     if (ImGui::BeginMenu("Scene")) {
         bool playing = editor_layer.is_playing();
-        if (ImGui::MenuItem(ICON_FA_PLAY "  Play", "CTRL+P", false, !playing)) {
+        if (ImGui::MenuItem(ICON_MS_PLAY_ARROW "  Play", "CTRL+P", false, !playing)) {
             editor_layer.play();
         }
-        if (ImGui::MenuItem(ICON_FA_STOP "  Stop", "CTRL+P", false, playing)) {
+        if (ImGui::MenuItem(ICON_MS_STOP "  Stop", "CTRL+P", false, playing)) {
             editor_layer.stop();
         }
-        if (ImGui::MenuItem(ICON_FA_PLUS "  New Scene", nullptr, false,
+        if (ImGui::MenuItem(ICON_MS_ADD "  New Scene", nullptr, false,
                 editor_layer.project.has_value() && !playing)) {
             new_scene_dialog(editor_layer);
         }
-        if (ImGui::BeginMenu(ICON_FA_MAP "  Open Scene", editor_layer.project.has_value() && !playing)) {
+        if (ImGui::BeginMenu(ICON_MS_MAP "  Open Scene", editor_layer.project.has_value() && !playing)) {
             std::vector<std::string> scene_names;
             for (const auto& [id, pair] : editor_layer.active_assets()) {
                 if (pair.second.type == Asset::Type::Scene) {

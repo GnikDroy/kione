@@ -30,7 +30,7 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
     }
 
     ImGui::Spacing();
-    if (ImGui::Button(ICON_FA_SAVE "  Save")) {
+    if (ImGui::Button(ICON_MS_SAVE "  Save")) {
         project.name = name;
         project.main_scene = main_scene.name;
         if (auto saved = project.save()) {
@@ -40,7 +40,7 @@ void ProjectSettingsWidget::render(EditorLayer& editor_layer) {
         }
     }
     ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_SYNC "  Reload Project")) {
+    if (ImGui::Button(ICON_MS_SYNC "  Reload Project")) {
         if (auto opened = editor_layer.open_project(project.file); !opened) {
             Log::core().error(std::format("Failed to reload project: {}", opened.error()));
         }

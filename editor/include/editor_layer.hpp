@@ -34,16 +34,16 @@ public:
     std::optional<Scene> runtime_scene;
 
     k2::editor::MainMenuWidget main_menu_widget;
-    k2::editor::ComponentInspectorWindow<entt::entity> component_inspector { ICON_FA_WRENCH "  Inspector" };
-    k2::editor::EntitySelectorWindow<entt::entity> entity_selector { ICON_FA_BARS "  Entity Selector" };
-    k2::editor::LogViewerWindow log_viewer { ICON_FA_BOOK "  Log Viewer" };
-    k2::editor::FileExplorerWindow file_explorer { ICON_FA_FILE "  File Explorer" };
-    k2::editor::Viewport2DWindow viewport2D { ICON_FA_BINOCULARS "  Viewport 2D" };
-    k2::editor::ProjectSettingsWindow project_settings { ICON_FA_COG "  Project Settings" };
-    k2::editor::AssetListWindow asset_list { ICON_FA_ARCHIVE "  Assets" };
-    k2::editor::AnimationEditorWindow animation_editor { ICON_FA_FILM "  Animation" };
-    k2::editor::TileSetEditorWindow tileset_editor { ICON_FA_PAINT_BRUSH "  Tile Set" };
-    k2::editor::TileMapEditorWindow tilemap_editor { ICON_FA_TH "  Tilemap Editor" };
+    k2::editor::ComponentInspectorWindow<entt::entity> component_inspector { ICON_MS_BUILD "  Inspector" };
+    k2::editor::EntitySelectorWindow<entt::entity> entity_selector { ICON_MS_ACCOUNT_TREE "  Entity Selector" };
+    k2::editor::LogViewerWindow log_viewer { ICON_MS_ARTICLE "  Log Viewer" };
+    k2::editor::FileExplorerWindow file_explorer { ICON_MS_DESCRIPTION "  File Explorer" };
+    k2::editor::Viewport2DWindow viewport2D { ICON_MS_VISIBILITY "  Viewport 2D" };
+    k2::editor::ProjectSettingsWindow project_settings { ICON_MS_SETTINGS "  Project Settings" };
+    k2::editor::AssetListWindow asset_list { ICON_MS_INVENTORY_2 "  Assets" };
+    k2::editor::AnimationEditorWindow animation_editor { ICON_MS_MOVIE "  Animation" };
+    k2::editor::TileSetEditorWindow tileset_editor { ICON_MS_BRUSH "  Tile Set" };
+    k2::editor::TileMapEditorWindow tilemap_editor { ICON_MS_GRID_ON "  Tilemap Editor" };
 
     explicit EditorLayer(k2::Window& window);
     void begin_frame() override;

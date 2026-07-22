@@ -4,7 +4,7 @@
 #include "serializers/asset/sprite_animation.hpp" // IWYU pragma: keep
 #include "ui/common.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -164,16 +164,16 @@ void AnimationEditorWidget::draw_frame_stage() {
 
     auto counter = std::format("{} / {}", selected_frame + 1, count);
     auto width = count == 0
-        ? button_width(ICON_FA_PLUS "  Add Frame")
+        ? button_width(ICON_MS_ADD "  Add Frame")
         : ImGui::CalcTextSize("Frame").x + ImGui::GetFrameHeight() * 2.0f + ImGui::CalcTextSize(counter.c_str()).x
-            + button_width(ICON_FA_PLUS) + button_width(ICON_FA_TRASH) + style.ItemSpacing.x * 5.0f + 12.0f;
+            + button_width(ICON_MS_ADD) + button_width(ICON_MS_DELETE) + style.ItemSpacing.x * 5.0f + 12.0f;
     auto pad = ImGui::GetContentRegionAvail().x - width;
     if (pad > 0.0f) {
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + pad);
     }
 
     if (clip.frames.empty()) {
-        if (ImGui::Button(ICON_FA_PLUS "  Add Frame")) {
+        if (ImGui::Button(ICON_MS_ADD "  Add Frame")) {
             clip.frames.push_back({});
             selected_frame = 0;
         }
@@ -198,7 +198,7 @@ void AnimationEditorWidget::draw_frame_stage() {
     }
 
     ImGui::SameLine(0.0f, 12.0f);
-    if (ImGui::Button(ICON_FA_PLUS)) {
+    if (ImGui::Button(ICON_MS_ADD)) {
         clip.frames.insert(clip.frames.begin() + selected_frame + 1, clip.frames[size_t(selected_frame)]);
         selected_frame++;
         preview_elapsed = frame_start_time(clip, selected_frame);
@@ -207,7 +207,7 @@ void AnimationEditorWidget::draw_frame_stage() {
         ImGui::SetTooltip("Add frame (copy of current)");
     }
     ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_TRASH)) {
+    if (ImGui::Button(ICON_MS_DELETE)) {
         clip.frames.erase(clip.frames.begin() + selected_frame);
         selected_frame = std::min(selected_frame, int(clip.frames.size()) - 1);
         preview_elapsed = selected_frame >= 0 ? frame_start_time(clip, selected_frame) : 0.0f;
@@ -223,13 +223,13 @@ void AnimationEditorWidget::draw_frame_stage() {
 void AnimationEditorWidget::render(EditorLayer& editor_layer) {
     ImGui::SetNextItemWidth(220.0f);
     ResourceInputWidget("##Clip", selected, editor_layer.active_assets(), Asset::Type::Animation);
-    RightAlignAccentButtons({ ICON_FA_PLUS "##new_clip", ICON_FA_SAVE "##save_clip" });
-    if (AccentButton(ICON_FA_PLUS "##new_clip", editor_layer.theme->color("primary"),
+    RightAlignAccentButtons({ ICON_MS_ADD "##new_clip", ICON_MS_SAVE "##save_clip" });
+    if (AccentButton(ICON_MS_ADD "##new_clip", editor_layer.theme->color("primary"),
             editor_layer.project.has_value(), "New Clip")) {
         new_clip(editor_layer);
     }
     ImGui::SameLine();
-    if (AccentButton(ICON_FA_SAVE "##save_clip", editor_layer.theme->color("safe"), loaded, "Save")) {
+    if (AccentButton(ICON_MS_SAVE "##save_clip", editor_layer.theme->color("safe"), loaded, "Save")) {
         save_clip(editor_layer);
     }
 
@@ -273,7 +273,7 @@ void AnimationEditorWidget::render(EditorLayer& editor_layer) {
     }
     ImGui::EndGroup();
 
-    if (ImGui::Button(preview_playing ? ICON_FA_PAUSE : ICON_FA_PLAY)) {
+    if (ImGui::Button(preview_playing ? ICON_MS_PAUSE : ICON_MS_PLAY_ARROW)) {
         preview_playing = !preview_playing;
         if (!preview_playing && !clip.frames.empty()) {
             preview_elapsed = time;
@@ -281,7 +281,7 @@ void AnimationEditorWidget::render(EditorLayer& editor_layer) {
         }
     }
     ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_UNDO)) {
+    if (ImGui::Button(ICON_MS_UNDO)) {
         preview_elapsed = 0.0f;
         selected_frame = 0;
     }

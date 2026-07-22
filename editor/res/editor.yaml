@@ -1,5 +1,5 @@
 version: 0.0.1
 assets:
   Font:
-      FontAwesome5: file:///fonts/fa-regular-400.ttf
+      MaterialSymbols: file:///fonts/material-symbols-outlined.ttf
       NotoSansRegular: file:///fonts/NotoSans-Regular.ttf

@@ -5,7 +5,7 @@
 #include "editor_layer.hpp"
 #include "rendering/draw_list.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <ImGuizmo.h>
 #include <algorithm>
 #include <cmath>
@@ -171,7 +171,7 @@ bool Viewport2DWidget::draw_toolbar(EditorLayer& editor_layer, ImVec2 rect_min) 
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hovered);
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, base);
 
-        if (ImGui::Button(playing ? ICON_FA_STOP : ICON_FA_PLAY, { 36.0f, 0 })) {
+        if (ImGui::Button(playing ? ICON_MS_STOP : ICON_MS_PLAY_ARROW, { 36.0f, 0 })) {
             playing ? editor_layer.stop() : editor_layer.play();
             started = !playing;
         }

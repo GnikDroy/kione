@@ -6,7 +6,7 @@
 #include "ui/common.hpp"
 #include "ui/tileset_view.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <fstream>
 #include <nfd.hpp>
 
@@ -96,13 +96,13 @@ void TileSetEditorWidget::new_tileset(EditorLayer& editor_layer) {
 void TileSetEditorWidget::render(EditorLayer& editor_layer) {
     ImGui::SetNextItemWidth(220.0f);
     ResourceInputWidget("##TileSet", selected, editor_layer.active_assets(), Asset::Type::TileSet);
-    RightAlignAccentButtons({ ICON_FA_PLUS "##new_tileset", ICON_FA_SAVE "##save_tileset" });
-    if (AccentButton(ICON_FA_PLUS "##new_tileset", editor_layer.theme->color("primary"),
+    RightAlignAccentButtons({ ICON_MS_ADD "##new_tileset", ICON_MS_SAVE "##save_tileset" });
+    if (AccentButton(ICON_MS_ADD "##new_tileset", editor_layer.theme->color("primary"),
             editor_layer.project.has_value(), "New Tile Set")) {
         new_tileset(editor_layer);
     }
     ImGui::SameLine();
-    if (AccentButton(ICON_FA_SAVE "##save_tileset", editor_layer.theme->color("safe"), loaded, "Save")) {
+    if (AccentButton(ICON_MS_SAVE "##save_tileset", editor_layer.theme->color("safe"), loaded, "Save")) {
         save_tileset(editor_layer);
     }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "core/resources.hpp"
 #include "ui/widgets/widget.hpp"
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <filesystem>
 #include <imgui.h>
 

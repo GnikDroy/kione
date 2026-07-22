@@ -7,7 +7,7 @@ namespace k2::editor {
 void LogViewer::render(EditorLayer& editor_layer) {
     auto* theme = editor_layer.theme.get();
 
-    if (ImGui::Button(ICON_FA_TRASH "  Clear")) {
+    if (ImGui::Button(ICON_MS_DELETE "  Clear")) {
         EditorLoggerSink::get().clear();
     }
     ImGui::SameLine();
@@ -15,7 +15,7 @@ void LogViewer::render(EditorLayer& editor_layer) {
     ImGui::SetNextItemWidth(110.0f);
     ImGui::Combo("##MinLevel", &min_level, levels.data(), int(levels.size()));
     ImGui::SameLine();
-    filter.Draw(ICON_FA_SEARCH " Search");
+    filter.Draw(ICON_MS_SEARCH " Search");
 
     if (!ImGui::BeginChild("##LogLines")) {
         ImGui::EndChild();

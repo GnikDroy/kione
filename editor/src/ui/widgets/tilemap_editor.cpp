@@ -4,7 +4,7 @@
 #include "rendering/tileset.hpp"
 #include "ui/tileset_view.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
@@ -238,13 +238,13 @@ void TileMapEditorWidget::draw_canvas(EditorLayer& editor_layer, entt::entity ac
 
 void TileMapEditorWidget::draw_side_panel(EditorLayer& editor_layer, k2::TileMapComponent& tilemap) {
     ImGui::TextUnformatted("Tools");
-    if (ImGui::Selectable(ICON_FA_PAINT_BRUSH "  Brush", tool == Tool::Brush)) {
+    if (ImGui::Selectable(ICON_MS_BRUSH "  Brush", tool == Tool::Brush)) {
         tool = Tool::Brush;
     }
-    if (ImGui::Selectable(ICON_FA_ERASER "  Eraser", tool == Tool::Eraser)) {
+    if (ImGui::Selectable(ICON_MS_INK_ERASER "  Eraser", tool == Tool::Eraser)) {
         tool = Tool::Eraser;
     }
-    if (ImGui::Selectable(ICON_FA_TINT "  Fill", tool == Tool::Fill)) {
+    if (ImGui::Selectable(ICON_MS_FORMAT_COLOR_FILL "  Fill", tool == Tool::Fill)) {
         tool = Tool::Fill;
     }
 

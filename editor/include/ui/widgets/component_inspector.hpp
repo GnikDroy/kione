@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ui/widgets/widget.hpp"
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <cassert>
 #include <entt/entt.hpp>
 #include <functional>

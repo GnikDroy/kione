@@ -1,4 +1,5 @@
 #include "ui/widgets/file_explorer.hpp"
+#include "IconsMaterialSymbols.h"
 #include "core/logger.hpp"
 #include "editor_layer.hpp"
 
@@ -16,38 +17,38 @@ struct IconInfo {
 IconInfo icon_for(const std::filesystem::directory_entry& entry) {
     std::error_code ec;
     if (entry.is_directory(ec)) {
-        return { ICON_FA_FOLDER, { 0.85f, 0.68f, 0.39f, 1.0f } };
+        return { .glyph = ICON_MS_FOLDER, .color = { 0.85f, 0.68f, 0.39f, 1.0f } };
     }
     auto ext = entry.path().extension().string();
     std::ranges::transform(ext, ext.begin(), [](unsigned char c) { return std::tolower(c); });
     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif") {
-        return { ICON_FA_FILE_IMAGE, { 0.78f, 0.47f, 0.87f, 1.0f } };
+        return { .glyph = ICON_MS_IMAGE, .color = { 0.78f, 0.47f, 0.87f, 1.0f } };
     }
     if (ext == ".lua") {
-        return { ICON_FA_FILE_CODE, { 0.38f, 0.69f, 0.94f, 1.0f } };
+        return { .glyph = ICON_MS_CODE, .color = { 0.38f, 0.69f, 0.94f, 1.0f } };
     }
     if (ext == ".glsl") {
-        return { ICON_FA_FILE_CODE, { 0.34f, 0.71f, 0.76f, 1.0f } };
+        return { .glyph = ICON_MS_CODE, .color = { 0.34f, 0.71f, 0.76f, 1.0f } };
     }
     if (ext == ".k2scene") {
-        return { ICON_FA_CUBES, { 0.60f, 0.76f, 0.47f, 1.0f } };
+        return { .glyph = ICON_MS_WIDGETS, .color = { 0.60f, 0.76f, 0.47f, 1.0f } };
     }
     if (ext == ".k2project") {
-        return { ICON_FA_GAMEPAD, { 0.47f, 0.53f, 0.80f, 1.0f } };
+        return { .glyph = ICON_MS_GAMEPAD, .color = { 0.47f, 0.53f, 0.80f, 1.0f } };
     }
     if (ext == ".k2anim") {
-        return { ICON_FA_FILM, { 0.78f, 0.57f, 0.40f, 1.0f } };
+        return { .glyph = ICON_MS_MOVIE, .color = { 0.78f, 0.57f, 0.40f, 1.0f } };
     }
     if (ext == ".ttf" || ext == ".otf") {
-        return { ICON_FA_FONT, { 0.90f, 0.75f, 0.48f, 1.0f } };
+        return { .glyph = ICON_MS_FONT_DOWNLOAD, .color = { 0.90f, 0.75f, 0.48f, 1.0f } };
     }
     if (ext == ".wav" || ext == ".mp3" || ext == ".ogg" || ext == ".flac") {
-        return { ICON_FA_FILE_AUDIO, { 0.82f, 0.60f, 0.40f, 1.0f } };
+        return { .glyph = ICON_MS_AUDIO_FILE, .color = { 0.82f, 0.60f, 0.40f, 1.0f } };
     }
     if (ext == ".log" || ext == ".txt" || ext == ".md" || ext == ".yaml" || ext == ".yml" || ext == ".ini") {
-        return { ICON_FA_FILE_ALT, { 0.62f, 0.65f, 0.71f, 1.0f } };
+        return { .glyph = ICON_MS_DESCRIPTION, .color = { 0.62f, 0.65f, 0.71f, 1.0f } };
     }
-    return { ICON_FA_FILE, { 0.54f, 0.57f, 0.62f, 1.0f } };
+    return { .glyph = ICON_MS_DESCRIPTION, .color = { 0.54f, 0.57f, 0.62f, 1.0f } };
 }
 }
 
@@ -138,13 +139,13 @@ void FileExplorerWidget::render(EditorLayer& editor_layer) {
         ImGui::TableNextColumn();
         auto at_root = !current_directory.has_parent_path() || current_directory == current_directory.root_path();
         ImGui::BeginDisabled(at_root);
-        if (ImGui::Button(ICON_FA_ARROW_UP)) {
+        if (ImGui::Button(ICON_MS_ARROW_UPWARD)) {
             current_directory = current_directory.parent_path();
         }
         ImGui::EndDisabled();
         ImGui::SameLine();
         ImGui::BeginDisabled(!editor_layer.project.has_value());
-        if (ImGui::Button(ICON_FA_GAMEPAD)) {
+        if (ImGui::Button(ICON_MS_HOME)) {
             current_directory = editor_layer.project->root;
         }
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
@@ -155,7 +156,7 @@ void FileExplorerWidget::render(EditorLayer& editor_layer) {
         render_breadcrumbs();
 
         ImGui::TableNextColumn();
-        filter.Draw(ICON_FA_SEARCH, 200.0f);
+        filter.Draw(ICON_MS_SEARCH, 200.0f);
 
         ImGui::SameLine();
         if (ImGui::Checkbox("Hidden", &show_hidden)) {
@@ -163,7 +164,7 @@ void FileExplorerWidget::render(EditorLayer& editor_layer) {
         }
 
         ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_SYNC)) {
+        if (ImGui::Button(ICON_MS_SYNC)) {
             cached_entries.first.clear();
         }
 

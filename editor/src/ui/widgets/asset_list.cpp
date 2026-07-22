@@ -2,7 +2,7 @@
 #include "editor_layer.hpp"
 #include "ui/common.hpp"
 
-#include <IconsFontAwesome5.h>
+#include <IconsMaterialSymbols.h>
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -84,9 +84,9 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
     ImGui::AlignTextToFramePadding();
     ImGui::TextDisabled("%td assets", shown);
 
-    RightAlignAccentButtons({ ICON_FA_SYNC "##reload_assets", ICON_FA_PLUS "##add_asset" });
+    RightAlignAccentButtons({ ICON_MS_SYNC "##reload_assets", ICON_MS_ADD "##add_asset" });
     if (AccentButton(
-            ICON_FA_SYNC "##reload_assets", ImVec4 { 0.30f, 0.45f, 0.55f, 1.0f }, editor_layer.project.has_value(),
+            ICON_MS_SYNC "##reload_assets", ImVec4 { 0.30f, 0.45f, 0.55f, 1.0f }, editor_layer.project.has_value(),
             "Reload")) {
         if (auto reloaded = editor_layer.reload_assets()) {
             Log::core().info("Reloaded asset manifest.");
@@ -95,7 +95,7 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
         }
     }
     ImGui::SameLine();
-    if (AccentButton(ICON_FA_PLUS "##add_asset", editor_layer.theme->color("primary"), actionable, "Add")) {
+    if (AccentButton(ICON_MS_ADD "##add_asset", editor_layer.theme->color("primary"), actionable, "Add")) {
         add_asset_dialog(editor_layer);
     }
 
@@ -143,12 +143,12 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
                 }
             }
             if (actionable && ImGui::BeginPopupContextItem()) {
-                if (ImGui::MenuItem(ICON_FA_PEN "  Rename")) {
+                if (ImGui::MenuItem(ICON_MS_EDIT "  Rename")) {
                     rename_target = asset_name;
                     rename_buffer = asset_name;
                     open_rename = true;
                 }
-                if (ImGui::MenuItem(ICON_FA_TRASH "  Remove")) {
+                if (ImGui::MenuItem(ICON_MS_DELETE "  Remove")) {
                     remove_target = asset_name;
                     open_remove = true;
                 }

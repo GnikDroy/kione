@@ -25,10 +25,10 @@ template <class EntityType> void ComponentInspectorWidget<EntityType>::render(Ed
         bool open = ImGui::CollapsingHeader(
             ci.name.c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowOverlap);
 
-        auto trash_width = ImGui::CalcTextSize(ICON_FA_TRASH).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+        auto trash_width = ImGui::CalcTextSize(ICON_MS_DELETE).x + ImGui::GetStyle().FramePadding.x * 2.0f;
         ImGui::SameLine(avail - trash_width);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {});
-        bool removed = ImGui::Button(ICON_FA_TRASH);
+        bool removed = ImGui::Button(ICON_MS_DELETE);
         ImGui::PopStyleColor();
         if (removed) {
             ci.destroy(registry, entity);
@@ -49,7 +49,7 @@ template <class EntityType> void ComponentInspectorWidget<EntityType>::render(Ed
 
     ImGui::Spacing();
     if (!missing.empty()) {
-        if (ImGui::Button(ICON_FA_PLUS_SQUARE "  Add Component", { -std::numeric_limits<float>::min(), 0.0f })) {
+        if (ImGui::Button(ICON_MS_ADD_BOX "  Add Component", { -std::numeric_limits<float>::min(), 0.0f })) {
             ImGui::OpenPopup("##AddComponent");
         }
 
@@ -68,21 +68,21 @@ template <class EntityType> void ComponentInspectorWidget<EntityType>::render(Ed
 }
 
 template <class EntityType> ComponentInspectorWidget<EntityType>::ComponentInspectorWidget() {
-    register_component<k2::TagComponent>(ICON_FA_TAGS "  Tag");
-    register_component<k2::TransformComponent>(ICON_FA_ARROWS_ALT "  Transform");
-    register_component<k2::SpriteComponent>(ICON_FA_IMAGE "  Sprite");
-    register_component<k2::TextComponent>(ICON_FA_FONT "  Text");
-    register_component<k2::AnimationComponent>(ICON_FA_FILM "  Animation");
-    register_component<k2::AudioSourceComponent>(ICON_FA_VOLUME_UP "  Audio Source");
-    register_component<k2::ColliderComponent>(ICON_FA_BULLSEYE "  Collider");
-    register_component<k2::Environment>(ICON_FA_CLOUD "  Environment");
-    register_component<k2::Camera>(ICON_FA_CAMERA "  Camera");
-    register_component<k2::MainCamera>(ICON_FA_VIDEO "  Main Camera");
-    register_component<k2::ScriptComponent>(ICON_FA_CODE "  Script");
-    register_component<k2::TileMapComponent>(ICON_FA_TH "  Tile Map");
-    register_component<k2::PointLight>(ICON_FA_LIGHTBULB "  Point Light");
-    register_component<k2::SpotLight>(ICON_FA_STAR "  Spot Light");
-    register_component<k2::SpriteLight>(ICON_FA_MOON "  Sprite Light");
+    register_component<k2::TagComponent>(ICON_MS_LABEL "  Tag");
+    register_component<k2::TransformComponent>(ICON_MS_OPEN_WITH "  Transform");
+    register_component<k2::SpriteComponent>(ICON_MS_IMAGE "  Sprite");
+    register_component<k2::TextComponent>(ICON_MS_FONT_DOWNLOAD "  Text");
+    register_component<k2::AnimationComponent>(ICON_MS_MOVIE "  Animation");
+    register_component<k2::AudioSourceComponent>(ICON_MS_VOLUME_UP "  Audio Source");
+    register_component<k2::ColliderComponent>(ICON_MS_ADJUST "  Collider");
+    register_component<k2::Environment>(ICON_MS_CLOUD "  Environment");
+    register_component<k2::Camera>(ICON_MS_PHOTO_CAMERA "  Camera");
+    register_component<k2::MainCamera>(ICON_MS_VIDEOCAM "  Main Camera");
+    register_component<k2::ScriptComponent>(ICON_MS_CODE "  Script");
+    register_component<k2::TileMapComponent>(ICON_MS_GRID_ON "  Tile Map");
+    register_component<k2::PointLight>(ICON_MS_LIGHTBULB "  Point Light");
+    register_component<k2::SpotLight>(ICON_MS_STAR "  Spot Light");
+    register_component<k2::SpriteLight>(ICON_MS_DARK_MODE "  Sprite Light");
 }
 
 // Instantiations
