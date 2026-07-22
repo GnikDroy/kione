@@ -41,7 +41,6 @@ static void load_texture(const AssetHandle& handle, ResourceManager& resources, 
     if (handle.name.empty() || resources.contains<Texture2D>(handle.id)) {
         return;
     }
-
     auto it = assets.find(handle.id);
     if (it == assets.end() || it->second.second.type != Asset::Type::Image) {
         Log::core().warn(std::format("Scene references unknown texture asset '{}'", handle.name));

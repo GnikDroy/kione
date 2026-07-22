@@ -1,5 +1,4 @@
 #include "editor_layer.hpp"
-#include "asset/loader.hpp"
 #include "core/animation_system.hpp"
 #include "core/entity_ops.hpp"
 #include "core/scene_loader.hpp"
@@ -18,34 +17,6 @@ EditorLayer::EditorLayer(k2::Window& window)
     scene.registry.ctx().emplace<EditorLayer&>(*this);
     scene.registry.ctx().emplace<ResourceManager&>(runtime.resources);
     scene_root(scene.registry);
-    runtime.resources.set("white", k2::Texture2D::create_white_texture<uint8_t>());
-
-    for (auto& [id, pair] : assets) {
-        auto&& [name, asset] = pair;
-        k2::Log::core().trace(std::format("Loaded {} asset: '{}'", asset.get_type_strv(), name));
-    }
-
-    for (auto& [id, pair] : assets) {
-        auto&& [name, asset] = pair;
-        if (asset.type == Asset::Type::Image) {
-            runtime.resources.set(name, AssetLoader::get<Texture2D>(asset));
-        }
-    }
-}
-
-void EditorLayer::load_image_resources(const AssetRegistry& asset_registry) {
-    for (auto& [id, pair] : asset_registry) {
-        auto& [name, asset] = pair;
-        if (asset.type != Asset::Type::Image || runtime.resources.contains<Texture2D>(id)) {
-            continue;
-        }
-        auto texture = AssetLoader::try_get<Texture2D>(asset);
-        if (!texture) {
-            Log::core().error(std::format("Failed to load image '{}': {}", name, texture.error()));
-            continue;
-        }
-        runtime.resources.set(name, std::move(*texture));
-    }
 }
 
 std::expected<void, std::string> EditorLayer::reload_assets() {
@@ -55,6 +26,7 @@ std::expected<void, std::string> EditorLayer::reload_assets() {
     if (auto reloaded = project->reload_assets(); !reloaded) {
         return reloaded;
     }
+    runtime.resources.clear();
     SceneLoader::load_resources(active_scene().registry, runtime.resources, project->assets);
     return {};
 }
@@ -64,7 +36,9 @@ std::expected<void, std::string> EditorLayer::open_project(const std::filesystem
     if (!new_project) {
         return std::unexpected(new_project.error());
     }
-    load_image_resources(new_project->assets);
+
+    stop();
+    runtime.resources.clear();
 
     auto new_scene = SceneLoader::load(new_project->main_scene, runtime.resources, new_project->assets);
     if (!new_scene) {

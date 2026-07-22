@@ -207,7 +207,7 @@ void TileMapEditorWidget::draw_canvas(EditorLayer& editor_layer, entt::entity ac
         framed_for = active;
         float map_w = float(tilemap.size.x) * tilemap.tile_size.x;
         float map_h = float(tilemap.size.y) * tilemap.tile_size.y;
-        camera_position = { map_w * 0.5f, -map_h * 0.5f };
+        camera_position = { 0.0f, 0.0f };
         zoom = map_w > 0.0f && map_h > 0.0f ? std::max(map_w / width, map_h / height) * 1.15f : 1.0f;
     }
 

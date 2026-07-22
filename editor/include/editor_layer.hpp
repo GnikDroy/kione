@@ -54,8 +54,6 @@ public:
 private:
     void build_default_layout(unsigned int dockspace_id);
 
-    void load_image_resources(const AssetRegistry& asset_registry);
-
     bool layout_pending = !std::filesystem::exists("imgui.ini");
 
 public:

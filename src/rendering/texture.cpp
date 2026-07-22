@@ -82,6 +82,7 @@ Texture2D::Texture2D(std::size_t width, std::size_t height, std::span<const T> d
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     this->width = int(width);
     this->height = int(height);
     glTexImage2D(GL_TEXTURE_2D, 0, (GLint)sized_format, (GLsizei)width, (GLsizei)height, 0,
@@ -127,47 +128,43 @@ template Texture2D Texture2D::create_white_texture<uint8_t>();
 template Texture2D Texture2D::create_white_texture<float>();
 
 Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps, TextureFilter filter) {
-    if (id == 0) {
-        if (image) {
-            glGenTextures(1, &id);
-            glBindTexture(GL_TEXTURE_2D, id);
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            width = image.width;
-            height = image.height;
+    if (!image) {
+        k2::Log::core().critical("Invalid image while loading texture");
+        throw std::invalid_argument("Invalid image.");
+    }
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    width = image.width;
+    height = image.height;
 
-            if (!generate_mipmaps) {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, generate_mipmaps ? 1000 : 0);
+    apply_sampler_filter(GL_TEXTURE_2D, filter, generate_mipmaps);
+
+    std::visit(
+        [&](auto& image_data) {
+            auto ptr = image_data.get();
+            if constexpr (std::is_same_v<decltype(ptr), std::uint8_t*>) {
+                auto sized_format = predict_sized_format<std::uint8_t>(image.channels);
+                auto format = predict_format_from_sized(sized_format);
+
+                glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
+                    OpenGLType<uint8_t>::type, ptr);
+            } else if constexpr (std::is_same_v<decltype(ptr), float*>) {
+                auto sized_format = predict_sized_format<float>(image.channels);
+                auto format = predict_format_from_sized(sized_format);
+
+                glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
+                    OpenGLType<float>::type, ptr);
+            } else {
+                static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");
             }
-            apply_sampler_filter(GL_TEXTURE_2D, filter, generate_mipmaps);
+        },
+        image.data);
 
-            std::visit(
-                [&](auto& image_data) {
-                    auto ptr = image_data.get();
-                    if constexpr (std::is_same_v<decltype(ptr), std::uint8_t*>) {
-                        auto sized_format = predict_sized_format<std::uint8_t>(image.channels);
-                        auto format = predict_format_from_sized(sized_format);
-
-                        glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
-                            OpenGLType<uint8_t>::type, ptr);
-                    } else if constexpr (std::is_same_v<decltype(ptr), float*>) {
-                        auto sized_format = predict_sized_format<float>(image.channels);
-                        auto format = predict_format_from_sized(sized_format);
-
-                        glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
-                            OpenGLType<float>::type, ptr);
-                    } else {
-                        static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");
-                    }
-                },
-                image.data);
-
-            if (generate_mipmaps) {
-                glGenerateMipmap(GL_TEXTURE_2D);
-            }
-        } else {
-            k2::Log::core().critical("Invalid image while loading texture");
-            throw std::invalid_argument("Invalid image.");
-        }
+    if (generate_mipmaps) {
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
     return *this;
 }

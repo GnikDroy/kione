@@ -108,7 +108,7 @@ void Batcher2D::flush() {
     glBlendFunc(pass->blend_src, pass->blend_dst);
 
     std::vector<std::int32_t> texture_units(texture_unit_map.size());
-    std::iota(texture_units.begin(), texture_units.end(), 0);
+    std::ranges::iota(texture_units, 0);
 
     for (auto& [texture_id, texture_unit_index] : texture_unit_map) {
         auto* texture = pass->resources != nullptr ? pass->resources->try_get<Texture2D>(texture_id) : nullptr;
