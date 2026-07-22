@@ -1,5 +1,6 @@
 #include "core/paths.hpp"
 
+#include <cstdlib>
 #include <string>
 
 #if defined(__APPLE__)
@@ -25,6 +26,16 @@ std::filesystem::path executable_path() {
     return std::filesystem::canonical(buffer.data());
 #else
     return std::filesystem::canonical("/proc/self/exe");
+#endif
+}
+
+void open_url(const std::string& url) {
+#if defined(_WIN32)
+    ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+#elif defined(__APPLE__)
+    static_cast<void>(std::system(("open \"" + url + "\"").c_str()));
+#else
+    static_cast<void>(std::system(("xdg-open \"" + url + "\"").c_str()));
 #endif
 }
 

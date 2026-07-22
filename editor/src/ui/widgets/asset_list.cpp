@@ -95,7 +95,7 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
         }
     }
     ImGui::SameLine();
-    if (AccentButton(ICON_FA_PLUS "##add_asset", accent_blue, actionable, "Add")) {
+    if (AccentButton(ICON_FA_PLUS "##add_asset", editor_layer.theme->color("primary"), actionable, "Add")) {
         add_asset_dialog(editor_layer);
     }
 

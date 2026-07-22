@@ -29,10 +29,13 @@ ImVec4 HexColorToImVec4(const std::string& hex_color_code) {
         float((value >> 8) & 0xff) / 255.0f, float(value & 0xff) / 255.0f };
 }
 
+ImVec4 ImGuiTheme::color(std::string_view name) const { return colors.at(fnv1a(name.data(), name.size())); }
+
 ImGuiThemeDark::ImGuiThemeDark() {
     using namespace k2::literals;
-    colors["primary"_fnv1a] = HexColorToImVec4("#5C6BC0ff");
-    colors["primary_alt"_fnv1a] = HexColorToImVec4("#3F51B5ff");
+    colors["primary"_fnv1a] = HexColorToImVec4("#3F51B5ff");
+    colors["primary_alt"_fnv1a] = HexColorToImVec4("#5C6BC0ff");
+    colors["safe"_fnv1a] = HexColorToImVec4("#338C40ff");
     colors["secondary"_fnv1a] = HexColorToImVec4("#ddddddff");
     colors["secondary_alt"_fnv1a] = HexColorToImVec4("#ccccccff");
     colors["background"_fnv1a] = HexColorToImVec4("#1a1a1eff");

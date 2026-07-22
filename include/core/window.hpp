@@ -13,6 +13,7 @@ struct Event;
 struct WindowConfig {
     std::string title { "Kione 2D" };
     std::uint32_t x_pos {}, y_pos {}, width = 1280, height = 720;
+    bool maximized { false };
 };
 
 class Window {

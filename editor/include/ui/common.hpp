@@ -198,10 +198,6 @@ inline void ResourceInputWidget(const std::string& label, AssetHandle& handle, c
     }
 }
 
-inline const ImVec4 accent_green { 0.20f, 0.55f, 0.25f, 1.0f };
-
-inline const ImVec4 accent_blue { 0.20f, 0.45f, 0.70f, 1.0f };
-
 inline ImVec2 AccentButtonSize(const char* label) {
     return { ImGui::CalcTextSize(label, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f + 8.0f,
         ImGui::GetFrameHeight() * 1.15f };
@@ -222,10 +218,6 @@ inline bool AccentButton(const char* label, const ImVec4& color, bool enabled = 
         ImGui::SetTooltip("%s", tooltip);
     }
     return clicked;
-}
-
-inline bool PrimarySaveButton(const char* label, bool enabled, const char* tooltip = "Save") {
-    return AccentButton(label, accent_green, enabled, tooltip);
 }
 
 inline void RightAlignAccentButtons(std::initializer_list<const char*> labels) {

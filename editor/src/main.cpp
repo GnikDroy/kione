@@ -10,7 +10,7 @@
 class Editor : public k2::App {
 public:
     explicit Editor(std::vector<std::string> args)
-        : k2::App({ .title { "Kione Editor" } }) {
+        : k2::App({ .title { "Kione Editor" }, .maximized = true }) {
         auto layer = std::make_unique<k2::EditorLayer>(window);
         if (!args.empty()) {
             if (auto opened = layer->open_project(args.front()); !opened) {

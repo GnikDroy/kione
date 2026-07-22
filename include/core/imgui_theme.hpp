@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include <imgui.h>
@@ -14,6 +15,8 @@ struct ImGuiTheme {
     std::unordered_map<std::uint64_t, ImVec4> colors;
     virtual void apply() const = 0;
     virtual ~ImGuiTheme() = default;
+
+    [[nodiscard]] ImVec4 color(std::string_view name) const;
 };
 
 struct ImGuiThemeDark : ImGuiTheme {

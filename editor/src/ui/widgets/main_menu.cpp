@@ -2,6 +2,7 @@
 #include "ui/widgets/main_menu.hpp"
 #include "components/relation.hpp"
 #include "core/entity_ops.hpp"
+#include "core/paths.hpp"
 #include "editor_layer.hpp"
 
 #include "serializers/core/scene.hpp" // IWYU pragma: keep
@@ -125,6 +126,15 @@ static void render_file_menu(EditorLayer& editor_layer) {
     }
 }
 
+static void render_help_menu() {
+    if (ImGui::BeginMenu("Help")) {
+        if (ImGui::MenuItem(ICON_FA_INFO_CIRCLE "  About")) {
+            k2::open_url("https://github.com/gnikdroy/kione");
+        }
+        ImGui::EndMenu();
+    }
+}
+
 static void render_scene_menu(EditorLayer& editor_layer) {
     if (ImGui::BeginMenu("Scene")) {
         bool playing = editor_layer.is_playing();
@@ -155,8 +165,12 @@ static void render_scene_menu(EditorLayer& editor_layer) {
             }
             ImGui::EndMenu();
         }
-        ImGui::Separator();
+        ImGui::EndMenu();
+    }
+}
 
+static void render_edit_menu(EditorLayer& editor_layer) {
+    if (ImGui::BeginMenu("Edit")) {
         auto& registry = editor_layer.active_scene().registry;
         auto& selector = editor_layer.entity_selector.get_widget();
         auto active = selector.get_active();
@@ -221,6 +235,23 @@ static void render_view_menu(EditorLayer& editor_layer) {
     }
 }
 
+static void render_brand(EditorLayer& editor_layer) {
+    const char* name = "Kione2D";
+    constexpr float pad_x = 12.0f;
+    ImVec2 text_size = ImGui::CalcTextSize(name);
+    float badge_w = text_size.x + pad_x * 2.0f;
+    float bar_h = ImGui::GetFrameHeight();
+    ImVec2 origin = ImGui::GetCursorScreenPos();
+    float top = ImGui::GetWindowPos().y;
+
+    auto* draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled(
+        { origin.x, top }, { origin.x + badge_w, top + bar_h }, ImGui::GetColorU32(editor_layer.theme->color("primary")));
+    draw_list->AddText({ origin.x + pad_x, top + (bar_h - text_size.y) * 0.5f }, IM_COL32_WHITE, name);
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + badge_w + ImGui::GetStyle().ItemSpacing.x);
+}
+
 static void render_fps() {
     auto text = std::format("{:.0f} FPS", ImGui::GetIO().Framerate);
     float width = ImGui::CalcTextSize(text.c_str()).x;
@@ -247,9 +278,12 @@ void MainMenuWidget::render(EditorLayer& editor_layer) {
     }
 
     if (ImGui::BeginMainMenuBar()) {
+        render_brand(editor_layer);
         render_file_menu(editor_layer);
         render_scene_menu(editor_layer);
+        render_edit_menu(editor_layer);
         render_view_menu(editor_layer);
+        render_help_menu();
         render_fps();
         ImGui::EndMainMenuBar();
     }

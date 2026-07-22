@@ -224,11 +224,12 @@ void AnimationEditorWidget::render(EditorLayer& editor_layer) {
     ImGui::SetNextItemWidth(220.0f);
     ResourceInputWidget("##Clip", selected, editor_layer.active_assets(), Asset::Type::Animation);
     RightAlignAccentButtons({ ICON_FA_PLUS "##new_clip", ICON_FA_SAVE "##save_clip" });
-    if (AccentButton(ICON_FA_PLUS "##new_clip", accent_blue, editor_layer.project.has_value(), "New Clip")) {
+    if (AccentButton(ICON_FA_PLUS "##new_clip", editor_layer.theme->color("primary"),
+            editor_layer.project.has_value(), "New Clip")) {
         new_clip(editor_layer);
     }
     ImGui::SameLine();
-    if (PrimarySaveButton(ICON_FA_SAVE "##save_clip", loaded)) {
+    if (AccentButton(ICON_FA_SAVE "##save_clip", editor_layer.theme->color("safe"), loaded, "Save")) {
         save_clip(editor_layer);
     }
 
