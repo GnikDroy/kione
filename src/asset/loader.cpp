@@ -31,8 +31,22 @@ template <> Image AssetLoader::get<Image>(const Asset& asset) {
     return k2::Image { raw, desired_channels };
 }
 
+static Texture2D texture_from(const Asset& asset, const Image& image) {
+    auto traits = asset.get_traits();
+    bool mipmaps = true;
+    if (auto it = traits.find("mipmaps"); it != traits.end()) {
+        auto& value = it->second;
+        mipmaps = !(value == "0" || value == "false" || value == "off" || value == "no");
+    }
+    auto filter = TextureFilter::Linear;
+    if (auto it = traits.find("filter"); it != traits.end() && it->second == "nearest") {
+        filter = TextureFilter::Nearest;
+    }
+    return k2::Texture2D { image, mipmaps, filter };
+}
+
 template <> Texture2D AssetLoader::get<Texture2D>(const Asset& asset) {
-    return k2::Texture2D { AssetLoader::get<k2::Image>(asset) };
+    return texture_from(asset, AssetLoader::get<k2::Image>(asset));
 }
 
 template <> Shader AssetLoader::get<Shader>(const Asset& asset) {
@@ -101,6 +115,14 @@ template <> Script AssetLoader::get<Script>(const Asset& asset) {
 template <> std::expected<Image, std::string> AssetLoader::try_get<Image>(const Asset& asset) noexcept {
     try {
         return get<Image>(asset);
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
+template <> std::expected<Texture2D, std::string> AssetLoader::try_get<Texture2D>(const Asset& asset) noexcept {
+    try {
+        return get<Texture2D>(asset);
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
     }

@@ -11,12 +11,12 @@ namespace k2 {
 
 std::unique_ptr<std::istream> AssetSchemeImpl<Asset::Scheme::file>::get_stream(const Asset& asset) {
     assert(Asset::Scheme::file == asset.get_scheme() && "Asset of different scheme.");
-    return std::make_unique<std::ifstream>(asset.get_url_divisions().path.data(), std::ios::binary);
+    return std::make_unique<std::ifstream>(asset.get_url_divisions().path, std::ios::binary);
 }
 
 std::vector<std::uint8_t> AssetSchemeImpl<Asset::Scheme::file>::get_raw(const Asset& asset) {
     assert(Asset::Scheme::file == asset.get_scheme() && "Asset of different scheme.");
-    std::ifstream file_stream { asset.get_url_divisions().path.data(), std::ios::binary };
+    std::ifstream file_stream { asset.get_url_divisions().path, std::ios::binary };
     if (file_stream.fail()) {
         throw std::runtime_error(std::format("Cannot open file {}.", asset.get_url_divisions().path));
     }

@@ -33,6 +33,7 @@ template <> AudioClip AssetLoader::get<AudioClip>(const Asset& asset);
 template <> Script AssetLoader::get<Script>(const Asset& asset);
 template <> TileSet AssetLoader::get<TileSet>(const Asset& asset);
 template <> std::expected<Image, std::string> AssetLoader::try_get<Image>(const Asset& asset) noexcept;
+template <> std::expected<Texture2D, std::string> AssetLoader::try_get<Texture2D>(const Asset& asset) noexcept;
 template <> std::expected<SpriteAnimation, std::string> AssetLoader::try_get<SpriteAnimation>(
     const Asset& asset) noexcept;
 template <> std::expected<BakedFont, std::string> AssetLoader::try_get<BakedFont>(const Asset& asset) noexcept;

@@ -57,11 +57,11 @@ Asset::URL Asset::get_url_divisions() const {
     std::smatch base;
     if (std::regex_match(url, base, url_regex)) {
         assert(base.size() == 6 && "Regular expression bad sub match number.");
-        parts.scheme = { base[1].first, base[1].second };
-        parts.authority = { base[2].first, base[2].second };
-        parts.path = { base[3].first, base[3].second };
-        parts.query = { base[4].first, base[4].second };
-        parts.fragment = { base[5].first, base[5].second };
+        parts.scheme = base[1].str();
+        parts.authority = base[2].str();
+        parts.path = base[3].str();
+        parts.query = base[4].str();
+        parts.fragment = base[5].str();
     }
     return parts;
 }
@@ -76,11 +76,11 @@ Asset::Scheme Asset::get_scheme() const {
     }
 }
 
-std::unordered_map<std::string_view, std::string_view> Asset::get_traits() const {
-    std::unordered_map<std::string_view, std::string_view> map;
+std::unordered_map<std::string, std::string> Asset::get_traits() const {
+    std::unordered_map<std::string, std::string> map;
     auto query = get_url_divisions().query;
     if (query.empty())
-        return {};
+        return map;
     auto pairs = string_view_split(query, '&');
 
     for (auto pair_sv : pairs) {
@@ -89,7 +89,7 @@ std::unordered_map<std::string_view, std::string_view> Asset::get_traits() const
 
         auto next_start = std::min(end + 1, pair_sv.size());
         auto value = pair_sv.substr(next_start, pair_sv.size() - next_start);
-        map[key] = value;
+        map[std::string { key }] = std::string { value };
     }
     return map;
 }

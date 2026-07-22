@@ -14,7 +14,7 @@ struct Asset {
     enum class Type { AssetBundle, Image, Shader, Font, Model, Audio, Data, Script, Animation, Scene, TileSet };
 
     struct URL {
-        std::string_view scheme, authority, path, query, fragment;
+        std::string scheme, authority, path, query, fragment;
         bool operator==(const URL& url) const = default;
         bool operator!=(const URL& url) const = default;
     };
@@ -32,7 +32,7 @@ struct Asset {
 
     [[nodiscard]] Scheme get_scheme() const;
 
-    [[nodiscard]] std::unordered_map<std::string_view, std::string_view> get_traits() const;
+    [[nodiscard]] std::unordered_map<std::string, std::string> get_traits() const;
 };
 
 struct AssetBundle {

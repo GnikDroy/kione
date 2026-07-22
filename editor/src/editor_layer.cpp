@@ -28,9 +28,7 @@ EditorLayer::EditorLayer(k2::Window& window)
     for (auto& [id, pair] : assets) {
         auto&& [name, asset] = pair;
         if (asset.type == Asset::Type::Image) {
-            auto image = AssetLoader::get<k2::Image>(asset);
-            runtime.resources.set(name, Texture2D { image });
-            runtime.resources.set(name, std::move(image));
+            runtime.resources.set(name, AssetLoader::get<Texture2D>(asset));
         }
     }
 }
@@ -41,12 +39,12 @@ void EditorLayer::load_image_resources(const AssetRegistry& asset_registry) {
         if (asset.type != Asset::Type::Image || runtime.resources.contains<Texture2D>(id)) {
             continue;
         }
-        auto image = AssetLoader::try_get<Image>(asset);
-        if (!image) {
-            Log::core().error(std::format("Failed to load image '{}': {}", name, image.error()));
+        auto texture = AssetLoader::try_get<Texture2D>(asset);
+        if (!texture) {
+            Log::core().error(std::format("Failed to load image '{}': {}", name, texture.error()));
             continue;
         }
-        runtime.resources.set(name, Texture2D { *image });
+        runtime.resources.set(name, std::move(*texture));
     }
 }
 

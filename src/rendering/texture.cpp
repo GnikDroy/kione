@@ -68,9 +68,17 @@ GLenum Texture2D::predict_type_from_sized(std::size_t sized) {
     }
 }
 
+static void apply_sampler_filter(GLenum target, TextureFilter filter, bool mipmaps) {
+    GLint mag = filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR;
+    GLint min = mipmaps ? (filter == TextureFilter::Nearest ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR)
+                        : mag;
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
+}
+
 template <FloatOrUInt8 T>
-Texture2D::Texture2D(
-    std::size_t width, std::size_t height, std::span<const T> data, GLuint sized_format, bool generate_mipmaps) {
+Texture2D::Texture2D(std::size_t width, std::size_t height, std::span<const T> data, GLuint sized_format,
+    bool generate_mipmaps, TextureFilter filter) {
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -81,8 +89,7 @@ Texture2D::Texture2D(
     if (!generate_mipmaps) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     }
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    apply_sampler_filter(GL_TEXTURE_2D, filter, generate_mipmaps && !data.empty());
     if (!data.empty()) {
         if (width * height > data.size()) {
             throw std::invalid_argument("Insufficient data provided.");
@@ -95,8 +102,8 @@ Texture2D::Texture2D(
     }
 }
 
-template Texture2D::Texture2D(std::size_t, std::size_t, std::span<const uint8_t>, GLuint, bool);
-template Texture2D::Texture2D(std::size_t, std::size_t, std::span<const float>, GLuint, bool);
+template Texture2D::Texture2D(std::size_t, std::size_t, std::span<const uint8_t>, GLuint, bool, TextureFilter);
+template Texture2D::Texture2D(std::size_t, std::size_t, std::span<const float>, GLuint, bool, TextureFilter);
 
 template <FloatOrUInt8 T> Texture2D Texture2D::create_white_texture() {
     Texture2D texture;
@@ -119,7 +126,7 @@ template <FloatOrUInt8 T> Texture2D Texture2D::create_white_texture() {
 template Texture2D Texture2D::create_white_texture<uint8_t>();
 template Texture2D Texture2D::create_white_texture<float>();
 
-Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps) {
+Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps, TextureFilter filter) {
     if (id == 0) {
         if (image) {
             glGenTextures(1, &id);
@@ -131,6 +138,7 @@ Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps) {
             if (!generate_mipmaps) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
             }
+            apply_sampler_filter(GL_TEXTURE_2D, filter, generate_mipmaps);
 
             std::visit(
                 [&](auto& image_data) {

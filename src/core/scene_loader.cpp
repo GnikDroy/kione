@@ -47,12 +47,12 @@ static void load_texture(const AssetHandle& handle, ResourceManager& resources, 
         Log::core().warn(std::format("Scene references unknown texture asset '{}'", handle.name));
         return;
     }
-    auto image = AssetLoader::try_get<Image>(it->second.second);
-    if (!image) {
-        Log::core().error(std::format("Failed to load texture '{}': {}", handle.name, image.error()));
+    auto texture = AssetLoader::try_get<Texture2D>(it->second.second);
+    if (!texture) {
+        Log::core().error(std::format("Failed to load texture '{}': {}", handle.name, texture.error()));
         return;
     }
-    resources.set(handle.name, Texture2D { *image });
+    resources.set(handle.name, std::move(*texture));
 }
 
 static void load_textures(ResourceManager& resources, const AssetRegistry& assets) {

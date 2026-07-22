@@ -2,6 +2,7 @@
 
 #include <array>
 #include <concepts>
+#include <cstdint>
 #include <filesystem>
 #include <span>
 #include <utility>
@@ -23,6 +24,8 @@ template <> struct OpenGLType<float> {
 template <> struct OpenGLType<uint8_t> {
     static constexpr GLenum type = GL_UNSIGNED_BYTE;
 };
+
+enum class TextureFilter : std::uint8_t { Nearest, Linear };
 
 struct Texture2D {
     template <FloatOrUInt8 T> static GLint predict_sized_format(std::size_t channels);
@@ -49,11 +52,13 @@ struct Texture2D {
 
     ~Texture2D() { glDeleteTextures(1, &id); }
 
-    explicit Texture2D(const Image& image, bool generate_mipmaps = true) { load(image, generate_mipmaps); }
+    explicit Texture2D(const Image& image, bool generate_mipmaps = true, TextureFilter filter = TextureFilter::Linear) {
+        load(image, generate_mipmaps, filter);
+    }
 
     template <FloatOrUInt8 T>
     Texture2D(std::size_t width, std::size_t height, std::span<const T> data = {}, GLuint sized_format = GL_RGBA8,
-        bool generate_mipmaps = true);
+        bool generate_mipmaps = true, TextureFilter filter = TextureFilter::Linear);
 
     explicit operator bool() const { return id != 0; }
 
@@ -66,7 +71,7 @@ struct Texture2D {
 
     template <FloatOrUInt8 T> static Texture2D create_white_texture();
 
-    Texture2D& load(const Image& image, bool generate_mipmaps = true);
+    Texture2D& load(const Image& image, bool generate_mipmaps = true, TextureFilter filter = TextureFilter::Linear);
 };
 
 struct TextureCube {

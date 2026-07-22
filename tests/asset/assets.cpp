@@ -67,7 +67,7 @@ TEST_CASE("Asset URL split") {
 }
 
 TEST_CASE("Asset query pair extraction.") {
-    using QueryMap = std::unordered_map<std::string_view, std::string_view>;
+    using QueryMap = std::unordered_map<std::string, std::string>;
     std::vector<std::pair<std::string, QueryMap>> cases {
         {
             {},
