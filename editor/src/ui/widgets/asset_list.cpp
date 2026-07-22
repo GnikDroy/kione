@@ -157,7 +157,17 @@ void AssetListWidget::render(EditorLayer& editor_layer) {
             ImGui::TableNextColumn();
             ImGui::TextUnformatted(std::string { asset.get_type_strv() }.c_str());
             ImGui::TableNextColumn();
+            bool missing = !std::filesystem::exists(std::filesystem::path { std::string { asset.get_url_divisions().path } });
             ImGui::TextUnformatted(asset.url.c_str());
+            if (missing) {
+                auto min = ImGui::GetItemRectMin();
+                auto max = ImGui::GetItemRectMax();
+                auto red = ImGui::GetColorU32(ImVec4 { 1.0f, 0.0f, 0.0f, 1.0f });
+                ImGui::GetWindowDrawList()->AddRect({ min.x - 2.0f, min.y - 1.0f }, { max.x + 2.0f, max.y + 1.0f }, red);
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("File not found: %s", std::string { asset.get_url_divisions().path }.c_str());
+                }
+            }
         }
         ImGui::EndTable();
     }
