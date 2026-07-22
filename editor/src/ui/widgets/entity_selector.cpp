@@ -62,7 +62,6 @@ static void in_between_drag_drop_target(
                     return;
                 }
                 reparent_preserving_world(registry, dragged, [&] {
-                    RelationComponent::detach(registry, dragged);
                     if constexpr (AttachBefore) {
                         RelationComponent::attach_before(registry, dragged, entity);
                     } else {
@@ -98,7 +97,6 @@ static void entity_drag_drop_target(
                     return;
                 }
                 reparent_preserving_world(registry, dragged, [&] {
-                    RelationComponent::detach(registry, dragged);
                     RelationComponent::attach_last(registry, dragged, entity);
                 });
             };

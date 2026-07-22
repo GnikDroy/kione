@@ -1,6 +1,8 @@
 #pragma once
 
 #include <queue>
+#include <unordered_map>
+#include <vector>
 
 #include <yaml-cpp/yaml.h>
 
@@ -30,24 +32,56 @@ template <> struct convert<k2::Scene> {
         YAML::Node node { YAML::NodeType::Sequence };
         auto& registry = scene.registry;
 
-        auto serialize = [&]<class Component>(auto& node, const auto& label, const auto& entity) {
+        // Serialized IDs are stable. Root is 0, and indices go in BFS order.
+        std::vector<entt::entity> order;
+        std::unordered_map<entt::entity, entt::entity> label;
+        std::queue<entt::entity> pending;
+        registry.view<k2::RelationComponent>().each([&](auto entity, const k2::RelationComponent& relation) {
+            if (relation.parent == entt::null) {
+                pending.push(entity);
+            }
+        });
+        while (!pending.empty()) {
+            auto entity = pending.front();
+            pending.pop();
+            label.emplace(entity, static_cast<entt::entity>(order.size()));
+            order.push_back(entity);
+            if (const auto* relation = registry.try_get<k2::RelationComponent>(entity)) {
+                auto curr = relation->first;
+                for (std::size_t i {}; i < relation->children; i++) {
+                    pending.push(curr);
+                    curr = registry.get<k2::RelationComponent>(curr).next;
+                }
+            }
+        }
+        auto relabel = [&](entt::entity e) { return e == entt::null ? entt::null : label.at(e); };
+
+        auto serialize = [&]<class Component>(YAML::Node& enode, const char* key, entt::entity entity) {
             if constexpr (std::is_empty_v<Component>) {
                 if (registry.all_of<Component>(entity)) {
-                    node[label] = Component {};
+                    enode[key] = Component {};
                 }
             } else {
                 if (const auto* component = registry.try_get<Component>(entity)) {
-                    node[label] = *component;
+                    enode[key] = *component;
                 }
             }
         };
 
-        auto emit = [&](entt::entity entity) {
+        for (auto entity : order) {
             YAML::Node entity_node;
-            entity_node["Entity"] = entity;
+            entity_node["Entity"] = relabel(entity);
             serialize.template operator()<k2::TagComponent>(entity_node, "TagComponent", entity);
             serialize.template operator()<k2::TransformComponent>(entity_node, "TransformComponent", entity);
-            serialize.template operator()<k2::RelationComponent>(entity_node, "RelationComponent", entity);
+            // RelationComponent stores entity references, so relabel.
+            if (const auto* relation = registry.try_get<k2::RelationComponent>(entity)) {
+                k2::RelationComponent relabeled = *relation;
+                relabeled.parent = relabel(relabeled.parent);
+                relabeled.first = relabel(relabeled.first);
+                relabeled.next = relabel(relabeled.next);
+                relabeled.prev = relabel(relabeled.prev);
+                entity_node["RelationComponent"] = relabeled;
+            }
             serialize.template operator()<k2::Camera>(entity_node, "Camera", entity);
             serialize.template operator()<k2::MainCamera>(entity_node, "MainCamera", entity);
             serialize.template operator()<k2::SpriteComponent>(entity_node, "SpriteComponent", entity);
@@ -62,26 +96,6 @@ template <> struct convert<k2::Scene> {
             serialize.template operator()<k2::SpotLight>(entity_node, "SpotLight", entity);
             serialize.template operator()<k2::SpriteLight>(entity_node, "SpriteLight", entity);
             node.push_back(entity_node);
-        };
-
-        // Tree order from the scene root.
-        std::queue<entt::entity> pending;
-        registry.view<k2::RelationComponent>().each([&](auto entity, const k2::RelationComponent& relation) {
-            if (relation.parent == entt::null) {
-                pending.push(entity);
-            }
-        });
-        while (!pending.empty()) {
-            auto entity = pending.front();
-            pending.pop();
-            emit(entity);
-            if (const auto* relation = registry.try_get<k2::RelationComponent>(entity)) {
-                auto curr = relation->first;
-                for (std::size_t i {}; i < relation->children; i++) {
-                    pending.push(curr);
-                    curr = registry.get<k2::RelationComponent>(curr).next;
-                }
-            }
         }
         return node;
     }
