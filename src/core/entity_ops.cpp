@@ -45,6 +45,7 @@ entt::entity scene_root(entt::registry& registry) {
     }
     auto root = registry.create();
     registry.emplace<RelationComponent>(root);
+    registry.emplace<TransformComponent>(root);
     return root;
 }
 

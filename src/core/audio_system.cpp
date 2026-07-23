@@ -35,6 +35,7 @@ struct AudioSystem::Impl {
 
     // std::list: voices must not move — ma_sound holds a pointer to its buffer.
     std::list<Voice> voices;
+    bool voice_cap_warned { false };
 
     Impl() {
         if (ma_engine_init(nullptr, &engine) != MA_SUCCESS) {
@@ -52,7 +53,14 @@ struct AudioSystem::Impl {
     }
 
     void play(const AudioClip& clip, float volume, float pitch, bool loop, entt::entity owner) {
-        if (!ready || clip.channels == 0 || !clip.frames || clip.frames->empty() || voices.size() >= max_voices) {
+        if (!ready || clip.channels == 0 || !clip.frames || clip.frames->empty()) {
+            return;
+        }
+        if (voices.size() >= max_voices) {
+            if (!voice_cap_warned) {
+                voice_cap_warned = true;
+                Log::core().warn(std::format("Voice cap of {} reached; dropping sounds", max_voices));
+            }
             return;
         }
         auto& voice = voices.emplace_back();

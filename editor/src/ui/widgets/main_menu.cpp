@@ -70,15 +70,41 @@ static void save_scene_as(EditorLayer& editor_layer) {
         std::array filters = { nfdfilteritem_t { "Scene files", "k2scene" } };
         [[maybe_unused]] auto lock = NFD::Guard();
         NFD::UniquePathU8 path;
-        if (NFD::SaveDialog(path, filters.data(), nfdfiltersize_t(filters.size())) == NFD_OKAY) {
-            std::ofstream scene_file_stream { path.get() };
-            scene_file_stream << YAML::Node(editor_layer.scene);
-            if (scene_file_stream) {
-                Log::core().info(std::format("Saving file as: {}", std::string_view { path.get() }));
-            } else {
-                Log::core().error(std::format("Failed to save file: {}", std::string_view { path.get() }));
-            }
+        auto default_path = editor_layer.project ? editor_layer.project->root.string() : std::string {};
+        if (NFD::SaveDialog(path, filters.data(), nfdfiltersize_t(filters.size()),
+                default_path.empty() ? nullptr : default_path.c_str())
+            != NFD_OKAY) {
+            return;
         }
+        auto scene_file = std::filesystem::path { path.get() };
+        if (scene_file.extension() != ".k2scene") {
+            scene_file += ".k2scene";
+        }
+        std::ofstream scene_file_stream { scene_file };
+        scene_file_stream << YAML::Node(editor_layer.scene);
+        if (!scene_file_stream) {
+            Log::core().error(std::format("Failed to save file: {}", scene_file.string()));
+            return;
+        }
+        Log::core().info(std::format("Saved scene: {}", scene_file.string()));
+
+        if (!editor_layer.project.has_value()) {
+            return;
+        }
+        auto name = scene_file.stem().string();
+        auto it = editor_layer.project->assets.find(ResourceManager::resolve(name));
+        if (it == editor_layer.project->assets.end()) {
+            if (auto added = editor_layer.project->add_asset(Asset::Type::Scene, name, scene_file); !added) {
+                Log::core().warn(std::format("Scene saved but not added to the project: {}", added.error()));
+                return;
+            }
+        } else if (it->second.second.type != Asset::Type::Scene
+            || !std::filesystem::equivalent(
+                std::filesystem::path { std::string { it->second.second.get_url_divisions().path } }, scene_file)) {
+            Log::core().warn(std::format("Scene saved, but a different asset named '{}' already exists", name));
+            return;
+        }
+        editor_layer.current_scene = name;
     } catch (const std::exception& e) {
         Log::core().error(std::format("Failed to save scene: {}", e.what()));
     }

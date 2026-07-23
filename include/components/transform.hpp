@@ -5,6 +5,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "components/relation.hpp"
+#include "core/logger.hpp"
 
 namespace k2 {
 
@@ -37,12 +38,20 @@ struct TransformComponent {
         // Depth guard: hierarchy cycles would otherwise loop forever.
         size_t depth = 0;
         const size_t MAX_DEPTH = 256;
-        for (auto current = entity; current != entt::null && depth < MAX_DEPTH; depth++) {
+        auto current = entity;
+        for (; current != entt::null && depth < MAX_DEPTH; depth++) {
             if (const auto* transform = registry.template try_get<TransformComponent>(current)) {
                 result = transform->get_matrix() * result;
             }
             const auto* relation = registry.template try_get<RelationComponent>(current);
             current = relation ? relation->parent : EntityType { entt::null };
+        }
+        if (current != entt::null) {
+            static bool warned = false;
+            if (!warned) {
+                warned = true;
+                Log::core().warn("TransformComponent::world truncated a parent chain deeper than 256 entities");
+            }
         }
         return result;
     }

@@ -82,9 +82,8 @@ namespace {
         vec[sol::meta_function::addition] = [](const Vec& a, const Vec& b) { return a + b; };
         vec[sol::meta_function::subtraction] = [](const Vec& a, const Vec& b) { return a - b; };
         vec[sol::meta_function::unary_minus] = [](const Vec& a) { return -a; };
-        vec[sol::meta_function::multiplication]
-            = sol::overload([](const Vec& a, float s) { return a * s; }, [](float s, const Vec& a) { return a * s; },
-                [](const Vec& a, const Vec& b) { return a * b; });
+        vec[sol::meta_function::multiplication] = sol::overload([](const Vec& a, float s) { return a * s; },
+            [](float s, const Vec& a) { return a * s; }, [](const Vec& a, const Vec& b) { return a * b; });
         vec[sol::meta_function::division] = sol::overload(
             [](const Vec& a, float s) { return a / s; }, [](const Vec& a, const Vec& b) { return a / b; });
         vec[sol::meta_function::equal_to] = [](const Vec& a, const Vec& b) { return a == b; };
@@ -275,7 +274,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     camera["bottom"] = ortho_property(&Camera::OrthographicTraits::bottom);
     camera["fov"] = perspective_property(&Camera::PerspectiveTraits::fov);
     camera["aspect_ratio"] = perspective_property(&Camera::PerspectiveTraits::aspect_ratio);
-    camera["near_clip"] = clip_property<&Camera::OrthographicTraits::near_clip, &Camera::PerspectiveTraits::near_clip>();
+    camera["near_clip"]
+        = clip_property<&Camera::OrthographicTraits::near_clip, &Camera::PerspectiveTraits::near_clip>();
     camera["far_clip"] = clip_property<&Camera::OrthographicTraits::far_clip, &Camera::PerspectiveTraits::far_clip>();
     camera["look_at"] = [](Camera& camera, float x, float y) {
         camera.position.x = x;
@@ -330,6 +330,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     audio_source["volume"] = &AudioSourceComponent::volume;
     audio_source["pitch"] = &AudioSourceComponent::pitch;
     audio_source["looping"] = &AudioSourceComponent::looping;
+    audio_source["play_on_create"] = &AudioSourceComponent::play_on_create;
     audio_source["clip"] = asset_property(&AudioSourceComponent::clip);
 
     auto animation = lua.new_usertype<AnimationComponent>("Animation");
@@ -583,8 +584,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
             std::move(options), DrawCommand { .kind = DrawCommand::Kind::Line, .a = { x1, y1 }, .b = { x2, y2 } }));
     };
     kione_table["draw_rect"] = [&host](float x, float y, float w, float h, sol::optional<sol::table> options) {
-        host.submit_draw(
-            parse_draw_options(std::move(options), DrawCommand { .kind = DrawCommand::Kind::Rect, .a = { x, y }, .b = { w, h } }));
+        host.submit_draw(parse_draw_options(
+            std::move(options), DrawCommand { .kind = DrawCommand::Kind::Rect, .a = { x, y }, .b = { w, h } }));
     };
     kione_table["draw_circle"] = [&host](float x, float y, float radius, sol::optional<sol::table> options) {
         host.submit_draw(parse_draw_options(std::move(options),

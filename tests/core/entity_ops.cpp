@@ -51,6 +51,7 @@ TEST_CASE("scene_root is created once and reused") {
     entt::registry registry;
     auto root = k2::scene_root(registry);
     REQUIRE((registry.get<k2::RelationComponent>(root).parent == entt::null));
+    REQUIRE(registry.all_of<k2::TransformComponent>(root));
     REQUIRE(k2::scene_root(registry) == root);
 }
 

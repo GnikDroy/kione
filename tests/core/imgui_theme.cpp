@@ -19,6 +19,7 @@ TEST_CASE("HexColorToImVec4") {
         "#aabbccddee", // too long
         "#gggggg", // non-hex digits
         "#-fffff", // from_chars rejects the sign
+        "#-fffffff", // signed at the 8-digit length as well
     };
 
     std::vector<std::pair<const char*, ImVec4>> valid = {

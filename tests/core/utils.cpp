@@ -66,6 +66,12 @@ TEST_CASE("StringView to Integer") {
     }
 
     {
+        // from_chars rejects the sign for unsigned targets.
+        std::string_view sv { "-1" };
+        REQUIRE_THROWS_AS(k2::to_number<std::uint32_t>(sv.data(), sv.data() + sv.size()), std::invalid_argument);
+    }
+
+    {
         std::string_view sv { "12.12" };
         REQUIRE(k2::to_number<std::uint32_t>(sv.data(), sv.data() + sv.size()) == 12);
     }
