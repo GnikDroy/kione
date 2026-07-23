@@ -2,7 +2,6 @@
 
 #include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
 #include <any>
@@ -70,13 +69,8 @@ namespace sinks {
 struct Logger::Impl {
     explicit Impl(const std::string& name) {
         auto console_sink = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
-        auto file_sink = std::make_unique<spdlog::sinks::basic_file_sink_mt>(std::format("{}.log", name), true);
-
         console_sink->set_pattern("%^[%T] %n: %v%$");
-        file_sink->set_pattern("[%T] [%l] %n: %v");
-        std::array<spdlog::sink_ptr, 2> sink_arr = { std::move(console_sink), std::move(file_sink) };
-
-        logger = std::make_unique<spdlog::logger>(name, sink_arr.begin(), sink_arr.end());
+        logger = std::make_unique<spdlog::logger>(name, std::move(console_sink));
         logger->set_level(spdlog::level::trace);
         logger->flush_on(spdlog::level::trace);
     }
@@ -167,8 +161,7 @@ template <LoggerSinkType V> std::vector<std::pair<LogLevel, std::string>> RingBu
 }
 
 template <LoggerSinkType V> void RingBufferSink<V>::set_pattern(const std::string& pattern) {
-    return std::static_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))
-        ->set_pattern(pattern);
+    return std::static_pointer_cast<RingBufferSinkT<V>>(std::any_cast<spdlog::sink_ptr>(impl))->set_pattern(pattern);
 }
 
 template <LoggerSinkType V> void RingBufferSink<V>::clear() {
