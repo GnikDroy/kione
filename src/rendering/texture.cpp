@@ -1,6 +1,5 @@
 #include "rendering/texture.hpp"
 
-#include <cmath>
 #include <format>
 #include <stdexcept>
 
@@ -15,12 +14,14 @@ template <FloatOrUInt8 T> GLint Texture2D::predict_sized_format(std::size_t chan
         case 1: return GL_R8;
         case 3: return GL_RGB8;
         case 4: return GL_RGBA8;
+        default: break;
         }
     } else if constexpr (std::same_as<T, float>) {
         switch (channels) {
         case 1: return GL_R32F;
         case 3: return GL_RGB32F;
         case 4: return GL_RGBA32F;
+        default: break;
         }
     }
 
@@ -70,8 +71,8 @@ GLenum Texture2D::predict_type_from_sized(std::size_t sized) {
 
 static void apply_sampler_filter(GLenum target, TextureFilter filter, bool mipmaps) {
     GLint mag = filter == TextureFilter::Nearest ? GL_NEAREST : GL_LINEAR;
-    GLint min = mipmaps ? (filter == TextureFilter::Nearest ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR)
-                        : mag;
+    GLint min
+        = mipmaps ? (filter == TextureFilter::Nearest ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR) : mag;
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
 }
@@ -155,8 +156,8 @@ Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps, TextureFil
                 auto sized_format = predict_sized_format<float>(image.channels);
                 auto format = predict_format_from_sized(sized_format);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
-                    OpenGLType<float>::type, ptr);
+                glTexImage2D(
+                    GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format, OpenGLType<float>::type, ptr);
             } else {
                 static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");
             }

@@ -3,6 +3,7 @@
 #include <format>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -77,6 +78,105 @@ namespace {
             [member](Owner& owner, const std::string& name) { (owner.*member).set(name); });
     }
 
+    template <class Vec> void bind_vec_math(sol::usertype<Vec> vec) {
+        vec[sol::meta_function::addition] = [](const Vec& a, const Vec& b) { return a + b; };
+        vec[sol::meta_function::subtraction] = [](const Vec& a, const Vec& b) { return a - b; };
+        vec[sol::meta_function::unary_minus] = [](const Vec& a) { return -a; };
+        vec[sol::meta_function::multiplication]
+            = sol::overload([](const Vec& a, float s) { return a * s; }, [](float s, const Vec& a) { return a * s; },
+                [](const Vec& a, const Vec& b) { return a * b; });
+        vec[sol::meta_function::division] = sol::overload(
+            [](const Vec& a, float s) { return a / s; }, [](const Vec& a, const Vec& b) { return a / b; });
+        vec[sol::meta_function::equal_to] = [](const Vec& a, const Vec& b) { return a == b; };
+        vec["length"] = [](const Vec& a) { return glm::length(a); };
+        vec["normalize"] = [](const Vec& a) { return glm::length(a) > 0.0f ? glm::normalize(a) : a; };
+        vec["dot"] = [](const Vec& a, const Vec& b) { return glm::dot(a, b); };
+        vec["distance"] = [](const Vec& a, const Vec& b) { return glm::distance(a, b); };
+    }
+
+    template <class Member> auto ortho_property(Member Camera::OrthographicTraits::* member) {
+        auto traits = [](Camera& camera) -> Camera::OrthographicTraits& {
+            if (auto* ortho = std::get_if<Camera::OrthographicTraits>(&camera.projection_traits)) {
+                return *ortho;
+            }
+            throw std::runtime_error("camera: projection is not orthographic");
+        };
+        return sol::property([member, traits](Camera& camera) -> Member { return traits(camera).*member; },
+            [member, traits](Camera& camera, const Member& value) { traits(camera).*member = value; });
+    }
+
+    template <class Member> auto perspective_property(Member Camera::PerspectiveTraits::* member) {
+        auto traits = [](Camera& camera) -> Camera::PerspectiveTraits& {
+            if (auto* perspective = std::get_if<Camera::PerspectiveTraits>(&camera.projection_traits)) {
+                return *perspective;
+            }
+            throw std::runtime_error("camera: projection is not perspective");
+        };
+        return sol::property([member, traits](Camera& camera) -> Member { return traits(camera).*member; },
+            [member, traits](Camera& camera, const Member& value) { traits(camera).*member = value; });
+    }
+
+    template <class F> decltype(auto) with_component_type(std::string_view name, F&& f) {
+        if (name == "Transform") {
+            return f(std::type_identity<TransformComponent> {});
+        }
+        if (name == "Sprite") {
+            return f(std::type_identity<SpriteComponent> {});
+        }
+        if (name == "Text") {
+            return f(std::type_identity<TextComponent> {});
+        }
+        if (name == "Animation") {
+            return f(std::type_identity<AnimationComponent> {});
+        }
+        if (name == "TileMap") {
+            return f(std::type_identity<TileMapComponent> {});
+        }
+        if (name == "AudioSource") {
+            return f(std::type_identity<AudioSourceComponent> {});
+        }
+        if (name == "Collider") {
+            return f(std::type_identity<ColliderComponent> {});
+        }
+        if (name == "Environment") {
+            return f(std::type_identity<Environment> {});
+        }
+        if (name == "PointLight") {
+            return f(std::type_identity<PointLight> {});
+        }
+        if (name == "SpotLight") {
+            return f(std::type_identity<SpotLight> {});
+        }
+        if (name == "SpriteLight") {
+            return f(std::type_identity<SpriteLight> {});
+        }
+        if (name == "Camera") {
+            return f(std::type_identity<Camera> {});
+        }
+        if (name == "MainCamera") {
+            return f(std::type_identity<MainCamera> {});
+        }
+        throw std::runtime_error(std::format("Unknown component '{}'", name));
+    }
+
+    template <float Camera::OrthographicTraits::* Ortho, float Camera::PerspectiveTraits::* Perspective>
+    auto clip_property() {
+        auto plane = [](Camera& camera) -> float& {
+            return std::visit(
+                [](auto& traits) -> float& {
+                    using T = std::decay_t<decltype(traits)>;
+                    if constexpr (std::is_same_v<T, Camera::OrthographicTraits>) {
+                        return traits.*Ortho;
+                    } else {
+                        return traits.*Perspective;
+                    }
+                },
+                camera.projection_traits);
+        };
+        return sol::property([plane](Camera& camera) -> float { return plane(camera); },
+            [plane](Camera& camera, float value) { plane(camera) = value; });
+    }
+
 }
 
 void bind_constants(sol::state& lua) {
@@ -93,11 +193,14 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     auto vec2 = lua.new_usertype<glm::vec2>("vec2", sol::constructors<glm::vec2(), glm::vec2(float, float)>());
     vec2["x"] = &glm::vec2::x;
     vec2["y"] = &glm::vec2::y;
+    bind_vec_math<glm::vec2>(vec2);
 
     auto vec3 = lua.new_usertype<glm::vec3>("vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>());
     vec3["x"] = &glm::vec3::x;
     vec3["y"] = &glm::vec3::y;
     vec3["z"] = &glm::vec3::z;
+    bind_vec_math<glm::vec3>(vec3);
+    vec3["cross"] = [](const glm::vec3& a, const glm::vec3& b) { return glm::cross(a, b); };
 
     auto vec4
         = lua.new_usertype<glm::vec4>("vec4", sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>());
@@ -105,6 +208,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     vec4["y"] = &glm::vec4::y;
     vec4["z"] = &glm::vec4::z;
     vec4["w"] = &glm::vec4::w;
+    bind_vec_math<glm::vec4>(vec4);
 
     auto rect = lua.new_usertype<Rectf>("Rect");
     rect["x"] = &Rectf::x;
@@ -124,6 +228,29 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     auto camera = lua.new_usertype<Camera>("Camera");
     camera["position"] = ref_property(&Camera::position);
     camera["target"] = ref_property(&Camera::target);
+    camera["up"] = ref_property(&Camera::up);
+    camera["projection"] = sol::property(
+        [](Camera& camera) -> const char* {
+            return std::holds_alternative<Camera::PerspectiveTraits>(camera.projection_traits) ? "perspective"
+                                                                                               : "orthographic";
+        },
+        [](Camera& camera, std::string_view value) {
+            if (value == "orthographic") {
+                camera.projection_traits = Camera::OrthographicTraits {};
+            } else if (value == "perspective") {
+                camera.projection_traits = Camera::PerspectiveTraits {};
+            } else {
+                throw std::runtime_error(std::format("Unknown camera projection '{}'", value));
+            }
+        });
+    camera["left"] = ortho_property(&Camera::OrthographicTraits::left);
+    camera["right"] = ortho_property(&Camera::OrthographicTraits::right);
+    camera["top"] = ortho_property(&Camera::OrthographicTraits::top);
+    camera["bottom"] = ortho_property(&Camera::OrthographicTraits::bottom);
+    camera["fov"] = perspective_property(&Camera::PerspectiveTraits::fov);
+    camera["aspect_ratio"] = perspective_property(&Camera::PerspectiveTraits::aspect_ratio);
+    camera["near_clip"] = clip_property<&Camera::OrthographicTraits::near_clip, &Camera::PerspectiveTraits::near_clip>();
+    camera["far_clip"] = clip_property<&Camera::OrthographicTraits::far_clip, &Camera::PerspectiveTraits::far_clip>();
     camera["look_at"] = [](Camera& camera, float x, float y) {
         camera.position.x = x;
         camera.position.y = y;
@@ -182,6 +309,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     auto animation = lua.new_usertype<AnimationComponent>("Animation");
     animation["playing"] = &AnimationComponent::playing;
     animation["speed"] = &AnimationComponent::speed;
+    animation["elapsed"] = &AnimationComponent::elapsed;
     animation["finished"] = sol::property([](AnimationComponent& animation) { return animation.finished; });
     animation["clip"] = sol::property([](AnimationComponent& animation) { return animation.clip.name; });
     animation["play"] = [](AnimationComponent& animation, const std::string& clip) {
@@ -303,6 +431,7 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
 
     auto entity = lua.new_usertype<LuaEntity>("Entity");
     entity["transform"] = &LuaEntity::transform;
+    entity["world_transform"] = &LuaEntity::world_transform;
     entity["sprite"] = &LuaEntity::sprite;
     entity["text"] = &LuaEntity::text;
     entity["animation"] = &LuaEntity::animation;
@@ -336,6 +465,65 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
         }
         return lua_component(lua, *self.registry, self.entity);
     };
+    entity["parent"] = [&lua](const LuaEntity& self) -> sol::object {
+        if (!self.valid()) {
+            return sol::lua_nil;
+        }
+        const auto* relation = self.registry->try_get<RelationComponent>(self.entity);
+        if (relation == nullptr || relation->parent == entt::null) {
+            return sol::lua_nil;
+        }
+        return sol::make_object(lua, LuaEntity { .entity = relation->parent, .registry = self.registry });
+    };
+    entity["children"] = [&lua](const LuaEntity& self) -> sol::table {
+        auto result = lua.create_table();
+        if (self.valid()) {
+            for (const auto& [child, relation] : RelationComponent::get_children(*self.registry, self.entity)) {
+                result.add(LuaEntity { .entity = child, .registry = self.registry });
+            }
+        }
+        return result;
+    };
+    entity["set_parent"] = [](const LuaEntity& self, const LuaEntity& parent) {
+        if (self.valid() && parent.valid()) {
+            RelationComponent::attach_last(*self.registry, self.entity, parent.entity);
+        }
+    };
+    entity["detach"] = [](const LuaEntity& self) {
+        if (self.valid()) {
+            RelationComponent::detach(*self.registry, self.entity);
+        }
+    };
+    entity["add_component"] = [&lua](const LuaEntity& self, const std::string& name) -> sol::object {
+        if (!self.valid()) {
+            return sol::lua_nil;
+        }
+        return with_component_type(name, [&](auto tag) -> sol::object {
+            using T = typename decltype(tag)::type;
+            if constexpr (std::is_empty_v<T>) {
+                if (!self.registry->all_of<T>(self.entity)) {
+                    self.registry->emplace<T>(self.entity);
+                }
+                return sol::lua_nil;
+            } else {
+                return sol::make_object(lua, &self.registry->get_or_emplace<T>(self.entity));
+            }
+        });
+    };
+    entity["remove_component"] = [](const LuaEntity& self, const std::string& name) {
+        if (self.valid()) {
+            with_component_type(name, [&](auto tag) {
+                using T = typename decltype(tag)::type;
+                self.registry->remove<T>(self.entity);
+            });
+        }
+    };
+    entity["has_component"] = [](const LuaEntity& self, const std::string& name) -> bool {
+        return self.valid() && with_component_type(name, [&](auto tag) {
+            using T = typename decltype(tag)::type;
+            return self.registry->all_of<T>(self.entity);
+        });
+    };
     entity["overlaps"] = [&host](const LuaEntity& self, const LuaEntity& other) { return host.overlaps(self, other); };
     entity["clone"] = [&host](const LuaEntity& self) { return host.clone(self); };
     entity["destroy"] = [&host](const LuaEntity& self) { host.destroy(self); };
@@ -347,6 +535,8 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
     kione_table["log"] = [](const std::string& message) { Log::app().info(message); };
     kione_table["find"] = [&host](std::string_view tag) { return host.find(tag); };
     kione_table["find_all"] = [&host](std::string_view tag) { return host.find_all(tag); };
+    kione_table["find_main_camera"] = [&host]() { return host.find_main_camera(); };
+    kione_table["screen_size"] = [&host]() { return host.screen_size(); };
     kione_table["entities"] = [&host](sol::variadic_args component_names) { return host.entities(component_names); };
     kione_table["spawn"] = [&host](std::string_view tag, float x, float y) { return host.spawn(tag, x, y); };
     kione_table["screen_to_world"] = [&host](float x, float y) { return host.screen_to_world(x, y); };

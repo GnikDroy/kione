@@ -20,6 +20,7 @@
 #include "core/resources.hpp"
 #include "core/runtime.hpp"
 #include "core/scene.hpp"
+#include "core/window.hpp"
 #include "core/script/bindings.hpp"
 #include "core/script/event_translation.hpp"
 #include "core/script/host.hpp"
@@ -171,6 +172,21 @@ struct ScriptSystem::Impl : ScriptHost {
             table.add(make_handle(entity));
         }
         return table;
+    }
+
+    sol::object find_main_camera() override {
+        require_registry("kione.find_main_camera");
+        for (auto entity : attached_registry->view<Camera, MainCamera>()) {
+            return sol::make_object(lua, make_handle(entity));
+        }
+        return sol::lua_nil;
+    }
+
+    std::tuple<float, float> screen_size() override {
+        if (auto* view = scene_view()) {
+            return { view->viewport.w, view->viewport.h };
+        }
+        return { float(window->get_width()), float(window->get_height()) };
     }
 
     sol::table entities(sol::variadic_args component_names) override {

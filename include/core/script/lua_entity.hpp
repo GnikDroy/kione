@@ -28,6 +28,13 @@ struct LuaEntity {
     [[nodiscard]] TransformComponent* transform() const {
         return valid() ? registry->try_get<TransformComponent>(entity) : nullptr;
     }
+    [[nodiscard]] TransformComponent world_transform() const {
+        TransformComponent result;
+        if (valid()) {
+            result.set_from_matrix(TransformComponent::world(*registry, entity));
+        }
+        return result;
+    }
     [[nodiscard]] SpriteComponent* sprite() const {
         return valid() ? registry->try_get<SpriteComponent>(entity) : nullptr;
     }
