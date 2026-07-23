@@ -54,28 +54,28 @@ TEST_CASE("screen_to_world / world_to_screen round-trip through a viewport rect"
             .near_clip = 2000.0f,
         } },
     };
-    k2::Rect<float> window { .x = 0.0f, .y = 0.0f, .w = 1280.0f, .h = 720.0f };
+    k2::SceneView window { .camera = camera, .viewport = { .x = 0.0f, .y = 0.0f, .w = 1280.0f, .h = 720.0f } };
 
-    auto center = camera.screen_to_world({ 640.0f, 360.0f }, window);
+    auto center = window.screen_to_world({ 640.0f, 360.0f });
     REQUIRE(center.x == Approx(0.0f).margin(1e-3));
     REQUIRE(center.y == Approx(0.0f).margin(1e-3));
 
     // screen origin is top-left, y-down; world y is up
-    auto top_left = camera.screen_to_world({ 0.0f, 0.0f }, window);
+    auto top_left = window.screen_to_world({ 0.0f, 0.0f });
     REQUIRE(top_left.x == Approx(-640.0f));
     REQUIRE(top_left.y == Approx(360.0f));
 
     // an editor-style viewport image offset inside the window
-    k2::Rect<float> offset_view { .x = 100.0f, .y = 50.0f, .w = 640.0f, .h = 360.0f };
-    auto offset_center = camera.screen_to_world({ 100.0f + 320.0f, 50.0f + 180.0f }, offset_view);
+    k2::SceneView offset { .camera = camera, .viewport = { .x = 100.0f, .y = 50.0f, .w = 640.0f, .h = 360.0f } };
+    auto offset_center = offset.screen_to_world({ 100.0f + 320.0f, 50.0f + 180.0f });
     REQUIRE(offset_center.x == Approx(0.0f).margin(1e-3));
     REQUIRE(offset_center.y == Approx(0.0f).margin(1e-3));
 
-    auto screen = camera.world_to_screen({ -640.0f, 360.0f }, offset_view);
+    auto screen = offset.world_to_screen({ -640.0f, 360.0f });
     REQUIRE(screen.x == Approx(100.0f));
     REQUIRE(screen.y == Approx(50.0f));
 
-    auto round_trip = camera.screen_to_world(camera.world_to_screen({ 123.0f, -217.0f }, window), window);
+    auto round_trip = window.screen_to_world(window.world_to_screen({ 123.0f, -217.0f }));
     REQUIRE(round_trip.x == Approx(123.0f));
     REQUIRE(round_trip.y == Approx(-217.0f));
 }
@@ -128,4 +128,89 @@ TEST_CASE("perspective projection matches glm reference", "[camera]") {
 
     auto expected = glm::perspective(1.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
     REQUIRE(camera.get_projection() == expected);
+}
+
+namespace {
+// 16:9 design view (aspect 1.777...).
+k2::Camera design_camera(k2::ScaleMode mode) {
+    k2::Camera camera { .projection_traits { k2::Camera::OrthographicTraits {
+        .left = -800.0f, .right = 800.0f, .top = 450.0f, .bottom = -450.0f } } };
+    camera.scale_mode = mode;
+    return camera;
+}
+const k2::Camera::OrthographicTraits& ortho_of(const k2::Camera& camera) {
+    return std::get<k2::Camera::OrthographicTraits>(camera.projection_traits);
+}
+}
+
+TEST_CASE("letterbox_fit centers a design-aspect rect inside the surface", "[camera][scale]") {
+    // Equal aspect: fills the surface.
+    auto exact = k2::letterbox_fit(1600.0f, 900.0f, 16.0f / 9.0f);
+    REQUIRE(exact.x == Approx(0.0f));
+    REQUIRE(exact.y == Approx(0.0f));
+    REQUIRE(exact.w == Approx(1600.0f));
+    REQUIRE(exact.h == Approx(900.0f));
+
+    // Wider surface -> pillarbox (bars left/right), full height.
+    auto pillar = k2::letterbox_fit(2000.0f, 900.0f, 16.0f / 9.0f);
+    REQUIRE(pillar.w == Approx(1600.0f));
+    REQUIRE(pillar.h == Approx(900.0f));
+    REQUIRE(pillar.x == Approx(200.0f));
+    REQUIRE(pillar.y == Approx(0.0f));
+
+    // Taller surface -> letterbox (bars top/bottom), full width.
+    auto letter = k2::letterbox_fit(1600.0f, 1200.0f, 16.0f / 9.0f);
+    REQUIRE(letter.w == Approx(1600.0f));
+    REQUIRE(letter.h == Approx(900.0f));
+    REQUIRE(letter.x == Approx(0.0f));
+    REQUIRE(letter.y == Approx(150.0f));
+}
+
+TEST_CASE("for_surface: Stretch leaves bounds and uses the full surface", "[camera][scale]") {
+    auto resolved = design_camera(k2::ScaleMode::Stretch).for_surface(2000.0f, 900.0f);
+    const auto& bounds = ortho_of(resolved.camera);
+    REQUIRE(bounds.left == Approx(-800.0f));
+    REQUIRE(bounds.right == Approx(800.0f));
+    REQUIRE(resolved.viewport.w == Approx(2000.0f));
+    REQUIRE(resolved.viewport.h == Approx(900.0f));
+}
+
+TEST_CASE("for_surface: FitHeight keeps vertical extent, widens horizontally", "[camera][scale]") {
+    auto resolved = design_camera(k2::ScaleMode::FitHeight).for_surface(2000.0f, 900.0f);
+    const auto& bounds = ortho_of(resolved.camera);
+    REQUIRE(bounds.top == Approx(450.0f));
+    REQUIRE(bounds.bottom == Approx(-450.0f));
+    REQUIRE(bounds.left == Approx(-1000.0f)); // 450 * (2000/900)
+    REQUIRE(bounds.right == Approx(1000.0f));
+    REQUIRE(resolved.viewport.w == Approx(2000.0f)); // full surface, no bars
+}
+
+TEST_CASE("for_surface: FitWidth keeps horizontal extent, grows vertically", "[camera][scale]") {
+    auto resolved = design_camera(k2::ScaleMode::FitWidth).for_surface(1600.0f, 1200.0f);
+    const auto& bounds = ortho_of(resolved.camera);
+    REQUIRE(bounds.left == Approx(-800.0f));
+    REQUIRE(bounds.right == Approx(800.0f));
+    REQUIRE(bounds.top == Approx(600.0f)); // 800 / (1600/1200)
+    REQUIRE(bounds.bottom == Approx(-600.0f));
+}
+
+TEST_CASE("for_surface: Expand reveals more on the longer axis", "[camera][scale]") {
+    // Wider than design -> behaves like FitHeight.
+    auto wide = design_camera(k2::ScaleMode::Expand).for_surface(2000.0f, 900.0f);
+    REQUIRE(ortho_of(wide.camera).right == Approx(1000.0f));
+    REQUIRE(ortho_of(wide.camera).top == Approx(450.0f));
+    // Taller than design -> behaves like FitWidth.
+    auto tall = design_camera(k2::ScaleMode::Expand).for_surface(900.0f, 1600.0f);
+    REQUIRE(ortho_of(tall.camera).right == Approx(800.0f));
+    REQUIRE(ortho_of(tall.camera).top == Approx(800.0f / (900.0f / 1600.0f)));
+}
+
+TEST_CASE("for_surface: Letterbox keeps bounds and returns the centered sub-rect", "[camera][scale]") {
+    auto resolved = design_camera(k2::ScaleMode::Letterbox).for_surface(2000.0f, 900.0f);
+    const auto& bounds = ortho_of(resolved.camera);
+    REQUIRE(bounds.left == Approx(-800.0f)); // unchanged
+    REQUIRE(bounds.right == Approx(800.0f));
+    REQUIRE(resolved.viewport.x == Approx(200.0f)); // pillarbox sub-rect
+    REQUIRE(resolved.viewport.w == Approx(1600.0f));
+    REQUIRE(resolved.viewport.h == Approx(900.0f));
 }

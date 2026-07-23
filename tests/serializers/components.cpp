@@ -148,11 +148,13 @@ TEST_CASE("Camera serializer round-trips orthographic traits", "[serializers]") 
             .far_clip = 0.0f,
             .near_clip = 2000.0f,
         } },
+        .scale_mode = k2::ScaleMode::Letterbox,
     };
 
     auto loaded = round_trip(camera);
     REQUIRE(loaded.position == camera.position);
     REQUIRE(loaded.target == camera.target);
+    REQUIRE(loaded.scale_mode == k2::ScaleMode::Letterbox);
     auto* traits = std::get_if<k2::Camera::OrthographicTraits>(&loaded.projection_traits);
     REQUIRE(traits != nullptr);
     REQUIRE(traits->left == -100.0f);
@@ -211,6 +213,13 @@ TEST_CASE("SpriteLight serializer round-trips", "[serializers]") {
     REQUIRE(loaded.texture.name == "glow");
     REQUIRE(loaded.color == glm::vec3 { 1.0f, 0.0f, 1.0f });
     REQUIRE(loaded.intensity == Approx(1.5f));
+}
+
+TEST_CASE("Camera serializer requires an explicit ScaleMode", "[serializers]") {
+    auto node = YAML::Load("{ Position: [0, 0, 1000], Target: [0, 0, 0], Up: [0, 1, 0], "
+                           "ProjectionType: Orthographic, ProjectionTraits: "
+                           "{ Left: -1, Right: 1, Top: 1, Bottom: -1, FarClip: 0, NearClip: 2000 } }");
+    REQUIRE_THROWS(node.as<k2::Camera>());
 }
 
 TEST_CASE("Map-shaped component serializers reject scalars", "[serializers]") {

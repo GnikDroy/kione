@@ -243,6 +243,32 @@ void bind_script_api(sol::state& lua, Window& window, const bool& input_enabled,
                 throw std::runtime_error(std::format("Unknown camera projection '{}'", value));
             }
         });
+    camera["scale_mode"] = sol::property(
+        [](Camera& camera) -> const char* {
+            switch (camera.scale_mode) {
+            case ScaleMode::Stretch: return "stretch";
+            case ScaleMode::FitWidth: return "fit_width";
+            case ScaleMode::FitHeight: return "fit_height";
+            case ScaleMode::Expand: return "expand";
+            case ScaleMode::Letterbox: return "letterbox";
+            }
+            return "fit_height";
+        },
+        [](Camera& camera, std::string_view value) {
+            if (value == "stretch") {
+                camera.scale_mode = ScaleMode::Stretch;
+            } else if (value == "fit_width") {
+                camera.scale_mode = ScaleMode::FitWidth;
+            } else if (value == "fit_height") {
+                camera.scale_mode = ScaleMode::FitHeight;
+            } else if (value == "expand") {
+                camera.scale_mode = ScaleMode::Expand;
+            } else if (value == "letterbox") {
+                camera.scale_mode = ScaleMode::Letterbox;
+            } else {
+                throw std::runtime_error(std::format("Unknown camera scale_mode '{}'", value));
+            }
+        });
     camera["left"] = ortho_property(&Camera::OrthographicTraits::left);
     camera["right"] = ortho_property(&Camera::OrthographicTraits::right);
     camera["top"] = ortho_property(&Camera::OrthographicTraits::top);

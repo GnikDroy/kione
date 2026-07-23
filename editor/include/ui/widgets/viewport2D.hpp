@@ -7,6 +7,7 @@
 namespace k2::editor {
 class Viewport2DWidget : public IWidget {
     float width, height;
+    float dpi_scale = 1.0f;
     glm::vec2 camera_position {};
     float zoom = 1.0f;
     int gizmo_operation;

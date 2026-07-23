@@ -508,9 +508,17 @@ void Renderer2D::bloom_pass() {
     VertexArray::unbind();
 }
 
-void Renderer2D::present_pass(const std::array<GLint, 4>& viewport, bool bloom) {
+void Renderer2D::present_pass(const std::array<GLint, 4>& content, const std::array<GLint, 4>& full, bool bloom) {
     glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer.get_id());
-    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+
+    // letterbox
+    if (content != full) {
+        glViewport(full[0], full[1], full[2], full[3]);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    glViewport(content[0], content[1], content[2], content[3]);
     glDisable(GL_BLEND);
 
     glActiveTexture(GL_TEXTURE0);
@@ -570,8 +578,18 @@ void Renderer2D::render() {
     auto is_additive = [](const Drawable& drawable) { return drawable.blend == BlendMode::Additive; };
 
     auto output_viewport = viewport_of(frame_buffer);
-    auto scene_width = std::max<std::size_t>(std::size_t(output_viewport[2]), 1);
-    auto scene_height = std::max<std::size_t>(std::size_t(output_viewport[3]), 1);
+
+    // Letterbox
+    auto content_viewport = output_viewport;
+    if (camera.scale_mode == ScaleMode::Letterbox
+        && std::holds_alternative<Camera::OrthographicTraits>(camera.projection_traits)) {
+        auto fit = letterbox_fit(float(output_viewport[2]), float(output_viewport[3]), camera.aspect_ratio());
+        content_viewport
+            = { output_viewport[0] + GLint(fit.x), output_viewport[1] + GLint(fit.y), GLint(fit.w), GLint(fit.h) };
+    }
+    auto scene_width = std::max<std::size_t>(std::size_t(content_viewport[2]), 1);
+    auto scene_height = std::max<std::size_t>(std::size_t(content_viewport[3]), 1);
+
     ensure_scene_targets(scene_width, scene_height);
 
     if (has_lights) {
@@ -606,10 +624,15 @@ void Renderer2D::render() {
     if (bloom) {
         bloom_pass();
     }
-    present_pass(output_viewport, bloom);
+    present_pass(content_viewport, output_viewport, bloom);
 
-    submit_pass(pass_for(frame_buffer, text_shader, GL_ONE_MINUS_SRC_ALPHA), text_drawables,
-        [](const Drawable&) { return true; });
+    Batcher2D::Pass text_pass { .target = &frame_buffer,
+        .shader = &text_shader,
+        .blend_dst = GL_ONE_MINUS_SRC_ALPHA,
+        .viewport = content_viewport,
+        .camera = &camera,
+        .resources = resources };
+    submit_pass(text_pass, text_drawables, [](const Drawable&) { return true; });
 
     drawables.clear();
     text_drawables.clear();

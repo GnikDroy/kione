@@ -127,6 +127,6 @@ private:
     void light_pass();
     void composite_pass();
     void bloom_pass();
-    void present_pass(const std::array<GLint, 4>& viewport, bool bloom);
+    void present_pass(const std::array<GLint, 4>& content, const std::array<GLint, 4>& full, bool bloom);
 };
 }

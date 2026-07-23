@@ -75,9 +75,9 @@ void TileMapEditorWidget::push_grid_overlay(const k2::TileMapComponent& tilemap,
         return;
     }
     // Drawn as ImGui overlay, so grid lines keep a constant thickness.
-    auto view = viewport(rect_min);
+    k2::SceneView view_sv { .camera = renderer2D.camera, .viewport = viewport(rect_min) };
     auto world_to_screen = [&](glm::vec2 w) {
-        auto s = renderer2D.camera.world_to_screen(w, view);
+        auto s = view_sv.world_to_screen(w);
         return ImVec2 { s.x, s.y };
     };
     auto* draw_list = ImGui::GetWindowDrawList();
@@ -120,7 +120,7 @@ void TileMapEditorWidget::push_grid_overlay(const k2::TileMapComponent& tilemap,
     // Highlight the hovered cell.
     if (ImGui::IsItemHovered()) {
         auto mouse = ImGui::GetIO().MousePos;
-        auto world = renderer2D.camera.screen_to_world({ mouse.x, mouse.y }, view);
+        auto world = view_sv.screen_to_world({ mouse.x, mouse.y });
         auto cell = tilemap.cell_at({ world.x, world.y });
         if (tilemap.contains(cell.x, cell.y)) {
             auto position = tilemap.cell_position(cell.x, cell.y);
@@ -157,10 +157,10 @@ void TileMapEditorWidget::handle_paint(k2::TileMapComponent& tilemap, ImVec2 rec
     }
 
     if (hovered && io.MouseWheel != 0.0f) {
-        auto world_before = renderer2D.camera.screen_to_world(mouse, view);
+        auto world_before = k2::SceneView { .camera = renderer2D.camera, .viewport = view }.screen_to_world(mouse);
         zoom = std::clamp(zoom * std::pow(0.9f, io.MouseWheel), 0.01f, 100.0f);
         update_camera();
-        auto world_after = renderer2D.camera.screen_to_world(mouse, view);
+        auto world_after = k2::SceneView { .camera = renderer2D.camera, .viewport = view }.screen_to_world(mouse);
         camera_position += world_before - world_after;
         update_camera();
     }
@@ -168,7 +168,7 @@ void TileMapEditorWidget::handle_paint(k2::TileMapComponent& tilemap, ImVec2 rec
     if (!hovered || ImGui::IsKeyDown(ImGuiKey_Space)) {
         return;
     }
-    auto world = renderer2D.camera.screen_to_world(mouse, view);
+    auto world = k2::SceneView { .camera = renderer2D.camera, .viewport = view }.screen_to_world(mouse);
     auto cell = tilemap.cell_at({ world.x, world.y });
     int col = cell.x;
     int row = cell.y;

@@ -57,12 +57,24 @@ template <> struct convert<k2::MainCamera> {
     static bool decode(const Node&, k2::MainCamera&) { return true; }
 };
 
+inline const char* to_string(k2::ScaleMode mode) {
+    switch (mode) {
+    case k2::ScaleMode::Stretch: return "Stretch";
+    case k2::ScaleMode::FitWidth: return "FitWidth";
+    case k2::ScaleMode::FitHeight: return "FitHeight";
+    case k2::ScaleMode::Expand: return "Expand";
+    case k2::ScaleMode::Letterbox: return "Letterbox";
+    }
+    return "FitHeight";
+}
+
 template <> struct convert<k2::Camera> {
     static Node encode(const k2::Camera& camera) {
         YAML::Node node;
         node["Position"] = camera.position;
         node["Target"] = camera.target;
         node["Up"] = camera.up;
+        node["ScaleMode"] = to_string(camera.scale_mode);
         std::visit(
             [&](auto&& traits) {
                 if constexpr (std::is_same_v<std::decay_t<decltype(traits)>, k2::Camera::OrthographicTraits>) {
@@ -84,6 +96,21 @@ template <> struct convert<k2::Camera> {
         camera.position = node["Position"].as<glm::vec3>();
         camera.target = node["Target"].as<glm::vec3>();
         camera.up = node["Up"].as<glm::vec3>();
+
+        const auto& scale_mode = node["ScaleMode"].as<std::string>();
+        if (scale_mode == "Stretch") {
+            camera.scale_mode = k2::ScaleMode::Stretch;
+        } else if (scale_mode == "FitWidth") {
+            camera.scale_mode = k2::ScaleMode::FitWidth;
+        } else if (scale_mode == "Expand") {
+            camera.scale_mode = k2::ScaleMode::Expand;
+        } else if (scale_mode == "Letterbox") {
+            camera.scale_mode = k2::ScaleMode::Letterbox;
+        } else if (scale_mode == "FitHeight") {
+            camera.scale_mode = k2::ScaleMode::FitHeight;
+        } else {
+            return false;
+        }
 
         const auto& projection_type = node["ProjectionType"].as<std::string>();
         if (projection_type == "Orthographic") {

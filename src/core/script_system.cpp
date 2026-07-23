@@ -232,7 +232,7 @@ struct ScriptSystem::Impl : ScriptHost {
         if (view == nullptr) {
             return { x, y };
         }
-        auto world = view->camera.screen_to_world({ x, y }, view->viewport);
+        auto world = view->screen_to_world({ x, y });
         return { world.x, world.y };
     }
 
@@ -241,7 +241,7 @@ struct ScriptSystem::Impl : ScriptHost {
         if (view == nullptr) {
             return { x, y };
         }
-        auto screen = view->camera.world_to_screen({ x, y }, view->viewport);
+        auto screen = view->world_to_screen({ x, y });
         return { screen.x, screen.y };
     }
 

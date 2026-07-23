@@ -22,8 +22,8 @@ Viewport2DWidget::Viewport2DWidget()
 }
 
 void Viewport2DWidget::resize_frame_buffer() {
-    renderer2D.set_frame_buffer({ { .width = std::size_t(width),
-        .height = std::size_t(height),
+    renderer2D.set_frame_buffer({ { .width = std::size_t(width * dpi_scale),
+        .height = std::size_t(height * dpi_scale),
         .attachments {
             {
                 .buffer_type = k2::FrameBuffer::Attachment::BufferType::Texture,
@@ -129,15 +129,15 @@ void Viewport2DWidget::handle_interaction(EditorLayer& editor_layer, ImVec2 rect
 
     glm::vec2 mouse { io.MousePos.x, io.MousePos.y };
     if (hovered && io.MouseWheel != 0.0f) {
-        auto world_before = make_camera().screen_to_world(mouse, viewport(rect_min));
+        auto world_before = k2::SceneView { .camera = make_camera(), .viewport = viewport(rect_min) }.screen_to_world(mouse);
         zoom = std::clamp(zoom * std::pow(0.9f, io.MouseWheel), 0.01f, 100.0f);
-        auto world_after = make_camera().screen_to_world(mouse, viewport(rect_min));
+        auto world_after = k2::SceneView { .camera = make_camera(), .viewport = viewport(rect_min) }.screen_to_world(mouse);
         camera_position += world_before - world_after;
     }
 
     if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsKeyDown(ImGuiKey_Space)
         && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing()) {
-        auto world = make_camera().screen_to_world(mouse, viewport(rect_min));
+        auto world = k2::SceneView { .camera = make_camera(), .viewport = viewport(rect_min) }.screen_to_world(mouse);
         auto picked = entt::entity { entt::null };
         auto picked_z = -std::numeric_limits<float>::infinity();
 
@@ -278,21 +278,26 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
     auto& scene = editor_layer.active_scene();
 
     auto space = ImGui::GetContentRegionAvail();
-    // Framebuffers cannot be 0x0
     space.x = std::max(1.f, space.x);
     space.y = std::max(1.f, space.y);
+    auto scale = ImGui::GetIO().DisplayFramebufferScale;
+    float fb_scale = std::max(1.0f, std::min(scale.x, scale.y));
 
-    if (space.x != width || space.y != height) {
+    if (space.x != width || space.y != height || fb_scale != dpi_scale) {
         width = space.x;
         height = space.y;
+        dpi_scale = fb_scale;
         resize_frame_buffer();
     }
 
     update_camera();
 
+    k2::Rect<float> content { .x = 0.0f, .y = 0.0f, .w = width, .h = height };
     if (editor_layer.is_playing()) {
         if (const auto* main_camera = k2::find_main_camera(scene.registry)) {
-            renderer2D.camera = *main_camera;
+            auto resolved = main_camera->for_surface(width, height);
+            renderer2D.camera = resolved.camera;
+            content = resolved.viewport;
         }
     }
 
@@ -306,13 +311,9 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
     renderer2D.draw(scene);
     renderer2D.render();
 
-    // Show the color attachment in viewport
     std::uint32_t texture_id = renderer2D.get_frame_buffer().get_traits().attachments.front().id;
 
-    ImGui::Image((std::uint64_t)texture_id,
-        { (float)renderer2D.get_frame_buffer().get_traits().width,
-            (float)renderer2D.get_frame_buffer().get_traits().height },
-        { 0, 1 }, { 1, 0 });
+    ImGui::Image((std::uint64_t)texture_id, { width, height }, { 0, 1 }, { 1, 0 });
 
     auto rect_min = ImGui::GetItemRectMin();
     draw_gizmo(editor_layer, rect_min);
@@ -327,7 +328,7 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
         editor_layer.runtime.scripts.set_input_enabled(ImGui::IsWindowFocused());
         scene.registry.ctx().insert_or_assign(k2::SceneView {
             .camera = renderer2D.camera,
-            .viewport = { .x = rect_min.x, .y = rect_min.y, .w = width, .h = height },
+            .viewport = { .x = rect_min.x + content.x, .y = rect_min.y + content.y, .w = content.w, .h = content.h },
         });
     }
 }

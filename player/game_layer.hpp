@@ -87,10 +87,9 @@ public:
 
     void publish_scene_view() {
         const auto* main_camera = k2::find_main_camera(scene.registry);
-        scene.registry.ctx().insert_or_assign(k2::SceneView {
-            .camera = main_camera ? *main_camera : scene.registry.ctx().get<k2::Camera>(),
-            .viewport = { .x = 0.0f, .y = 0.0f, .w = float(window.get_width()), .h = float(window.get_height()) },
-        });
+        const auto& design = main_camera ? *main_camera : scene.registry.ctx().get<k2::Camera>();
+        scene.registry.ctx().insert_or_assign(
+            design.for_surface(float(window.get_width()), float(window.get_height())));
     }
 
     void render() override {
