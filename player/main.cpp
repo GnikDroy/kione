@@ -3,12 +3,14 @@
 
 #include "core/imgui_layer.hpp"
 #include "core/paths.hpp"
-#include "rendering/debug.hpp"
 #include "game_layer.hpp"
+#include "rendering/debug.hpp"
 
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <format>
+#include <iostream>
 
 class Player : public k2::App {
 public:
@@ -35,18 +37,23 @@ static std::string discover_project() {
             projects.push_back(entry.path());
         }
     }
-    if (projects.size() > 1) {
+
+    if (projects.size() == 0) {
+        std::print(std::cerr, "No projects present in this directory\n");
+        exit(EXIT_FAILURE);
+    } else if (projects.size() > 1) {
         std::ranges::sort(projects);
         std::string names;
         for (const auto& project : projects) {
             names += std::format("\n  {}", project.filename().string());
         }
-        throw std::runtime_error(
-            std::format("Multiple projects next to the executable; pass one explicitly:{}", names));
+        std::print(std::cerr, "Multiple projects next to the executable; pass one explicitly:{}\n", names);
+        exit(EXIT_FAILURE);
     }
     return projects.front().string();
 }
 
 auto create_app(std::vector<std::string> args) -> std::unique_ptr<k2::App> {
-    return std::make_unique<Player>(args.empty() ? discover_project() : args.front());
+    auto project = args.empty() ? discover_project() : args.front();
+    return std::make_unique<Player>(project);
 }
