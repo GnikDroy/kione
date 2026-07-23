@@ -9,6 +9,7 @@
 
 #include <IconsMaterialSymbols.h>
 #include <algorithm>
+#include <memory>
 #include <nfd.hpp>
 
 namespace k2::editor {
@@ -48,8 +49,7 @@ static void save_scene(EditorLayer& editor_layer) {
     try {
         auto it = editor_layer.project->assets.find(ResourceManager::resolve(editor_layer.current_scene));
         if (it == editor_layer.project->assets.end() || it->second.second.type != Asset::Type::Scene) {
-            Log::core().error(
-                std::format("Project has no scene asset '{}' to save to", editor_layer.current_scene));
+            Log::core().error(std::format("Project has no scene asset '{}' to save to", editor_layer.current_scene));
             return;
         }
         auto path = std::string { it->second.second.get_url_divisions().path };
@@ -144,8 +144,7 @@ static void render_scene_menu(EditorLayer& editor_layer) {
         if (ImGui::MenuItem(ICON_MS_STOP "  Stop", "CTRL+P", false, playing)) {
             editor_layer.stop();
         }
-        if (ImGui::MenuItem(ICON_MS_ADD "  New Scene", nullptr, false,
-                editor_layer.project.has_value() && !playing)) {
+        if (ImGui::MenuItem(ICON_MS_ADD "  New Scene", nullptr, false, editor_layer.project.has_value() && !playing)) {
             new_scene_dialog(editor_layer);
         }
         if (ImGui::BeginMenu(ICON_MS_MAP "  Open Scene", editor_layer.project.has_value() && !playing)) {
@@ -251,19 +250,37 @@ static void render_brand(EditorLayer& editor_layer) {
     float top = ImGui::GetWindowPos().y;
 
     auto* draw_list = ImGui::GetWindowDrawList();
-    draw_list->AddRectFilled(
-        { origin.x, top }, { origin.x + badge_w, top + bar_h }, ImGui::GetColorU32(editor_layer.theme->color("primary")));
+    draw_list->AddRectFilled({ origin.x, top }, { origin.x + badge_w, top + bar_h },
+        ImGui::GetColorU32(editor_layer.theme->color("primary")));
     draw_list->AddText({ origin.x + pad_x, top + (bar_h - text_size.y) * 0.5f }, IM_COL32_WHITE, name);
 
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + badge_w + ImGui::GetStyle().ItemSpacing.x);
 }
 
-static void render_fps() {
-    auto text = std::format("{:.0f} FPS", ImGui::GetIO().Framerate);
-    float width = ImGui::CalcTextSize(text.c_str()).x;
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - width - ImGui::GetStyle().ItemSpacing.x * 2.0f);
+static void render_status(EditorLayer& editor_layer, bool& dark_theme) {
+    auto fps = std::format("{:.0f} FPS", ImGui::GetIO().Framerate);
+    float fps_width = ImGui::CalcTextSize(fps.c_str()).x;
+
+    const char* label = dark_theme ? ICON_MS_SUNNY : ICON_MS_DARK_MODE;
+    float button_width = ImGui::CalcTextSize(label).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+    float spacing = ImGui::GetStyle().ItemSpacing.x;
+
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - fps_width - button_width - spacing * 3.0f);
+    if (ImGui::SmallButton(label)) {
+        dark_theme = !dark_theme;
+        if (dark_theme) {
+            editor_layer.apply_theme(std::make_unique<k2::Imgui::ImGuiThemeDark>());
+        } else {
+            editor_layer.apply_theme(std::make_unique<k2::Imgui::ImGuiThemeLight>());
+        }
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Toggle light / dark theme");
+    }
+
+    ImGui::SameLine();
     ImGui::AlignTextToFramePadding();
-    ImGui::TextDisabled("%s", text.c_str());
+    ImGui::TextDisabled("%s", fps.c_str());
 }
 
 void MainMenuWidget::render(EditorLayer& editor_layer) {
@@ -290,7 +307,7 @@ void MainMenuWidget::render(EditorLayer& editor_layer) {
         render_edit_menu(editor_layer);
         render_view_menu(editor_layer);
         render_help_menu();
-        render_fps();
+        render_status(editor_layer, dark_theme);
         ImGui::EndMainMenuBar();
     }
 }

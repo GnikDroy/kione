@@ -144,4 +144,117 @@ void ImGuiThemeDark::apply() const {
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 }
 
+ImGuiThemeLight::ImGuiThemeLight() {
+    using namespace k2::literals;
+    colors["primary"_fnv1a] = HexColorToImVec4("#3F51B5ff");
+    colors["primary_alt"_fnv1a] = HexColorToImVec4("#5C6BC0ff");
+    colors["safe"_fnv1a] = HexColorToImVec4("#2E7D32ff");
+    colors["secondary"_fnv1a] = HexColorToImVec4("#3a3a42ff");
+    colors["secondary_alt"_fnv1a] = HexColorToImVec4("#4a4a54ff");
+    colors["background"_fnv1a] = HexColorToImVec4("#f5f5f7ff");
+    colors["background_alt"_fnv1a] = HexColorToImVec4("#e9e9eeff");
+    colors["surface"_fnv1a] = HexColorToImVec4("#e4e4eaff");
+    colors["surface_hover"_fnv1a] = HexColorToImVec4("#d8d8e0ff");
+    colors["surface_active"_fnv1a] = HexColorToImVec4("#c9c9d3ff");
+
+    colors["log_trace"_fnv1a] = HexColorToImVec4("#8a8a8aff");
+    colors["log_debug"_fnv1a] = HexColorToImVec4("#5c5c5cff");
+    colors["log_info"_fnv1a] = HexColorToImVec4("#1a1a1eff");
+    colors["log_warn"_fnv1a] = HexColorToImVec4("#b26a00ff");
+    colors["log_err"_fnv1a] = HexColorToImVec4("#c0392bff");
+    colors["log_critical"_fnv1a] = HexColorToImVec4("#d32f2fff");
+    colors["log_off"_fnv1a] = colors["background"_fnv1a];
+}
+
+void ImGuiThemeLight::apply() const {
+    using namespace k2::literals;
+    auto& io = ImGui::GetIO();
+    auto& style = ImGui::GetStyle();
+    auto* im_colors = ImGui::GetStyle().Colors;
+
+    im_colors[ImGuiCol_Text] = HexColorToImVec4("#1a1a1eff");
+    im_colors[ImGuiCol_TextDisabled] = HexColorToImVec4("#9a9aa2ff");
+    im_colors[ImGuiCol_WindowBg] = colors.at("background"_fnv1a);
+    im_colors[ImGuiCol_ChildBg] = HexColorToImVec4("#00000000");
+    im_colors[ImGuiCol_PopupBg] = HexColorToImVec4("#fbfbfdfa");
+    im_colors[ImGuiCol_Border] = HexColorToImVec4("#d0d0d8ff");
+    im_colors[ImGuiCol_BorderShadow] = HexColorToImVec4("#00000000");
+    im_colors[ImGuiCol_FrameBg] = colors.at("surface"_fnv1a);
+    im_colors[ImGuiCol_FrameBgHovered] = colors.at("surface_hover"_fnv1a);
+    im_colors[ImGuiCol_FrameBgActive] = colors.at("surface_active"_fnv1a);
+    im_colors[ImGuiCol_TitleBg] = colors.at("background_alt"_fnv1a);
+    im_colors[ImGuiCol_TitleBgActive] = colors.at("background_alt"_fnv1a);
+    im_colors[ImGuiCol_TitleBgCollapsed] = colors.at("background_alt"_fnv1a);
+    im_colors[ImGuiCol_MenuBarBg] = colors.at("background_alt"_fnv1a);
+    im_colors[ImGuiCol_ScrollbarBg] = HexColorToImVec4("#00000000");
+    im_colors[ImGuiCol_ScrollbarGrab] = HexColorToImVec4("#c2c2ccff");
+    im_colors[ImGuiCol_ScrollbarGrabHovered] = HexColorToImVec4("#b0b0bcff");
+    im_colors[ImGuiCol_ScrollbarGrabActive] = colors.at("primary"_fnv1a);
+    im_colors[ImGuiCol_CheckMark] = colors.at("primary"_fnv1a);
+    im_colors[ImGuiCol_SliderGrab] = HexColorToImVec4("#5C6BC0cc");
+    im_colors[ImGuiCol_SliderGrabActive] = HexColorToImVec4("#3F51B5ff");
+    im_colors[ImGuiCol_Button] = colors.at("surface"_fnv1a);
+    im_colors[ImGuiCol_ButtonHovered] = colors.at("surface_hover"_fnv1a);
+    im_colors[ImGuiCol_ButtonActive] = colors.at("primary_alt"_fnv1a);
+    im_colors[ImGuiCol_Header] = HexColorToImVec4("#3F51B533");
+    im_colors[ImGuiCol_HeaderHovered] = HexColorToImVec4("#5C6BC033");
+    im_colors[ImGuiCol_HeaderActive] = HexColorToImVec4("#3F51B559");
+    im_colors[ImGuiCol_Separator] = HexColorToImVec4("#d0d0d8ff");
+    im_colors[ImGuiCol_SeparatorHovered] = colors.at("primary"_fnv1a);
+    im_colors[ImGuiCol_SeparatorActive] = HexColorToImVec4("#3949abff");
+    im_colors[ImGuiCol_ResizeGrip] = HexColorToImVec4("#00000000");
+    im_colors[ImGuiCol_ResizeGripHovered] = HexColorToImVec4("#5C6BC066");
+    im_colors[ImGuiCol_ResizeGripActive] = HexColorToImVec4("#5C6BC0cc");
+    im_colors[ImGuiCol_Tab] = colors.at("background_alt"_fnv1a);
+    im_colors[ImGuiCol_TabHovered] = HexColorToImVec4("#3F51B540");
+    im_colors[ImGuiCol_TabActive] = colors.at("background"_fnv1a);
+    im_colors[ImGuiCol_TabUnfocused] = colors.at("background_alt"_fnv1a);
+    im_colors[ImGuiCol_TabUnfocusedActive] = HexColorToImVec4("#ededf2ff");
+    im_colors[ImGuiCol_DockingPreview] = HexColorToImVec4("#5C6BC066");
+    im_colors[ImGuiCol_DockingEmptyBg] = colors.at("background_alt"_fnv1a);
+    im_colors[ImGuiCol_TableHeaderBg] = HexColorToImVec4("#e4e4eaff");
+    im_colors[ImGuiCol_TableBorderStrong] = HexColorToImVec4("#c8c8d0ff");
+    im_colors[ImGuiCol_TableBorderLight] = HexColorToImVec4("#dcdce2ff");
+    im_colors[ImGuiCol_TableRowBg] = HexColorToImVec4("#00000000");
+    im_colors[ImGuiCol_TableRowBgAlt] = HexColorToImVec4("#0000000a");
+    im_colors[ImGuiCol_PlotLines] = HexColorToImVec4("#6a6a74ff");
+    im_colors[ImGuiCol_PlotLinesHovered] = HexColorToImVec4("#1565c0ff");
+    im_colors[ImGuiCol_PlotHistogram] = colors.at("primary"_fnv1a);
+    im_colors[ImGuiCol_PlotHistogramHovered] = HexColorToImVec4("#3949abff");
+    im_colors[ImGuiCol_TextSelectedBg] = HexColorToImVec4("#3F51B540");
+    im_colors[ImGuiCol_DragDropTarget] = HexColorToImVec4("#3949abff");
+    im_colors[ImGuiCol_NavHighlight] = colors.at("primary"_fnv1a);
+    im_colors[ImGuiCol_NavWindowingHighlight] = colors.at("primary"_fnv1a);
+    im_colors[ImGuiCol_NavWindowingDimBg] = HexColorToImVec4("#00000030");
+    im_colors[ImGuiCol_ModalWindowDimBg] = HexColorToImVec4("#00000040");
+
+    style.WindowPadding = ImVec2(10.f, 10.f);
+    style.FramePadding = ImVec2(8.f, 4.f);
+    style.ItemSpacing = ImVec2(8.f, 5.f);
+    style.ItemInnerSpacing = ImVec2(6.f, 4.f);
+    style.IndentSpacing = 20.f;
+    style.CellPadding = ImVec2(6.f, 4.f);
+
+    style.ScrollbarSize = 12.f;
+    style.GrabMinSize = 10.f;
+    style.WindowBorderSize = 1.f;
+    style.ChildBorderSize = 0.f;
+    style.PopupBorderSize = 1.f;
+    style.FrameBorderSize = 0.f;
+    style.TabBorderSize = 0.f;
+
+    style.WindowRounding = 0.f;
+    style.ChildRounding = 0.f;
+    style.FrameRounding = 4.f;
+    style.PopupRounding = 4.f;
+    style.ScrollbarRounding = 9.f;
+    style.GrabRounding = 4.f;
+    style.TabRounding = 4.f;
+
+    style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+    style.WindowMenuButtonPosition = ImGuiDir_None;
+
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
+}
+
 }

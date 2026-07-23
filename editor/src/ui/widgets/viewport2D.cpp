@@ -306,7 +306,8 @@ void Viewport2DWidget::render(EditorLayer& editor_layer) {
         push_camera_overlay(editor_layer);
     }
 
-    renderer2D.set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
+    auto backdrop = editor_layer.theme->color("surface");
+    renderer2D.set_clear_color(backdrop.x, backdrop.y, backdrop.z, backdrop.w);
     renderer2D.clear();
     renderer2D.draw(scene);
     renderer2D.render();

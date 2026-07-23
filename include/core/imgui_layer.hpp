@@ -24,6 +24,11 @@ public:
     ImguiLayer(const ImguiLayer&) = delete;
     ImguiLayer& operator=(const ImguiLayer&) = delete;
 
+    void apply_theme(std::unique_ptr<Imgui::ImGuiTheme> new_theme) {
+        theme = std::move(new_theme);
+        theme->apply();
+    }
+
     ~ImguiLayer() override;
     void begin_frame() override;
     void update(float) override;

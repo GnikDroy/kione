@@ -6,6 +6,8 @@
 
 namespace k2::editor {
 class MainMenuWidget : public IWidget {
+    bool dark_theme = true;
+
 public:
     void render(EditorLayer&) override;
 };

@@ -25,4 +25,10 @@ struct ImGuiThemeDark : ImGuiTheme {
     void apply() const override;
 };
 
+struct ImGuiThemeLight : ImGuiTheme {
+    ImGuiThemeLight();
+
+    void apply() const override;
+};
+
 }
