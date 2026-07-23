@@ -80,9 +80,3 @@ target_compile_options(editor PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest /wd4201 /wd4103 /wd5054>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>
 )
-
-add_custom_command(TARGET editor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:editor>/res/
-    COMMENT "COPY res directory to build"
-)

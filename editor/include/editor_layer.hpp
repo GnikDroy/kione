@@ -23,9 +23,6 @@
 namespace k2 {
 class EditorLayer : public k2::ImguiLayer {
 public:
-    AssetRegistry assets
-        = AssetRegistryLoader::load({ .url = "file:///res/editor.yaml", .type = Asset::Type::AssetBundle });
-
     Runtime runtime;
     std::optional<Project> project;
 
@@ -78,7 +75,10 @@ public:
     [[nodiscard]] bool is_playing() const { return runtime_scene.has_value(); }
     [[nodiscard]] Scene& active_scene() { return runtime_scene ? *runtime_scene : scene; }
 
-    [[nodiscard]] const AssetRegistry& active_assets() const { return project ? project->assets : assets; }
+    [[nodiscard]] const AssetRegistry& active_assets() const {
+        static const AssetRegistry none;
+        return project ? project->assets : none;
+    }
 };
 
 }

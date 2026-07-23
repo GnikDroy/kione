@@ -1,5 +1,0 @@
-version: 0.0.1
-assets:
-  Font:
-      MaterialSymbols: file:///fonts/material-symbols-outlined.ttf
-      NotoSansRegular: file:///fonts/NotoSans-Regular.ttf

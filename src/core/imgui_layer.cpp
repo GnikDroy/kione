@@ -1,7 +1,6 @@
 #include "core/imgui_layer.hpp"
 
-#include "core/logger.hpp"
-#include "core/paths.hpp"
+#include "core/embedded_fonts.hpp"
 #include "events/event.hpp"
 #include "events/keyboard.hpp"
 #include "events/mouse.hpp"
@@ -39,29 +38,26 @@ ImguiLayer::ImguiLayer(k2::Window& win, std::unique_ptr<Imgui::ImGuiTheme> theme
         // Material Symbols' full range runs past the 0xffffd, cap at 0xffff
         static std::array<const ImWchar, 3> icon_ranges { ICON_MIN_MS, 0xFFFF, 0 };
 
-        auto font_directory = executable_path().parent_path() / "res/fonts";
-        auto text_font = font_directory / "NotoSans-Regular.ttf";
-        auto icon_ttf = font_directory / "material-symbols-outlined.ttf";
-        std::error_code ec;
-        if (std::filesystem::is_regular_file(text_font, ec)
-            && io.Fonts->AddFontFromFileTTF(text_font.string().c_str(), 18) != nullptr) {
-            if (std::filesystem::is_regular_file(icon_ttf, ec)) {
-                ImFontConfig config;
-                config.MergeMode = true;
-                // Material Symbols sit on a 24px grid; render near text size and nudge down to
-                // stay centered on the 18px baseline.
-                config.GlyphOffset = ImVec2(0.0f, 4.0f);
-                io.Fonts->AddFontFromFileTTF(icon_ttf.string().c_str(), 20.0f, &config, icon_ranges.data());
-            } else {
-                Log::core().warn("Failed to load res/fonts/material-symbols-outlined.ttf, icons might look corrupt.");
-            }
-        } else {
-            Log::core().warn("Failed to load res/fonts/NotoSans-Regular.ttf, falling back to the default font.");
-            io.Fonts->AddFontDefault();
-        }
-        if (std::filesystem::is_regular_file(icon_ttf, ec)) {
-            icon_font = io.Fonts->AddFontFromFileTTF(icon_ttf.string().c_str(), 52.0f, nullptr, icon_ranges.data());
-        }
+        // Fonts are compiled into the binary; ImGui must not free their static storage.
+        ImFontConfig text_config;
+        text_config.FontDataOwnedByAtlas = false;
+        io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(embedded_fonts::NotoSans_Regular),
+            int(embedded_fonts::NotoSans_Regular_size), 18, &text_config);
+
+        // Material Symbols sit on a 24px grid; render near text size and nudge down to
+        // stay centered on the 18px baseline.
+        ImFontConfig merge_config;
+        merge_config.FontDataOwnedByAtlas = false;
+        merge_config.MergeMode = true;
+        merge_config.GlyphOffset = ImVec2(0.0f, 4.0f);
+        io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(embedded_fonts::material_symbols_outlined),
+            int(embedded_fonts::material_symbols_outlined_size), 20.0f, &merge_config, icon_ranges.data());
+
+        ImFontConfig icon_config;
+        icon_config.FontDataOwnedByAtlas = false;
+        icon_font
+            = io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(embedded_fonts::material_symbols_outlined),
+                int(embedded_fonts::material_symbols_outlined_size), 52.0f, &icon_config, icon_ranges.data());
 
         ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
         ImGui_ImplOpenGL3_Init();

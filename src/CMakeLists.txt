@@ -11,6 +11,17 @@ add_custom_command(
     COMMENT "Embedding engine shaders"
 )
 
+set(K2_FONT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/core/fonts)
+set(K2_EMBEDDED_FONTS ${CMAKE_CURRENT_BINARY_DIR}/generated/embedded_fonts.cpp)
+file(GLOB K2_FONT_FILES CONFIGURE_DEPENDS ${K2_FONT_DIR}/*.ttf)
+add_custom_command(
+    OUTPUT ${K2_EMBEDDED_FONTS}
+    COMMAND ${CMAKE_COMMAND} -DFONT_DIR=${K2_FONT_DIR} -DOUTPUT=${K2_EMBEDDED_FONTS}
+            -P ${PROJECT_SOURCE_DIR}/cmake/embed_fonts.cmake
+    DEPENDS ${K2_FONT_FILES} ${PROJECT_SOURCE_DIR}/cmake/embed_fonts.cmake
+    COMMENT "Embedding editor UI fonts"
+)
+
 add_library(
     kione2D
     asset/asset.cpp
@@ -55,6 +66,7 @@ add_library(
     rendering/texture.cpp
     stb_image.cpp
     ${K2_EMBEDDED_SHADERS}
+    ${K2_EMBEDDED_FONTS}
 )
 add_library(kione2D::kione2D ALIAS kione2D)
 

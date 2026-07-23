@@ -49,7 +49,7 @@ target_precompile_headers(K2_tests PRIVATE
 )
 
 target_compile_definitions(K2_tests PRIVATE
-    K2_TEST_FONT="${PROJECT_SOURCE_DIR}/editor/res/fonts/NotoSans-Regular.ttf")
+    K2_TEST_FONT="${PROJECT_SOURCE_DIR}/src/core/fonts/NotoSans-Regular.ttf")
 
 target_link_libraries(K2_tests
     kione2D::kione2D

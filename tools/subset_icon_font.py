@@ -15,7 +15,7 @@ FONT_URL = (
     "https://raw.githubusercontent.com/google/material-design-icons/master/"
     "variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf"
 )
-OUT = os.path.join(ROOT, "editor", "res", "fonts", "material-symbols-outlined.ttf")
+OUT = os.path.join(ROOT, "src", "core", "fonts", "material-symbols-outlined.ttf")
 INSTANCE = {"FILL": 0, "wght": 400, "GRAD": 0, "opsz": 24}
 
 
