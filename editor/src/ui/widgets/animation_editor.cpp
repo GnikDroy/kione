@@ -138,8 +138,9 @@ float AnimationEditorWidget::draw_preview(EditorLayer& editor_layer) {
     const auto* texture = frame ? editor_layer.runtime.resources.try_get<Texture2D>(clip.texture.id) : nullptr;
     if (texture != nullptr && texture->width > 0 && texture->height > 0) {
         constexpr auto stage = 128.0f;
-        // region is in texture pixels; normalize to uv for the preview image.
-        k2::Rectf uv { .x = frame->region.x / float(texture->width), .y = frame->region.y / float(texture->height),
+        // region is in texture pixels from the top-left; normalize to uv
+        k2::Rectf uv { .x = frame->region.x / float(texture->width),
+            .y = (float(texture->height) - frame->region.y - frame->region.h) / float(texture->height),
             .w = frame->region.w / float(texture->width), .h = frame->region.h / float(texture->height) };
         auto pixel_width = std::abs(frame->region.w);
         auto pixel_height = std::abs(frame->region.h);

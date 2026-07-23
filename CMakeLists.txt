@@ -52,7 +52,7 @@ function(entt_build)
     FetchContent_Declare(
         EnTT
         GIT_REPOSITORY https://github.com/skypjack/entt
-        GIT_TAG        v3.14.0
+        GIT_TAG        v3.16.0
     )
 
     FetchContent_MakeAvailable(EnTT)
@@ -65,7 +65,7 @@ function(yaml_build)
     FetchContent_Declare(
             yaml-cpp
             GIT_REPOSITORY https://github.com/jasonbeach/yaml-cpp
-            GIT_TAG cmake_install_fix
+            GIT_TAG dec18b8d7f25bed77dd3bee44d9c3874437ae7a7 # cmake_install_fix
     )
     FetchContent_MakeAvailable(yaml-cpp)
 endfunction()
@@ -75,7 +75,7 @@ yaml_build()
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.7.1
+    GIT_TAG        v3.15.2
     GIT_SHALLOW 1
     GIT_PROGRESS 1
 )
@@ -88,7 +88,7 @@ function(spdlog_build)
     FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG        v1.15.0
+        GIT_TAG        v1.17.0
         GIT_SHALLOW 1
         GIT_PROGRESS 1
     )
@@ -101,12 +101,14 @@ spdlog_build()
 FetchContent_Declare(
     glm
     GIT_REPOSITORY https://github.com/g-truc/glm
-    GIT_TAG        0.9.9.8
+    GIT_TAG        1.0.3
     GIT_SHALLOW 1
     GIT_PROGRESS 1
 )
 
 FetchContent_MakeAvailable(glm)
+# glm 1.x gates the gtx/ extension headers behind this definition
+target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
 
 # Setup glfw
 function(glfw_build)
@@ -130,7 +132,7 @@ glfw_build()
 FetchContent_Declare(
     nfd
     GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended
-    GIT_TAG        v1.2.1
+    GIT_TAG        v1.3.0
     GIT_SHALLOW 1
     GIT_PROGRESS 1
 )
@@ -144,7 +146,7 @@ function(glad_build)
     FetchContent_Declare(
         glad
         GIT_REPOSITORY https://github.com/Dav1dde/glad
-        GIT_TAG        v0.1.34
+        GIT_TAG        v0.1.36
         GIT_SHALLOW 1
         GIT_PROGRESS 1
     )
@@ -158,8 +160,7 @@ glad_build()
 FetchContent_Declare(
     iconFontCppHeaders
     GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders
-    GIT_TAG        main
-    GIT_SHALLOW 1
+    GIT_TAG        210b5a399a64270674560d633638952d1e8d804d
     GIT_PROGRESS 1
 )
 
@@ -176,8 +177,7 @@ endif()
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG        origin/docking
-    GIT_SHALLOW 1
+    GIT_TAG        ca49eff3980443a97c470e09fe55b1740cfb9584 # docking
     GIT_PROGRESS 1
 )
 
@@ -204,8 +204,7 @@ endif()
 FetchContent_Declare(
     imguizmo
     GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo
-    GIT_TAG        master
-    GIT_SHALLOW 1
+    GIT_TAG        dc25afb98bc3ebe00dfc9a23ba7235fead2ccb1d # master
     GIT_PROGRESS 1
 )
 
@@ -229,8 +228,7 @@ function(stb_build)
     FetchContent_Declare(
         stb
         GIT_REPOSITORY https://github.com/nothings/stb
-        GIT_TAG        master
-        GIT_SHALLOW 1
+        GIT_TAG        31c1ad37456438565541f4919958214b6e762fb4 # master
         GIT_PROGRESS 1
     )
     FetchContent_GetProperties(stb)
@@ -248,7 +246,7 @@ function(miniaudio_build)
     FetchContent_Declare(
         miniaudio
         GIT_REPOSITORY https://github.com/mackron/miniaudio
-        GIT_TAG        0.11.21
+        GIT_TAG        0.11.25
         GIT_SHALLOW 1
         GIT_PROGRESS 1
     )
@@ -267,7 +265,7 @@ function(lua_build)
     FetchContent_Declare(
         lua
         GIT_REPOSITORY https://github.com/lua/lua
-        GIT_TAG        v5.4.3
+        GIT_TAG        v5.4.8
         GIT_SHALLOW 1
         GIT_PROGRESS 1
     )
@@ -318,8 +316,7 @@ function(sol2_build)
     FetchContent_Declare(
         sol2
         GIT_REPOSITORY https://github.com/ThePhD/sol2
-        GIT_TAG        develop
-        GIT_SHALLOW 1
+        GIT_TAG        c1f95a773c6f8f4fde8ca3efe872e7286afe4444 # develop
         GIT_PROGRESS 1
     )
     FetchContent_MakeAvailable(sol2)
@@ -330,8 +327,7 @@ sol2_build()
 FetchContent_Declare(
     tinyobjloader
     GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader
-    GIT_TAG        release
-    GIT_SHALLOW 1
+    GIT_TAG        45636bdcef1a4fec140346b90c0b50bf0bc3e23b # release
     GIT_PROGRESS 1
 )
 FetchContent_MakeAvailable(tinyobjloader)

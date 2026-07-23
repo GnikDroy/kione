@@ -253,12 +253,12 @@ void Renderer2D::draw(Scene& scene) {
         [&](auto entity, const auto&, const auto& sprite) {
             auto world = TransformComponent::world(scene.registry, entity);
 
-            // Region is authored in pixels; normalize to UV
+            // Region is authored in pixels from the image's top-left
             Rectf uv { .x = 0.0f, .y = 0.0f, .w = 1.0f, .h = 1.0f };
             const auto* texture = resources != nullptr ? resources->try_get<Texture2D>(sprite.texture.id) : nullptr;
             if (texture != nullptr && texture->width > 0 && texture->height > 0) {
                 uv = { .x = sprite.region.x / float(texture->width),
-                    .y = sprite.region.y / float(texture->height),
+                    .y = (float(texture->height) - sprite.region.y - sprite.region.h) / float(texture->height),
                     .w = sprite.region.w / float(texture->width),
                     .h = sprite.region.h / float(texture->height) };
             }

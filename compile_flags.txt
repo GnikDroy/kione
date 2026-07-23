@@ -7,6 +7,7 @@
 -DSOL_ALL_SAFETIES_ON=1
 -DSPDLOG_COMPILED_LIB
 -DSPDLOG_USE_STD_FORMAT
+-DGLM_ENABLE_EXPERIMENTAL
 
 --include-directory=include
 --include-directory=src

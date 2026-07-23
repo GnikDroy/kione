@@ -53,7 +53,7 @@
   SpriteComponent:
     Texture: spring_
     Color: [1, 1, 1, 1]
-    Region: [0, 0, 16, 32]
+    Region: [0, 288, 16, 32]
     Size: [16, 32]
   ColliderComponent:
     Shape: Box
@@ -726,7 +726,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -746,7 +746,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -766,7 +766,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -786,7 +786,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -806,7 +806,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -826,7 +826,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -846,7 +846,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -866,7 +866,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -886,7 +886,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -906,7 +906,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -926,7 +926,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -946,7 +946,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -966,7 +966,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -986,7 +986,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -1006,7 +1006,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water
@@ -1026,7 +1026,7 @@
   SpriteComponent:
     Texture: foreground_
     Color: [1, 1, 1, 1]
-    Region: [0, 64, 16, 16]
+    Region: [0, 48, 16, 16]
     Size: [16, 16]
   AnimationComponent:
     Clip: water

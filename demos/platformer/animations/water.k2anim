@@ -1,27 +1,27 @@
 texture: foreground_
 loop: true
 frames:
-  - region: [0, 64, 16, 16]
+  - region: [0, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
-  - region: [16, 64, 16, 16]
+  - region: [16, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
-  - region: [32, 64, 16, 16]
+  - region: [32, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
-  - region: [48, 64, 16, 16]
+  - region: [48, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
-  - region: [64, 64, 16, 16]
+  - region: [64, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
-  - region: [80, 64, 16, 16]
+  - region: [80, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
-  - region: [96, 64, 16, 16]
+  - region: [96, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
-  - region: [112, 64, 16, 16]
+  - region: [112, 48, 16, 16]
     duration: 0.200000003
     color: [1, 1, 1, 1]
