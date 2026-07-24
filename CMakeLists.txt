@@ -9,6 +9,11 @@ project(
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(BUILD_SHARED_LIBS OFF)
 
+# sol2 is very template heavy
+if(MSVC)
+    add_compile_options(/bigobj)
+endif()
+
 # Set the default build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(default_build_type "Debug")

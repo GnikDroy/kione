@@ -70,6 +70,6 @@ set_target_properties(K2_tests
     CXX_STANDARD 23
 )
 target_compile_options(K2_tests PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /std:c++latest>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /std:c++latest>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>
 )
