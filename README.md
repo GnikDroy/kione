@@ -1,6 +1,9 @@
-# kione
+<h1>
+    <img src="docs/src/assets/logo.svg" alt="kione" width="64" height="64" align="center" />
+    <span> kione </span>
+</h1>
 
-Kione is a small 2D game engine you can actually read. Build your game in its editor, script
+Kione is a general purpose 2D game engine. Build your game in its editor, script
 it in Lua, and ship it by dropping a tiny runtime next to your project folder.
 
 ![The platformer demo](docs/src/assets/platformer.png)

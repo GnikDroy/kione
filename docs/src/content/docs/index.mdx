@@ -1,0 +1,148 @@
+---
+title: kione
+description: A C++23 2D game engine with an ImGui editor, EnTT ECS, Lua scripting, and deferred lighting.
+template: splash
+hero:
+  tagline: Kione is a general purpose 2D game engine.
+  actions:
+    - text: Get Kione
+      link: guides/getting-started/
+      icon: download
+    - text: Docs
+      link: documentation/basics/
+      icon: open-book
+      variant: minimal
+---
+
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import platformer from '../../assets/platformer.png';
+import platformerLight from '../../assets/platformer_light.png';
+import tilemap from '../../assets/tilemap.png';
+import tilemapLight from '../../assets/tilemap_light.png';
+import towerdefense from '../../assets/towerdefense.png';
+
+<div class="feature">
+<div class="feature-text">
+
+### Editor included
+
+A docking editor with scene/entity/component editing, live play mode, and tileset, tilemap, and
+animation authoring — everything you need to build a game without leaving the app.
+
+</div>
+<div class="feature-media">
+
+<Image src={tilemap} alt="The in-editor tilemap authoring workflow" class="dark-only" />
+<Image src={tilemapLight} alt="The in-editor tilemap authoring workflow" class="light-only" />
+
+</div>
+</div>
+
+<div class="feature feature-alt">
+<div class="feature-text">
+
+### Lua scripting
+
+Drive entities with per-entity Lua — read input, move and animate, spawn and query, and store
+custom data other entities can read. Here's the heart of the demo's player controller:
+
+</div>
+<div class="feature-media">
+
+```lua
+function on_update(entity, dt)
+  local transform = entity:transform()
+
+  local move = 0.0
+  if Input.is_key_down(Key.a) or Input.is_key_down(Key.left) then move = move - 1.0 end
+  if Input.is_key_down(Key.d) or Input.is_key_down(Key.right) then move = move + 1.0 end
+  vx = move * MOVE_SPEED
+
+  local jump = Input.is_key_down(Key.space) or Input.is_key_down(Key.up)
+  if jump and not jump_held and grounded then
+    vy = JUMP_SPEED
+    grounded = false
+  end
+  jump_held = jump
+
+  vy = math.max(vy - GRAVITY * dt, -MAX_FALL)
+  transform.translation.x = transform.translation.x + vx * dt
+  transform.translation.y = transform.translation.y + vy * dt
+end
+```
+
+</div>
+</div>
+
+<div class="feature">
+<div class="feature-text">
+
+### Lit 2D rendering
+
+Batched sprites with deferred ambient/point/spot/sprite lights, HDR tone mapping, bloom, SDF
+text, and tilemaps — so a pixel-art scene lights up without hand-painting shadows.
+
+</div>
+<div class="feature-media">
+
+<Image src={platformer} alt="The platformer demo — lit sprites and tilemaps" class="dark-only" />
+<Image src={platformerLight} alt="The platformer demo — lit sprites and tilemaps" class="light-only" />
+
+</div>
+</div>
+
+<div class="feature feature-alt">
+<div class="feature-text">
+
+### Readable projects
+
+Scenes and projects serialize to plain YAML — easy to diff, hand-edit, and generate (even by an
+LLM). A whole entity is just a few lines:
+
+</div>
+<div class="feature-media">
+
+```yaml
+- Entity: 0
+  TagComponent: Player
+  TransformComponent:
+    Translation: [0, 0, 0]
+  SpriteComponent:
+    Texture: hero
+    Size: [16, 32]
+  ScriptComponent:
+    Script: player
+```
+
+</div>
+</div>
+
+<div class="feature">
+<div class="feature-text">
+
+### A complete game in the box
+
+The repository hosts Crystal Keep, a five-level night-time tower defense built entirely
+as kione content: autotiled maps, enemy waves and economy in Lua, dynamic lighting, a HUD,
+and audio. No engine-side game code. Play it, then pick it apart.
+
+</div>
+<div class="feature-media">
+
+<Image src={towerdefense} alt="Crystal Keep: the tower defense game" />
+
+</div>
+</div>
+
+## A small 2D engine you can own
+
+Kione is a tiny, hobby-scale 2D game engine with a full editor, a Lua scripting layer, and
+human-readable project files. Build your game in the editor, script it in Lua, and ship it by
+dropping your project next to the runtime — no build step required. Two finished projects live
+in `demos/` — a platformer and the Crystal Keep tower-defense game.
+
+<div class="cta">
+  <LinkButton href="guides/getting-started/" icon="download">Get Kione</LinkButton>
+  <LinkButton href="documentation/basics/" icon="open-book" variant="minimal">Docs</LinkButton>
+</div>

@@ -1,0 +1,102 @@
+:root[data-theme='dark'] .light-only {
+  display: none;
+}
+:root[data-theme='light'] .dark-only {
+  display: none;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  vertical-align: -0.15em;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+.heading-icon::before {
+  content: attr(data-icon);
+  font-family: 'Material Symbols Outlined';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  margin-right: 0.35em;
+  vertical-align: -0.15em;
+  color: var(--sl-color-text-accent);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 6vw, 5rem);
+  background-image: url('../assets/hero_dark.png');
+  background-size: cover;
+  background-position: center 35%;
+}
+:root[data-theme='light'] .hero {
+  background-image: url('../assets/hero_light.png');
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--sl-color-bg);
+  opacity: 0.78;
+}
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.feature {
+  display: grid;
+  gap: 1.25rem;
+  align-items: center;
+  margin: 3rem 0;
+}
+.feature-media img {
+  border-radius: 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+}
+.feature-media :is(pre, .expressive-code) {
+  margin: 0;
+}
+@media (min-width: 50rem) {
+  .feature {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+  .feature-alt .feature-media {
+    order: -1;
+  }
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+  scroll-behavior: smooth;
+}
+.carousel img {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
+}
