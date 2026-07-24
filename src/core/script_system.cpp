@@ -252,8 +252,9 @@ struct ScriptSystem::Impl : ScriptHost {
         if (!source.valid()) {
             throw std::runtime_error("entity:clone called on an invalid entity");
         }
+        auto root = scene_root(*attached_registry);
         auto entity = clone_entity(*attached_registry, source.entity);
-        RelationComponent::attach_last(*attached_registry, entity, scene_root(*attached_registry));
+        RelationComponent::attach_last(*attached_registry, entity, root);
         defer_script_from(source.entity, entity);
         return make_handle(entity);
     }
@@ -363,8 +364,9 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     LuaEntity spawn_from(entt::entity tmpl, float x, float y) {
+        auto root = scene_root(*attached_registry);
         auto entity = clone_entity(*attached_registry, tmpl);
-        RelationComponent::attach_last(*attached_registry, entity, scene_root(*attached_registry));
+        RelationComponent::attach_last(*attached_registry, entity, root);
         auto& transform = attached_registry->get_or_emplace<TransformComponent>(entity);
         transform.translation.x = x;
         transform.translation.y = y;
@@ -373,6 +375,16 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     void defer_script_from(entt::entity tmpl, entt::entity entity) {
+        defer_one_script(tmpl, entity);
+        auto sources = RelationComponent::get_children(*attached_registry, tmpl, true);
+        auto clones = RelationComponent::get_children(*attached_registry, entity, true);
+        // the clone has same ring order as source
+        for (std::size_t i = 0; i < sources.size(); i++) {
+            defer_one_script(sources[i].first, clones[i].first);
+        }
+    }
+
+    void defer_one_script(entt::entity tmpl, entt::entity entity) {
         if (const auto* script = attached_registry->try_get<ScriptComponent>(tmpl)) {
             pending.push_back({ .kind = CommandKind::AttachScript, .entity = entity, .script = script->script });
         }

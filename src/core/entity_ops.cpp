@@ -75,6 +75,10 @@ entt::entity clone_entity(entt::registry& registry, entt::entity src) {
     if (const auto* data = registry.try_get<LuaComponent>(src); data != nullptr && data->valid()) {
         registry.emplace<LuaComponent>(dst, deep_copy_table(*data));
     }
+    auto children = RelationComponent::get_children(registry, src);
+    for (const auto& [child, _] : children) {
+        RelationComponent::attach_last(registry, clone_entity(registry, child), dst);
+    }
     return dst;
 }
 

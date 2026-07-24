@@ -13,7 +13,8 @@ entt::entity scene_root(entt::registry& registry);
 
 entt::entity create_entity(entt::registry& registry);
 
-// Copies all components except RelationComponent and ScriptComponent;
+// Children are cloned recursively, root is left detached.
+// Copies all components except ScriptComponent (script host defers);
 // LuaComponent data is deep-copied.
 entt::entity clone_entity(entt::registry& registry, entt::entity src);
 

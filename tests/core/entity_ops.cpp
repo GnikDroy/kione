@@ -47,6 +47,37 @@ TEST_CASE("clone_entity excludes Relation and Script") {
     REQUIRE_FALSE(registry.all_of<k2::RelationComponent>(clone)); // a clone is a root
 }
 
+TEST_CASE("clone_entity deep-copies children in ring order") {
+    entt::registry registry;
+    auto src = registry.create();
+    registry.emplace<k2::TagComponent>(src, "tank");
+    auto turret = registry.create();
+    registry.emplace<k2::TagComponent>(turret, "turret");
+    registry.emplace<k2::SpriteComponent>(turret);
+    auto antenna = registry.create();
+    registry.emplace<k2::TagComponent>(antenna, "antenna");
+    k2::RelationComponent::attach_last(registry, turret, src);
+    k2::RelationComponent::attach_last(registry, antenna, src);
+    auto muzzle = registry.create();
+    registry.emplace<k2::TagComponent>(muzzle, "muzzle");
+    k2::RelationComponent::attach_last(registry, muzzle, turret);
+
+    auto clone = k2::clone_entity(registry, src);
+
+    REQUIRE((registry.get<k2::RelationComponent>(clone).parent == entt::null)); // still a root
+    auto children = k2::RelationComponent::get_children(registry, clone);
+    REQUIRE(children.size() == 2);
+    REQUIRE(children[0].first != turret);
+    REQUIRE(registry.get<k2::TagComponent>(children[0].first).tag == "turret");
+    REQUIRE(registry.all_of<k2::SpriteComponent>(children[0].first));
+    REQUIRE(registry.get<k2::TagComponent>(children[1].first).tag == "antenna");
+    auto grandchildren = k2::RelationComponent::get_children(registry, children[0].first);
+    REQUIRE(grandchildren.size() == 1);
+    REQUIRE(registry.get<k2::TagComponent>(grandchildren.front().first).tag == "muzzle");
+    // the source hierarchy is untouched
+    REQUIRE(k2::RelationComponent::get_children(registry, src).size() == 2);
+}
+
 TEST_CASE("scene_root is created once and reused") {
     entt::registry registry;
     auto root = k2::scene_root(registry);
