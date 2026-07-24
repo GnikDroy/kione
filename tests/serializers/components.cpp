@@ -89,13 +89,16 @@ TEST_CASE("Environment serializer round-trips", "[serializers]") {
     REQUIRE(loaded.bloom_intensity == 0.5f);
     REQUIRE(loaded.bloom_threshold == 1.5f);
 
-    // Missing fields decode to defaults.
-    auto defaults = YAML::Load("{}").as<k2::Environment>();
-    REQUIRE(defaults.ambient_color == glm::vec3 { 1.0f });
-    REQUIRE(defaults.ambient_intensity == 1.0f);
-    REQUIRE(defaults.bloom);
-    REQUIRE(defaults.bloom_intensity == 1.0f);
-    REQUIRE(defaults.bloom_threshold == 1.0f);
+    // Every field is compulsory: a partial document fails to decode.
+    REQUIRE_THROWS(YAML::Load("{}").as<k2::Environment>());
+    REQUIRE_THROWS(YAML::Load("{AmbientColor: [1, 1, 1], AmbientIntensity: 1}").as<k2::Environment>());
+}
+
+TEST_CASE("Sprite and TileMap serializers require Unlit and Size", "[serializers]") {
+    REQUIRE_THROWS(YAML::Load("{Texture: hero, Color: [1, 1, 1, 1], Region: [0, 0, 16, 16], Size: [16, 16]}")
+            .as<k2::SpriteComponent>());
+    REQUIRE_THROWS(YAML::Load("{Texture: hero, Color: [1, 1, 1, 1], Region: [0, 0, 16, 16], Unlit: false}")
+            .as<k2::SpriteComponent>());
 }
 
 TEST_CASE("TagComponent serializer round-trips as a scalar", "[serializers]") {

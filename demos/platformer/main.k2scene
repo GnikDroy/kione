@@ -55,6 +55,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 288, 16, 32]
     Size: [16, 32]
+    Unlit: false
   ColliderComponent:
     Shape: Box
     Size: [16.5, 32]
@@ -441,6 +442,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -465,6 +467,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -489,6 +492,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -513,6 +517,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -537,6 +542,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -561,6 +567,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -585,6 +592,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -609,6 +617,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -633,6 +642,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -657,6 +667,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -681,6 +692,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -705,6 +717,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 0, 16, 16]
     Size: [16, 16]
+    Unlit: false
   ColliderComponent:
     Shape: Circle
     Radius: 3.5
@@ -728,6 +741,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -748,6 +762,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -768,6 +783,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -788,6 +804,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -808,6 +825,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -828,6 +846,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -848,6 +867,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -868,6 +888,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -888,6 +909,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -908,6 +930,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -928,6 +951,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -948,6 +972,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -968,6 +993,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -988,6 +1014,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -1008,6 +1035,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1
@@ -1028,6 +1056,7 @@
     Color: [1, 1, 1, 1]
     Region: [0, 48, 16, 16]
     Size: [16, 16]
+    Unlit: false
   AnimationComponent:
     Clip: water
     Speed: 1

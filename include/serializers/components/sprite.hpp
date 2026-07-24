@@ -13,9 +13,7 @@ template <> struct convert<k2::SpriteComponent> {
         node["Color"] = sprite.color;
         node["Region"] = sprite.region;
         node["Size"] = sprite.size;
-        if (sprite.unlit) {
-            node["Unlit"] = sprite.unlit;
-        }
+        node["Unlit"] = sprite.unlit;
         if (sprite.blend == k2::BlendMode::Additive) {
             node["Blend"] = "Additive";
         }
@@ -32,8 +30,8 @@ template <> struct convert<k2::SpriteComponent> {
         sprite.texture = node["Texture"].as<k2::AssetHandle>();
         sprite.color = node["Color"].as<glm::vec4>();
         sprite.region = node["Region"].as<k2::Rect<float>>();
-        sprite.size = node["Size"].as<glm::vec2>(sprite.size);
-        sprite.unlit = node["Unlit"].as<bool>(false);
+        sprite.size = node["Size"].as<glm::vec2>();
+        sprite.unlit = node["Unlit"].as<bool>();
         const auto& blend = node["Blend"].as<std::string>("Alpha");
         if (blend == "Additive") {
             sprite.blend = k2::BlendMode::Additive;

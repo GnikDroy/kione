@@ -28,12 +28,8 @@ template <> struct convert<k2::TileMapComponent> {
             return false;
         }
         tilemap.tileset = node["Tileset"].as<k2::AssetHandle>();
-        if (node["Size"].IsDefined()) {
-            tilemap.size = glm::max(node["Size"].as<glm::ivec2>(), glm::ivec2 {});
-        }
-        if (node["TileSize"].IsDefined()) {
-            tilemap.tile_size = node["TileSize"].as<glm::vec2>();
-        }
+        tilemap.size = glm::max(node["Size"].as<glm::ivec2>(), glm::ivec2 {});
+        tilemap.tile_size = node["TileSize"].as<glm::vec2>();
         for (const auto& entry : node["Tiles"]) {
             auto tile = entry.as<int>();
             tilemap.tiles.push_back(tile < 0 || tile > int(k2::TileMapComponent::empty_tile)
@@ -42,10 +38,8 @@ template <> struct convert<k2::TileMapComponent> {
         }
         tilemap.tiles.resize(
             std::size_t(tilemap.size.x) * std::size_t(tilemap.size.y), k2::TileMapComponent::empty_tile);
-        if (node["Color"].IsDefined()) {
-            tilemap.color = node["Color"].as<glm::vec4>();
-        }
-        tilemap.unlit = node["Unlit"].as<bool>(false);
+        tilemap.color = node["Color"].as<glm::vec4>();
+        tilemap.unlit = node["Unlit"].as<bool>();
         return true;
     }
 };
