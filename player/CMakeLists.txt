@@ -6,6 +6,8 @@ add_executable(kione2D::player ALIAS player)
 
 target_link_libraries(player kione2D::kione2D)
 
+install(TARGETS player RUNTIME DESTINATION .)
+
 set_target_properties(player
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

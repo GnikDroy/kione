@@ -58,6 +58,8 @@ target_precompile_headers(editor PRIVATE
 
 target_link_libraries(editor kione2D::kione2D ImGuizmo::ImGuizmo)
 
+install(TARGETS editor RUNTIME DESTINATION .)
+
 set_target_properties(editor
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
