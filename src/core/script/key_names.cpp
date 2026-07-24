@@ -1,5 +1,6 @@
 #include "core/script/key_names.hpp"
 
+#include <ranges>
 #include <unordered_map>
 
 namespace k2 {
@@ -164,7 +165,12 @@ const char* key_state_name(KeyboardDevice::KeyState state) {
 }
 
 std::vector<std::string> key_names_all() {
-    return named_keys | std::ranges::views::keys | std::ranges::to<std::vector>();
+    std::vector<std::string> names;
+    names.reserve(named_keys.size());
+    for (const auto& name : named_keys | std::ranges::views::keys) {
+        names.push_back(name);
+    }
+    return names;
 }
 
 }
