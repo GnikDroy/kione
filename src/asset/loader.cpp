@@ -33,10 +33,10 @@ template <> Image AssetLoader::get<Image>(const Asset& asset) {
 
 static Texture2D texture_from(const Asset& asset, const Image& image) {
     auto traits = asset.get_traits();
-    bool mipmaps = true;
+    bool mipmaps = false;
     if (auto it = traits.find("mipmaps"); it != traits.end()) {
         auto& value = it->second;
-        mipmaps = !(value == "0" || value == "false" || value == "off" || value == "no");
+        mipmaps = value == "1" || value == "true" || value == "on" || value == "yes";
     }
     auto filter = TextureFilter::Linear;
     if (auto it = traits.find("filter"); it != traits.end() && it->second == "nearest") {
