@@ -33,5 +33,6 @@ void main()
 
     float width = fwidth(distance);
     float alpha = smoothstep(0.5 - width, 0.5 + width, distance);
-    FragColor = vec4(color.rgb, color.a * alpha);
+    float a = color.a * alpha;
+    FragColor = vec4(color.rgb * a, a);
 }

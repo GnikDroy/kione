@@ -1,12 +1,38 @@
 #include "rendering/texture.hpp"
 
+#include <cstdint>
 #include <format>
 #include <stdexcept>
+#include <vector>
 
 #include "core/logger.hpp"
 #include "core/utils.hpp"
 
 namespace k2 {
+
+static std::vector<std::uint8_t> premultiply_rgba(const std::uint8_t* src, std::size_t pixels) {
+    std::vector<std::uint8_t> out(pixels * 4);
+    for (std::size_t i = 0; i < pixels; i++) {
+        int a = src[i * 4 + 3];
+        out[i * 4 + 0] = std::uint8_t(int(src[i * 4 + 0]) * a / 255);
+        out[i * 4 + 1] = std::uint8_t(int(src[i * 4 + 1]) * a / 255);
+        out[i * 4 + 2] = std::uint8_t(int(src[i * 4 + 2]) * a / 255);
+        out[i * 4 + 3] = std::uint8_t(a);
+    }
+    return out;
+}
+
+static std::vector<float> premultiply_rgba(const float* src, std::size_t pixels) {
+    std::vector<float> out(pixels * 4);
+    for (std::size_t i = 0; i < pixels; i++) {
+        float a = src[i * 4 + 3];
+        out[i * 4 + 0] = src[i * 4 + 0] * a;
+        out[i * 4 + 1] = src[i * 4 + 1] * a;
+        out[i * 4 + 2] = src[i * 4 + 2] * a;
+        out[i * 4 + 3] = a;
+    }
+    return out;
+}
 
 template <FloatOrUInt8 T> GLint Texture2D::predict_sized_format(std::size_t channels) {
     if constexpr (std::same_as<T, uint8_t>) {
@@ -143,21 +169,21 @@ Texture2D& Texture2D::load(const Image& image, bool generate_mipmaps, TextureFil
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, generate_mipmaps ? 1000 : 0);
     apply_sampler_filter(GL_TEXTURE_2D, filter, generate_mipmaps);
 
+    auto pixels = std::size_t(image.width) * std::size_t(image.height);
     std::visit(
         [&](auto& image_data) {
             auto ptr = image_data.get();
-            if constexpr (std::is_same_v<decltype(ptr), std::uint8_t*>) {
-                auto sized_format = predict_sized_format<std::uint8_t>(image.channels);
+            using Pixel = std::remove_pointer_t<decltype(ptr)>;
+            if constexpr (std::is_same_v<decltype(ptr), std::uint8_t*> || std::is_same_v<decltype(ptr), float*>) {
+                auto sized_format = predict_sized_format<Pixel>(image.channels);
                 auto format = predict_format_from_sized(sized_format);
-
-                glTexImage2D(GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format,
-                    OpenGLType<uint8_t>::type, ptr);
-            } else if constexpr (std::is_same_v<decltype(ptr), float*>) {
-                auto sized_format = predict_sized_format<float>(image.channels);
-                auto format = predict_format_from_sized(sized_format);
-
+                std::vector<Pixel> premultiplied;
+                if (image.channels == 4) {
+                    premultiplied = premultiply_rgba(ptr, pixels);
+                    ptr = premultiplied.data();
+                }
                 glTexImage2D(
-                    GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format, OpenGLType<float>::type, ptr);
+                    GL_TEXTURE_2D, 0, sized_format, image.width, image.height, 0, format, OpenGLType<Pixel>::type, ptr);
             } else {
                 static_assert(always_false<decltype(ptr)>, "non-exhaustive visitor!");
             }

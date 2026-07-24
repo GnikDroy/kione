@@ -25,7 +25,7 @@ public:
     struct Pass {
         const FrameBuffer* target {};
         Program* shader {};
-        std::uint32_t blend_src { GL_SRC_ALPHA };
+        std::uint32_t blend_src { GL_ONE };
         std::uint32_t blend_dst { GL_ONE_MINUS_SRC_ALPHA };
         std::array<GLint, 4> viewport {};
         Camera* camera {};
