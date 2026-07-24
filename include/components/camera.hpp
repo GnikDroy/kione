@@ -18,16 +18,14 @@ struct SceneView;
 struct Camera {
     enum class Projection : uint8_t { Perspective, Orthographic };
 
-    template <auto T> struct ProjectionTraits;
-
-    template <> struct ProjectionTraits<Projection::Perspective> {
+    struct PerspectiveTraits {
         float fov = glm::radians(60.0f);
         float aspect_ratio = 16.0f / 9.0f;
         float far_clip = 1000.f;
         float near_clip = 0.1f;
     };
 
-    template <> struct ProjectionTraits<Projection::Orthographic> {
+    struct OrthographicTraits {
         float left = -640.0f;
         float right = 640.0f;
         float top = 360.0f;
@@ -36,8 +34,6 @@ struct Camera {
         float near_clip = 2000.0f;
     };
 
-    using PerspectiveTraits = ProjectionTraits<Projection::Perspective>;
-    using OrthographicTraits = ProjectionTraits<Projection::Orthographic>;
 
     glm::vec3 position { 0, 0, 1000.f };
     glm::vec3 target { 0, 0, 0 };
@@ -61,9 +57,9 @@ struct Camera {
         return std::visit(
             [](auto&& traits) {
                 using T = std::decay_t<decltype(traits)>;
-                if constexpr (std::is_same_v<T, ProjectionTraits<Projection::Perspective>>) {
+                if constexpr (std::is_same_v<T, PerspectiveTraits>) {
                     return glm::perspective(traits.fov, traits.aspect_ratio, traits.near_clip, traits.far_clip);
-                } else if constexpr (std::is_same_v<T, ProjectionTraits<Projection::Orthographic>>) {
+                } else if constexpr (std::is_same_v<T, OrthographicTraits>) {
                     return glm::ortho(
                         traits.left, traits.right, traits.bottom, traits.top, traits.near_clip, traits.far_clip);
                 } else {

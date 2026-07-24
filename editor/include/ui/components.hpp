@@ -58,16 +58,16 @@ template <> void ComponentWidget<k2::Camera>(entt::registry& reg, entt::registry
     auto projection_type = k2::Camera::Projection(item);
     switch (projection_type) {
     case k2::Camera::Projection::Perspective: {
-        if (!std::holds_alternative<k2::Camera::ProjectionTraits<k2::Camera::Projection::Perspective>>(
+        if (!std::holds_alternative<k2::Camera::PerspectiveTraits>(
                 camera.projection_traits)) {
-            camera.projection_traits = k2::Camera::ProjectionTraits<k2::Camera::Projection::Perspective> {};
+            camera.projection_traits = k2::Camera::PerspectiveTraits {};
         }
         break;
     }
     case k2::Camera::Projection::Orthographic: {
-        if (!std::holds_alternative<k2::Camera::ProjectionTraits<k2::Camera::Projection::Orthographic>>(
+        if (!std::holds_alternative<k2::Camera::OrthographicTraits>(
                 camera.projection_traits)) {
-            camera.projection_traits = k2::Camera::ProjectionTraits<k2::Camera::Projection::Orthographic> {};
+            camera.projection_traits = k2::Camera::OrthographicTraits {};
         }
         break;
     }
@@ -77,7 +77,7 @@ template <> void ComponentWidget<k2::Camera>(entt::registry& reg, entt::registry
     std::visit(
         [](auto&& traits) {
             using T = std::decay_t<decltype(traits)>;
-            if constexpr (std::is_same_v<T, k2::Camera::ProjectionTraits<k2::Camera::Projection::Perspective>>) {
+            if constexpr (std::is_same_v<T, k2::Camera::PerspectiveTraits>) {
                 PropertyLabel("FOV");
                 ImGui::DragFloat("##FOV", &traits.fov, 0.01f);
                 PropertyLabel("Aspect Ratio");
@@ -86,8 +86,7 @@ template <> void ComponentWidget<k2::Camera>(entt::registry& reg, entt::registry
                 ImGui::DragFloat("##NearClip", &traits.near_clip, 1.0f);
                 PropertyLabel("Far Clip");
                 ImGui::DragFloat("##FarClip", &traits.far_clip, 1.0f);
-            } else if constexpr (std::is_same_v<T,
-                                     k2::Camera::ProjectionTraits<k2::Camera::Projection::Orthographic>>) {
+            } else if constexpr (std::is_same_v<T, k2::Camera::OrthographicTraits>) {
                 PropertyLabel("Left");
                 ImGui::DragFloat("##Left", &traits.left, 1.0f);
                 PropertyLabel("Right");
