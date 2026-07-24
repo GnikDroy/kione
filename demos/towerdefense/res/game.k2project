@@ -1,0 +1,47 @@
+version: 0.0.1
+name: Crystal Keep
+main_scene: title
+assets:
+  Image:
+    spritesheet: file:///textures/spritesheet.png
+  TileSet:
+    tilesheet: file:///tilesheet.k2tileset
+  Font:
+    noto: file:///fonts/NotoSans-Regular.ttf
+  Animation:
+    flame: file:///animations/flame.k2anim
+    boom: file:///animations/boom.k2anim
+  Script:
+    director: file:///scripts/director.lua
+    camera: file:///scripts/camera.lua
+    enemy: file:///scripts/enemy.lua
+    tower: file:///scripts/tower.lua
+    projectile: file:///scripts/projectile.lua
+    cursor: file:///scripts/cursor.lua
+    fx: file:///scripts/fx.lua
+    float: file:///scripts/float.lua
+    campfire: file:///scripts/campfire.lua
+    portal: file:///scripts/portal.lua
+    hq: file:///scripts/hq.lua
+    heart: file:///scripts/heart.lua
+    title_screen: file:///scripts/title.lua
+    levels_gen: file:///scripts/levels_gen.lua
+    save: file:///scripts/save.lua
+  Audio:
+    shoot_gun: file:///audio/shoot_gun.wav
+    shoot_cannon: file:///audio/shoot_cannon.wav
+    shoot_missile: file:///audio/shoot_missile.wav
+    explosion: file:///audio/explosion.wav
+    build_chime: file:///audio/build.wav
+    deny: file:///audio/deny.wav
+    shatter: file:///audio/leak.wav
+    horn: file:///audio/horn.wav
+    victory_sting: file:///audio/victory.wav
+    ambience: file:///audio/ambience.wav
+  Scene:
+    title: file:///title.k2scene
+    level1: file:///level1.k2scene
+    level2: file:///level2.k2scene
+    level3: file:///level3.k2scene
+    level4: file:///level4.k2scene
+    level5: file:///level5.k2scene

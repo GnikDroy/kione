@@ -1,0 +1,8 @@
+version: 0.0.1
+texture: spritesheet
+loop: true
+frames:
+  - region: [1280, 768, 64, 64]
+    duration: 0.1
+  - region: [1408, 768, 64, 64]
+    duration: 0.1

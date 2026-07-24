@@ -1,0 +1,348 @@
+- Entity: 0
+  RelationComponent:
+    Parent: 4294967295
+    First: 1
+    Next: 4294967295
+    Previous: 4294967295
+    Children: 17
+- Entity: 1
+  TagComponent: Title Director
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 2
+    Previous: 17
+    Children: 0
+  AudioSourceComponent:
+    Clip: ambience
+    Volume: 0.400000006
+    Pitch: 1
+    Looping: true
+    PlayOnCreate: true
+  Environment:
+    AmbientColor: [0.400000006, 0.419999987, 0.550000012]
+    AmbientIntensity: 0.449999988
+    ClearColor: [0.0299999993, 0.0399999991, 0.0599999987, 1]
+    Bloom: true
+    BloomIntensity: 1
+    BloomThreshold: 1
+  ScriptComponent:
+    Script: title_screen
+- Entity: 2
+  TagComponent: Camera
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 3
+    Previous: 1
+    Children: 0
+  Camera:
+    Position: [0, 0, 1000]
+    Target: [0, 0, 0]
+    Up: [0, 1, 0]
+    ScaleMode: Letterbox
+    ProjectionType: Orthographic
+    ProjectionTraits:
+      Left: -640
+      Right: 640
+      Top: 360
+      Bottom: -360
+      FarClip: 0
+      NearClip: 2000
+  MainCamera: true
+- Entity: 3
+  TagComponent: Ground
+  TransformComponent:
+    Translation: [0, 0, -6]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 4
+    Previous: 2
+    Children: 0
+  TileMapComponent:
+    Tileset: tilesheet
+    Size: [20, 12]
+    TileSize: [64, 64]
+    Tiles: [119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 157, 119, 119, 157, 119, 157, 119, 157, 119, 119, 119, 119, 157, 119, 119, 119, 119, 119, 119, 119, 157, 119, 119, 119, 119, 119, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 119, 119, 157, 119, 119, 157, 119, 119, 119, 119, 119, 119, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 119, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 119, 119, 157, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 157, 157, 119, 119, 119, 119, 119, 119, 119, 119, 157, 119, 119, 119, 119, 119, 119, 119]
+    Color: [1, 1, 1, 1]
+    Unlit: false
+- Entity: 4
+  TagComponent: Clearing
+  TransformComponent:
+    Translation: [0, 0, -5.9000001]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 5
+    Previous: 3
+    Children: 0
+  TileMapComponent:
+    Tileset: tilesheet
+    Size: [20, 12]
+    TileSize: [64, 64]
+    Tiles: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 79, 80, 80, 80, 80, 81, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 102, 103, 103, 103, 103, 104, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 102, 103, 103, 103, 103, 104, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 128, 102, 103, 103, 103, 103, 104, 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 102, 103, 103, 103, 103, 104, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 125, 126, 126, 126, 126, 127, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+    Color: [1, 1, 1, 1]
+    Unlit: false
+- Entity: 5
+  TagComponent: Tree
+  TransformComponent:
+    Translation: [-500, 240, 1.20000005]
+    Orientation: [0, 0, 0.0762252733, 0.997090638]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 6
+    Previous: 4
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [960, 320, 64, 64]
+    Size: [120, 120]
+    Unlit: false
+- Entity: 6
+  TagComponent: Tree
+  TransformComponent:
+    Translation: [-380, 300, 1.20000005]
+    Orientation: [0, 0, 0.15694961, 0.987606585]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 7
+    Previous: 5
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [960, 320, 64, 64]
+    Size: [90, 90]
+    Unlit: false
+- Entity: 7
+  TagComponent: Tree
+  TransformComponent:
+    Translation: [470, 260, 1.20000005]
+    Orientation: [0, 0, -0.207744405, 0.97818315]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 8
+    Previous: 6
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [960, 320, 64, 64]
+    Size: [110, 110]
+    Unlit: false
+- Entity: 8
+  TagComponent: Tree
+  TransformComponent:
+    Translation: [560, 180, 1.20000005]
+    Orientation: [0, 0, 0.0888198987, 0.996047676]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 9
+    Previous: 7
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [960, 320, 64, 64]
+    Size: [80, 80]
+    Unlit: false
+- Entity: 9
+  TagComponent: Tree
+  TransformComponent:
+    Translation: [-520, -260, 1.20000005]
+    Orientation: [0, 0, 0.112137601, 0.993692696]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 10
+    Previous: 8
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [960, 320, 64, 64]
+    Size: [100, 100]
+    Unlit: false
+- Entity: 10
+  TagComponent: Tree
+  TransformComponent:
+    Translation: [520, -240, 1.20000005]
+    Orientation: [0, 0, 0.161821678, 0.986820042]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 11
+    Previous: 9
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [960, 320, 64, 64]
+    Size: [95, 95]
+    Unlit: false
+- Entity: 11
+  TagComponent: Big Crystal
+  TransformComponent:
+    Translation: [0, 60, 1]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 12
+    Previous: 10
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [0.850000024, 0.970000029, 1, 1]
+    Region: [1344, 448, 64, 64]
+    Size: [150, 150]
+    Unlit: false
+  PointLight:
+    Color: [0.449999988, 0.899999976, 1]
+    Intensity: 1
+    Radius: 280
+- Entity: 12
+  TagComponent: Campfire 1
+  TransformComponent:
+    Translation: [-224, 40, 1.5]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 13
+    Previous: 11
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [1280, 768, 64, 64]
+    Size: [26, 36]
+    Unlit: false
+    Blend: Additive
+    Intensity: 1.14999998
+  AnimationComponent:
+    Clip: flame
+    Speed: 1
+    Playing: true
+  ScriptComponent:
+    Script: campfire
+  PointLight:
+    Color: [1, 0.870000005, 0.680000007]
+    Intensity: 1.10000002
+    Radius: 150
+- Entity: 13
+  TagComponent: Campfire 2
+  TransformComponent:
+    Translation: [224, 40, 1.5]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 14
+    Previous: 12
+    Children: 0
+  SpriteComponent:
+    Texture: spritesheet
+    Color: [1, 1, 1, 1]
+    Region: [1280, 768, 64, 64]
+    Size: [26, 36]
+    Unlit: false
+    Blend: Additive
+    Intensity: 1.14999998
+  AnimationComponent:
+    Clip: flame
+    Speed: 1.16999996
+    Playing: true
+  ScriptComponent:
+    Script: campfire
+  PointLight:
+    Color: [1, 0.870000005, 0.680000007]
+    Intensity: 1.10000002
+    Radius: 150
+- Entity: 14
+  TagComponent: Game Title
+  TransformComponent:
+    Translation: [0, -90, 5]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 15
+    Previous: 13
+    Children: 0
+  TextComponent:
+    Font: noto
+    Text: CRYSTAL KEEP
+    Size: 72
+    Color: [0.75, 0.939999998, 1, 1]
+- Entity: 15
+  TagComponent: Subtitle
+  TransformComponent:
+    Translation: [0, -140, 5]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 16
+    Previous: 14
+    Children: 0
+  TextComponent:
+    Font: noto
+    Text: A KIONE TOWER DEFENSE
+    Size: 18
+    Color: [0.600000024, 0.75, 0.899999976, 0.899999976]
+- Entity: 16
+  TagComponent: Prompt
+  TransformComponent:
+    Translation: [0, -200, 5]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 17
+    Previous: 15
+    Children: 0
+  TextComponent:
+    Font: noto
+    Text: CLICK OR PRESS ANY KEY
+    Size: 22
+    Color: [0.899999976, 0.920000017, 1, 0.899999976]
+- Entity: 17
+  TagComponent: Stats
+  TransformComponent:
+    Translation: [0, -260, 5]
+    Orientation: [0, 0, 0, 1]
+    Scale: [1, 1, 1]
+  RelationComponent:
+    Parent: 0
+    First: 4294967295
+    Next: 1
+    Previous: 16
+    Children: 0
+  TextComponent:
+    Font: noto
+    Text: ""
+    Size: 18
+    Color: [0.649999976, 0.800000012, 0.949999988, 0.850000024]

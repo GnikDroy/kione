@@ -1,0 +1,4 @@
+texture: spritesheet
+tile_size: [64, 64]
+margin: [0, 0]
+spacing: [0, 0]

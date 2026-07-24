@@ -60,9 +60,11 @@ cmake --build build -j
 
 This produces `editor`, `player`, and `K2_tests` in `build/bin/`.
 
-## Try the demo
+## Try the demos
 
-A small platformer ships in the repository. It demonstrates lit sprites, tilemap levels, animated coins, and a
+Two projects ship in `demos/`.
+
+A small platformer demonstrates lit sprites, tilemap levels, animated coins, and a
 Lua-scripted player:
 
 ```sh
@@ -71,6 +73,16 @@ Lua-scripted player:
 ```
 
 Move with A/D or the arrow keys, jump with Space, and collect the coins.
+
+Crystal Keep is a full tower-defense game: a five-level night-time campaign with enemy
+waves, three tower types, dynamic lighting, a HUD, audio, and campaign
+saves. It is built entirely as engine content (scenes + Lua), with no engine-side game code:
+
+```sh
+./build/bin/player demos/towerdefense/res/game.k2project
+```
+
+![Crystal Keep, the tower defense campaign](docs/src/assets/towerdefense2.png)
 
 ## Project layout
 
