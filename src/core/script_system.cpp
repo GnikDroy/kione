@@ -8,6 +8,7 @@
 
 #include <sol/sol.hpp>
 
+#include "asset/loader.hpp"
 #include "components/camera.hpp"
 #include "components/relation.hpp"
 #include "components/script.hpp"
@@ -25,6 +26,7 @@
 #include "core/script/event_translation.hpp"
 #include "core/script/host.hpp"
 #include "core/script/lua_entity.hpp"
+#include "core/script/scheduler.hpp"
 
 namespace k2 {
 
@@ -32,6 +34,7 @@ struct ScriptSystemAttached { };
 
 struct ScriptSystem::Impl : ScriptHost {
     sol::state lua;
+    sol::protected_function scheduler_tick;
     Window* window {};
     bool input_enabled { true };
 
@@ -54,10 +57,43 @@ struct ScriptSystem::Impl : ScriptHost {
     }
 
     void rebuild_vm() {
+        scheduler_tick = sol::protected_function {}; // release the old VM's ref before destroying it
         lua = sol::state {};
         lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table, sol::lib::io,
-            sol::lib::os, sol::lib::coroutine);
+            sol::lib::os, sol::lib::coroutine, sol::lib::package);
         bind_script_api(lua, *window, input_enabled, *this);
+        scheduler_tick = lua.script(SCHEDULER_SOURCE);
+
+        // require resolves modules through the asset registry
+        lua["package"]["path"] = "";
+        lua["package"]["cpath"] = "";
+        lua["package"]["loadlib"] = sol::lua_nil;
+        sol::object preload = lua["package"]["searchers"][1];
+        lua["package"]["searchers"] = lua.create_table_with(1, preload, 2, [this](const std::string& module) {
+            return search_module(module);
+        });
+    }
+
+    // package searcher: a module is a Script asset, referenced by name
+    sol::object search_module(const std::string& module) {
+        auto fail = [&](const std::string& message) { return sol::make_object(lua, "\n\t" + message); };
+        if (attached_assets == nullptr) {
+            return fail("no asset registry attached");
+        }
+        auto it = attached_assets->find(ResourceManager::resolve(module));
+        if (it == attached_assets->end() || it->second.second.type != Asset::Type::Script) {
+            return fail(std::format("no Script asset named '{}'", module));
+        }
+        auto source = AssetLoader::try_get<Script>(it->second.second);
+        if (!source) {
+            return fail(std::format("asset '{}': {}", module, source.error()));
+        }
+        auto chunk = lua.load(source->source, "@" + module);
+        if (!chunk.valid()) {
+            sol::error err = chunk;
+            return fail(err.what());
+        }
+        return sol::make_object(lua, chunk.get<sol::protected_function>());
     }
 
     LuaEntity make_handle(entt::entity entity) {
@@ -353,6 +389,11 @@ void ScriptSystem::set_input_enabled(bool enabled) { impl->input_enabled = enabl
 void ScriptSystem::update(Scene& scene, const AssetRegistry& assets, float dt) {
     auto& registry = scene.registry;
     impl->attach_scene(registry, assets);
+
+    if (auto ticked = impl->scheduler_tick(dt); !ticked.valid()) {
+        sol::error err = ticked;
+        Log::core().error(std::format("kione.after/tween tick: {}", err.what()));
+    }
 
     for (auto [entity, script] : registry.view<ScriptComponent>().each()) {
         auto& env = impl->instance(entity, script);
